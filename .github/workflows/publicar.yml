@@ -1,7 +1,6 @@
-# Publica MMV en Cloudflare Pages cada vez que subís cambios a GitHub.
-# La compilación y las pruebas corren en los servidores de GitHub (no en tu PC).
-# Si alguna prueba falla, NO se publica.
-name: Publicar MMV
+# Prueba y compila MMV en los servidores de GitHub (no en tu PC).
+# Si alguna prueba falla, no se genera nada. El resultado queda para descargar en Actions.
+name: Compilar MMV
 
 on:
   push:
@@ -9,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  publicar:
+  compilar:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -22,10 +21,8 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      # rama main = producción (mmv-bribay.pages.dev); rama prueba = dirección de prueba aparte
-      - name: Publicar en Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+      - uses: actions/upload-artifact@v4
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=mmv-bribay --branch=${{ github.ref_name }}
+          name: mmv-app-${{ github.ref_name }}
+          path: dist
+          retention-days: 30
