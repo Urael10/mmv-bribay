@@ -1,0 +1,429 @@
+:root {
+  color-scheme: dark;
+  --bg: #0a0f14;
+  --sf: #121923;
+  --ln: #1f2a37;
+  --tx: #e6edf3;
+  --mu: #7d8b9a;
+  --ac: #22d3ee;
+  --pr: #c6f432;
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+input[type='range'] {
+  accent-color: var(--ac);
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--ac);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--tx);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.app {
+  max-width: 520px;
+  margin: auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+}
+header {
+  padding: 14px 16px;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+header b {
+  color: var(--ac);
+  font-size: 34px;
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  font-family: 'Chakra Petch', ui-monospace, monospace;
+}
+header span {
+  color: var(--mu);
+}
+main {
+  flex: 1;
+  padding: 0 16px 90px;
+}
+section {
+  background: var(--sf);
+  border: 1px solid var(--ln);
+  border-radius: 22px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+h3 {
+  margin: 0 0 8px;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mu);
+  font-weight: 600;
+}
+.big {
+  font-family: 'Chakra Petch', ui-monospace, monospace;
+  font-size: 34px;
+  font-weight: 700;
+}
+.big small {
+  font-size: 14px;
+  color: var(--mu);
+}
+.bar {
+  height: 8px;
+  background: var(--ln);
+  border-radius: 9px;
+  margin: 8px 0;
+}
+.bar i {
+  display: block;
+  height: 100%;
+  background: var(--ac);
+  border-radius: 9px;
+}
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+button {
+  background: var(--ac);
+  color: #041014;
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font:
+    600 15px/1.2 'Inter',
+    system-ui,
+    sans-serif;
+  min-height: 48px;
+}
+button.ghost {
+  background: transparent;
+  color: var(--ac);
+  border: 1px solid var(--ln);
+}
+input,
+select,
+textarea {
+  background: var(--bg);
+  color: var(--tx);
+  border: 1px solid var(--ln);
+  border-radius: 10px;
+  padding: 10px;
+  font: inherit;
+  min-width: 0;
+}
+textarea {
+  width: 100%;
+  min-height: 80px;
+  margin-top: 8px;
+}
+input[type='number'] {
+  width: 90px;
+}
+.tag {
+  color: var(--pr);
+  font-size: 13px;
+}
+nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 520px;
+  margin: auto;
+  display: flex;
+  background: var(--sf);
+  border-top: 1px solid var(--ln);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+nav button {
+  flex: 1;
+  background: none;
+  color: var(--mu);
+  border-radius: 0;
+}
+nav button.on {
+  color: var(--ac);
+}
+.timer {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+.timer .big {
+  font-size: 96px;
+  color: var(--ac);
+}
+.plus {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  font-size: 30px;
+  padding: 18px 30px;
+  background: var(--pr);
+}
+.fila {
+  padding: 10px 0;
+  border-top: 1px solid var(--ln);
+}
+.fila .row {
+  margin-top: 6px;
+}
+.mini {
+  padding: 6px 12px;
+  min-height: 40px;
+}
+.row input[type='number'] {
+  width: 72px;
+}
+summary {
+  margin: 4px 0;
+}
+.mu {
+  color: var(--mu);
+}
+.mono {
+  font-family: 'Chakra Petch', ui-monospace, monospace;
+}
+.chip {
+  background: transparent;
+  color: var(--mu);
+  border: 1px solid var(--ln);
+  border-radius: 999px;
+  padding: 8px 14px;
+  min-height: 40px;
+  font-weight: 600;
+  font-size: 14px;
+  font-family: inherit;
+}
+.chip.on {
+  color: #041014;
+  background: var(--ac);
+  border-color: var(--ac);
+}
+.delta {
+  display: inline;
+  color: var(--mu);
+  font-family: 'Chakra Petch', ui-monospace, monospace;
+  font-size: 12px;
+}
+.delta.up {
+  color: var(--pr);
+}
+.delta.down {
+  color: #ff7a7a;
+}
+.fila > .delta,
+.fila > .tag {
+  display: block;
+  margin-top: 4px;
+}
+.ghostbar {
+  height: 4px;
+  margin-top: -2px;
+}
+.ghostbar i {
+  background: var(--mu);
+  opacity: 0.6;
+}
+.lin {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid var(--ln);
+  font-size: 14px;
+}
+details > summary {
+  cursor: pointer;
+  list-style-position: inside;
+}
+button:disabled {
+  opacity: 0.35;
+}
+.ver {
+  margin-left: auto;
+  color: var(--mu);
+  font-family: 'Chakra Petch', ui-monospace, monospace;
+  font-size: 11px;
+  cursor: pointer;
+}
+.upd {
+  margin: 0 16px 10px;
+  background: var(--pr);
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+nav button {
+  padding: 12px 2px;
+  font-size: 14px;
+}
+.warn {
+  display: block;
+  color: #ffb454;
+  font-size: 13px;
+  margin-top: 4px;
+}
+.sug {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  text-align: left;
+  font-weight: 500;
+}
+.campo {
+  display: block;
+  margin-top: 8px;
+}
+.campo input {
+  width: 100%;
+}
+.row .campo {
+  flex: 1 1 42%;
+}
+.row .campo input[type='number'] {
+  width: 100%;
+}
+
+/* v0.4.1 · diseño bento y tipografía (Bebas Neue títulos, Chakra Petch números y etiquetas, Inter texto) */
+button {
+  border-radius: 14px;
+  font-family: 'Inter', sans-serif;
+}
+.bento {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.bento > section {
+  grid-column: span 2;
+  margin-bottom: 0;
+}
+.bento > .mitad {
+  grid-column: span 1;
+}
+.bento > .mitad .big {
+  font-size: 24px;
+}
+.bento > .mitad .row input {
+  width: 100%;
+}
+.hero {
+  background: linear-gradient(145deg, #0e4b57, #0b2a35);
+  border-color: #14697a;
+}
+.hero h3,
+.hero .big small {
+  color: #9fe7f3;
+}
+.hero .big {
+  font-size: 46px;
+}
+.hero .bar {
+  background: rgba(255, 255, 255, 0.14);
+}
+nav {
+  padding-top: 6px;
+}
+nav button {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  margin: 0 2px;
+  border-radius: 12px;
+}
+nav button.on {
+  background: rgba(34, 211, 238, 0.1);
+}
+/* v0.4.2 · con los botones a 15 px (antes caían a 13 px por un error de CSS) +250 y +500 siguen entrando lado a lado en media columna */
+.bento > .mitad button {
+  padding: 12px 10px;
+}
+
+/* v0.5.0 · entrega 3: preparación, informe y coach */
+.sc {
+  color: var(--tx);
+}
+.sc.up {
+  color: var(--pr);
+}
+.sc.down {
+  color: #ff7a7a;
+}
+.coach ul {
+  margin: 4px 0 10px;
+  padding-left: 20px;
+}
+.coach li {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+/* v0.8.0 · entrega 6: barra del temporizador y aviso de backup */
+.barrareloj {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 16px 10px;
+  padding: 6px 10px;
+  background: var(--sf);
+  border: 1px solid var(--ac);
+  border-radius: 16px;
+}
+.barrareloj span {
+  flex: 1;
+  color: var(--mu);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.barrareloj b {
+  font-size: 20px;
+  color: var(--ac);
+}
+.upd.bk {
+  background: var(--sf);
+  color: var(--tx);
+  border: 1px solid var(--pr);
+  text-align: left;
+}
