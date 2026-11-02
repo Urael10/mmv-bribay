@@ -1,5 +1,16 @@
 # Historial de versiones de MMV
 
+## v0.15.0 · Entrega 13 · La IA dice qué falla y no gasta tu cuota (02/11/2026)
+- **Motivo:** «no lee, reintenta sin éxito». Hasta ahora **todo error temporal se mostraba como «alta demanda»** y se reintentaba 3 veces por modelo (6 llamadas). Si el problema era la **cuota gratuita de Google (error 429)**, cada reintento gastaba más cuota y empeoraba. No pude probarlo con Google real: es una corrección por lectura del código y pruebas con respuestas simuladas.
+- **Cuota (429):** ya no reintenta el mismo modelo; prueba el otro modelo una vez y, si también está agotado, dice «Llegaste al límite gratuito de Google» con los segundos de espera que informa Google (si los informa).
+- **Alta demanda (500/502/503/504):** igual que antes (espera y reintenta), pero el mensaje ya no se usa para otros errores.
+- **Clave inválida:** corta enseguida y manda a «Probar la IA».
+- **Respuesta ilegible:** acepta JSON entre ```json … ``` o con texto alrededor; si la respuesta se cortó (MAX_TOKENS) o no es JSON, reintenta y después lo explica. Si Google bloquea la foto, dice el motivo.
+- **Todo error termina con `[código N · modelo]`** para que me lo pases tal cual.
+- **Ajustes → 🔎 Probar la IA:** comprueba la clave, si el modelo existe para tu clave y si responde (2 consultas chicas, sin foto). Lista los modelos «flash» disponibles y con un toque elegís uno.
+- Sin cambios en Dexie (sigue **v8**), backup, pizarra, reloj ni Comidas. La clave sigue yendo en la URL (cambiarlo no se puede probar acá).
+- **Pruebas: 164** (153 + 11 nuevas en `entrega13.test.js`), todas pasan.
+
 ## v0.14.0 · Entrega 12 · El reloj dice qué ejercicio toca (02/11/2026)
 - **Tabata con ejercicios alternados:** el reloj muestra en grande el ejercicio de cada ronda de trabajo (la ronda 1 es el ejercicio 1, la 2 el 2, y así; con 2 ejercicios van A-B-A-B…, con 4, A-B-C-D-A-B-C-D) y, abajo, **«Sigue: …»**; durante el descanso también avisa cuál viene. En «Preparate» dice **«Primero: …»**. La barra chica del reloj muestra el ejercicio actual. Por defecto siguen siendo 8 rondas de 20/10 en total (4 minutos); si hacés más rondas, se cambia en «Más del bloque».
 - **Reloj para Movilidad y Warm up (▶):** 40 s por ejercicio, **2 vueltas** por la lista: con 3 ejercicios son **40 s × 6** y con 4, **40 s × 8**. Sin pausa entre ejercicios por defecto; suena el aviso de cambio en cada uno. En «Más del bloque» se ajustan **segundos por ejercicio**, **vueltas** (hasta 10) y **cambio (seg)** entre ejercicios. El campo «min» del bloque es solo informativo: el reloj usa ejercicios × vueltas × segundos. Sin ejercicios cargados, usa 6 intervalos sin nombres.
