@@ -2,7 +2,7 @@ import {useState, useEffect, useSyncExternalStore} from 'react'
 import {db, hoy, cfg} from '../../data/db'
 import {chica} from '../../services/img'
 import {pedirIA} from '../../services/ia'
-import {volumen, repsTot, marcar, sg} from '../../domain/stats'
+import {volumen, repsTot, marcarPorContexto, sg} from '../../domain/stats'
 import {TIPOS as T, CON_RELOJ, aSegundos, mmss} from '../../domain/temporizador'
 import {
   iniciar as iniciarReloj,
@@ -180,7 +180,7 @@ export default function Entreno() {
     const pv = await db.ejercicios.bulkGet(E.map(e => e.clave))
     await db.ejercicios.bulkPut(E.map((e, i) => ({...pv[i], ...e})))
     const todos = await db.registros.toArray(),
-      M = marcar(todos),
+      M = marcarPorContexto(todos),
       nuevos = todos.filter(r => r.sesionId === sid && M[r.id]?.flags.length)
     setMsg(
       '✅ Sesión guardada.' +

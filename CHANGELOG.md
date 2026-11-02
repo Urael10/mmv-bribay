@@ -1,5 +1,13 @@
 # Historial de versiones de MMV
 
+## v0.10.0 · Entrega 8 · Progreso con 4 pilares, tests de referencia, progresión y descarga (01/11/2026)
+- **Progreso → Pilares (nueva pestaña inicial):** gráfico de carga semanal (RPE × minutos, 8 semanas) y un resumen de **Fuerza** (1RM estimado de 28 días contra los 28 anteriores, por ejercicio y contexto), **Resistencia** (repeticiones de cardio, sesiones por semana y tests), **Composición** (peso, grasa y músculo contra hace 4 semanas, sin juzgar si es bueno o malo: depende de tu objetivo) y **Hábitos** (constancia de los últimos 7 días).
+- **Progresión (D11):** por ejercicio y tipo de bloque, sugerencia de carga según los dos últimos registros (probar +2,5 % redondeado a 0,5 kg, consolidar o repetir). **Descarga:** aviso cuando se cumplen 2 o más señales (carga +20 % sobre tu promedio, RPE medio ≥ 8, dolor muscular alto o poco sueño). Umbrales de diseño, no indicaciones médicas.
+- **Récords por contexto (D11):** el mismo ejercicio en EMOM, AMRAP, For time, etc. ya no se pisa: cada contexto tiene sus propias marcas (Récords, Historial 🏆, aviso al guardar la sesión e informe semanal).
+- **Tests de referencia (D8):** pestaña **Tests** con 5 pruebas (dominadas, flexiones, plancha, 1 km, burpees en 5 min). Se repiten cada 6 a 8 semanas: estado «Al día / Toca repetirlo / Atrasado», comparación con el anterior y gráfico. Tabla nueva `tests` (Dexie **v7**, solo agrega tabla); viaja en el backup.
+- **Informe semanal:** línea de **check-in** (días completos y promedios de energía, ánimo y dolor muscular, escala 1 a 5). El coach recibe esos números (siguen sin enviarse peso, medidas ni nombres de ejercicios).
+- **Pruebas: 112** (antes 103): 9 nuevas (contexto, progresión, pilares, descarga, serie semanal, tests, informe con check-in, migración v6 → v7 y backup).
+
 ## v0.9.0 · Entrega 7 · «Hoy» como centro de mando, check-in y cuerpo (01/11/2026)
 - **Navegación (D1):** 4 pestañas (Hoy · Entreno · Comidas · Progreso) y **Ajustes como ⚙** en el encabezado (tocarlo de nuevo vuelve a la pestaña anterior). Tocar la versión sigue abriendo Ajustes.
 - **«Hoy» (D1):** de arriba hacia abajo: check-in de 20 segundos (energía, ánimo y dolor muscular de 1 a 5 + sueño y su calidad) → preparación con recomendación de intensidad → botón **EMPEZAR ENTRENO** (lleva a Entreno; las entradas «repetir última» y plantillas llegan en la entrega 9) → agua en 1 toque con deshacer → calorías y **proteína** del día → tarjeta **Cuerpo**.

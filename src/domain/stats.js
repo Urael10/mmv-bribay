@@ -148,3 +148,7 @@ export function mejores(arr) {
 
 export const pct = (a, b) => (b > 0 ? Math.round(((a - b) / b) * 100) : null)
 export const sg = n => (n > 0 ? '+' : '') + n
+
+// Récords por contexto (D11): el mismo ejercicio hecho en otro tipo de bloque (EMOM, AMRAP, For time…) no se compara.
+export const claveCtx = r => `${r.clave}|${r.tipo || ''}`
+export const marcarPorContexto = registros => marcar(registros.map(r => ({...r, clave: claveCtx(r)})))
