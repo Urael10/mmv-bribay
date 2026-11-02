@@ -3,6 +3,18 @@
 
 # Historial de versiones de MMV
 
+## v0.16.0 · Entrega 14 · Menú privado «Bienestar» (02/11/2026)
+- **Acceso oculto (H1-A):** 5 toques seguidos (en menos de 3 s) sobre la versión del encabezado. No hay pestaña, botón ni ítem en Ajustes. Un toque solo sigue abriendo Ajustes (con una espera de 0,7 s). Dentro del menú, tocar la versión no hace nada.
+- **Clave y cifrado real (H2-B):** la clave nunca se guarda. Se deriva con PBKDF2-SHA256 (250 000 vueltas) y los datos se cifran con AES-GCM, **un bloque por mes**, atado a su mes. Una fila `_meta` guarda la sal y una verificación para saber si la clave es correcta. **Olvidar la clave = perder estos datos** (H8-A, sin recuperación); la pantalla lo pide confirmar al crearla. Mínimo 4 caracteres, con aviso si son menos de 8.
+- **Qué se registra (H4-B):** erección matutina (sí/no, un toque), dureza 1 a 4 (solo si hubo erección), libido 1 a 5, y eyaculación con hora (sin indicar / en pareja / a solas). Día elegible (hoy por defecto). Historial de los últimos 6 meses con editar la hora, editar el día y borrar.
+- **Backup (H3-B):** la tabla `privado` entra al backup **cifrada** (ilegible). Al restaurar solo se importa si este equipo no tenía menú privado o si la clave es la misma (misma sal); si no, se omite para no dejar bloques ilegibles y se cuenta entre las filas omitidas.
+- **Privacidad (H5):** el menú no se importa desde la IA, el informe, el coach, la preparación, Progreso ni Hoy; una prueba recorre todo `src/` y falla si otro archivo lo menciona.
+- **Autobloqueo (H7):** a los 60 s en segundo plano, al tocar 🔒 Bloquear y al salir (la clave en memoria se descarta). Tras una clave incorrecta hay espera creciente.
+- **Más:** cambiar clave (re-cifra todo, todo o nada) y «Borrar todo» (escribir BORRAR), también desde «Olvidé la clave».
+- **Dexie v9:** solo agrega la tabla `privado`; no toca nada anterior.
+- **Pruebas: 176** (164 + 12 nuevas en `entrega14.test.js`).
+- **No incluye (entregas 15 y 16):** estadísticas, comparativa semanal y relación con cargas.
+
 ## v0.15.0 · Entrega 13 · La IA dice qué falla y no gasta tu cuota (02/11/2026)
 - **Motivo:** «no lee, reintenta sin éxito». Hasta ahora **todo error temporal se mostraba como «alta demanda»** y se reintentaba 3 veces por modelo (6 llamadas). Si el problema era la **cuota gratuita de Google (error 429)**, cada reintento gastaba más cuota y empeoraba. No pude probarlo con Google real: es una corrección por lectura del código y pruebas con respuestas simuladas.
 - **Cuota (429):** ya no reintenta el mismo modelo; prueba el otro modelo una vez y, si también está agotado, dice «Llegaste al límite gratuito de Google» con los segundos de espera que informa Google (si los informa).

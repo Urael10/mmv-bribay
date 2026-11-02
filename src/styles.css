@@ -558,3 +558,19 @@ header {
   text-align: center;
   overflow-wrap: anywhere;
 }
+
+/* Menú privado «Bienestar» */
+.priv label.mu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 8px 0;
+}
+.priv input[type='password'],
+.priv input[type='datetime-local'] {
+  width: 100%;
+}
+.priv .lin {
+  gap: 8px;
+  flex-wrap: wrap;
+}

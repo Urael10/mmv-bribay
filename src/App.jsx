@@ -1,10 +1,12 @@
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useRef} from 'react'
 import Hoy from './features/hoy/Hoy'
 import Entreno from './features/entreno/Entreno'
 import {BarraReloj} from './features/entreno/Timer'
 import Comidas from './features/comidas/Comidas'
 import Progreso from './features/progreso/Progreso'
 import Ajustes from './features/ajustes/Ajustes'
+import Bienestar from './features/bienestar/Bienestar'
+import {registrarToque} from './domain/privado'
 import {etiqueta, buscarActualizacion, actualizarAhora} from './version'
 import {exportar, hayDatos, ultimoBackup} from './data/backup'
 import {avisoBackup} from './domain/backup'
@@ -26,8 +28,24 @@ export default function App() {
     buscarActualizacion().then(r => r?.nueva && setNueva(true))
   }, [])
   const ir = t => {
-    if (t !== 'ajustes') setPrevia(t)
+    if (t !== 'ajustes' && t !== 'priv') setPrevia(t)
     setTab(t)
+  }
+  // Acceso oculto al menú privado: 5 toques seguidos en la versión. Un toque solo sigue abriendo Ajustes.
+  const toques = useRef([]),
+    espera = useRef(0)
+  const tocarVersion = () => {
+    if (tab === 'priv') return // ya estás adentro: un toque de más no te saca
+    const r = registrarToque(toques.current, Date.now())
+    toques.current = r.toques
+    clearTimeout(espera.current)
+    if (r.abre) return setTab('priv')
+    espera.current = setTimeout(() => {
+      if (toques.current.length === 1) {
+        toques.current = [] // el toque que abrió Ajustes no cuenta para el gesto
+        setTab('ajustes')
+      }
+    }, 700)
   }
   const revisarBackup = async () =>
     setBk(avisoBackup({ultimo: ultimoBackup(), hayDatos: await hayDatos()}))
@@ -39,13 +57,13 @@ export default function App() {
       <header>
         <b>MMV</b>
         <span>Mi Mejor Versión</span>
-        <small className="ver" onClick={() => setTab('ajustes')}>
+        <small className="ver" onClick={tocarVersion}>
           {etiqueta}
         </small>
         <button
           className={'gear' + (tab === 'ajustes' ? ' on' : '')}
           aria-label={tab === 'ajustes' ? 'Cerrar ajustes' : 'Ajustes'}
-          onClick={() => (tab === 'ajustes' ? setTab(previa) : setTab('ajustes'))}
+          onClick={() => (tab === 'ajustes' || tab === 'priv' ? setTab(previa) : setTab('ajustes'))}
         >
           ⚙
         </button>
@@ -84,6 +102,7 @@ export default function App() {
         {tab === 'comidas' && <Comidas />}
         {tab === 'progreso' && <Progreso />}
         {tab === 'ajustes' && <Ajustes />}
+        {tab === 'priv' && <Bienestar onSalir={() => setTab(previa)} />}
       </main>
       <nav>
         {TABS.map(([k, n]) => (
