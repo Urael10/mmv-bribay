@@ -2,13 +2,15 @@ import {useState, useEffect, useMemo} from 'react'
 import {db, hoy} from '../../data/db'
 import {Informe} from '../coach/Coach'
 import {VistaCuerpo} from '../cuerpo/Cuerpo'
+import {VistaPilares, VistaTests} from './Pilares'
 import {
   PATRONES,
   patron,
   repsTot,
   volumen,
   e1rm,
-  marcar,
+  claveCtx,
+  marcarPorContexto,
   mejores,
   lunes,
   sumaDias,
@@ -279,13 +281,14 @@ function Records({reg, ej, recargar}) {
     for (const r of [...reg].sort((a, b) =>
       a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : a.id - b.id
     ))
-      (g[r.clave] || (g[r.clave] = [])).push(r)
+      (g[claveCtx(r)] || (g[claveCtx(r)] = [])).push(r)
     return Object.entries(g)
-      .map(([c, a]) => ({
-        c,
+      .map(([k, a]) => ({
+        k,
+        c: a[0].clave,
         a,
         n: a[a.length - 1].nombre,
-        p: patron(a[a.length - 1].nombre, a[a.length - 1].tipo, manual[c]),
+        p: patron(a[a.length - 1].nombre, a[a.length - 1].tipo, manual[a[0].clave]),
         m: mejores(a)
       }))
       .sort((x, y) => x.n.localeCompare(y.n, 'es'))
@@ -317,10 +320,11 @@ function Records({reg, ej, recargar}) {
         />
         <small className="mu" style={{display: 'block', marginTop: 8}}>
           1RM estimado con Epley: kg × (1 + reps/30), solo si anotaste {EPLEY_MAX} reps o menos. Con
-          más repeticiones (trabajo por tiempo) no se estima.
+          más repeticiones (trabajo por tiempo) no se estima. Los récords se separan por tipo de
+          bloque (EMOM, AMRAP…): el mismo ejercicio en otro contexto cuenta aparte.
         </small>
       </section>
-      {vis.map(({c, a, n, p, m}) => {
+      {vis.map(({k, c, a, n, p, m}) => {
         const serie = m.e1
           ? a.map(e1rm).filter(Boolean)
           : m.vol
@@ -328,10 +332,11 @@ function Records({reg, ej, recargar}) {
             : a.map(repsTot)
         const ult = a[a.length - 1]
         return (
-          <section key={c}>
+          <section key={k}>
             <details>
               <summary>
-                <b>{n}</b> <small className="tag">{p}</small>
+                <b>{n}</b> <small className="tag">{p}</small>{' '}
+                <small className="tag">{T[a[a.length - 1].tipo] || a[a.length - 1].tipo}</small>
                 <br />
                 <small className="mu">
                   {m.carga ? (
@@ -417,7 +422,7 @@ function Records({reg, ej, recargar}) {
 
 export default function Progreso() {
   const [d, setD] = useState(null),
-    [sub, setSub] = useState('semana')
+    [sub, setSub] = useState('pilares')
   const cargar = async () =>
     setD({
       ses: await db.sesiones.orderBy('fecha').toArray(),
@@ -431,7 +436,7 @@ export default function Progreso() {
     () => (d ? Object.fromEntries(d.ej.filter(e => e.patron).map(e => [e.clave, e.patron])) : {}),
     [d]
   )
-  const marcas = useMemo(() => (d ? marcar(d.reg) : {}), [d])
+  const marcas = useMemo(() => (d ? marcarPorContexto(d.reg) : {}), [d])
   if (!d)
     return (
       <section>
@@ -442,9 +447,11 @@ export default function Progreso() {
     <>
       <div className="row" style={{marginBottom: 12}}>
         {[
+          ['pilares', 'Pilares'],
           ['semana', 'Semana'],
           ['historial', 'Historial'],
           ['records', 'Récords'],
+          ['tests', 'Tests'],
           ['cuerpo', 'Cuerpo'],
           ['informe', 'Informe']
         ].map(([k, n]) => (
@@ -453,6 +460,8 @@ export default function Progreso() {
           </button>
         ))}
       </div>
+      {sub === 'pilares' && <VistaPilares />}
+      {sub === 'tests' && <VistaTests />}
       {sub === 'semana' && <Semana reg={d.reg} manual={manual} ses={d.ses} />}
       {sub === 'historial' && (
         <Historial ses={d.ses} reg={d.reg} marcas={marcas} recargar={cargar} />

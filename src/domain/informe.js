@@ -1,6 +1,7 @@
 // Informe semanal (lunes a domingo) y coach IA. Funciones puras: las cuentas las hace SIEMPRE este código;
 // la IA solo recibe el resumen ya calculado (números, sin fotos ni nombres) y devuelve consejos en texto.
-import {sumaDias, volumen, repsTot, marcar, pct, patron} from './stats.js'
+import {sumaDias, volumen, repsTot, marcarPorContexto, pct, patron} from './stats.js'
+import {checkinHecho} from './checkin.js'
 import {cargaSesion} from './preparacion.js'
 
 const num = x => {
@@ -46,7 +47,7 @@ export function informeSemana({
       pat[p] = (pat[p] || 0) + repsTot(r)
     }
   // récords: registros de la semana que superan marcas previas
-  const M = marcar(registros),
+  const M = marcarPorContexto(registros),
     recs = registros.filter(r => enSemana(r.fecha, desde) && M[r.id]?.flags.length)
   const records = [
     ...new Set(
@@ -63,6 +64,8 @@ export function informeSemana({
   const hs = habitos.filter(h => enSemana(h.fecha, desde))
   const horas = hs.map(h => num(h.sueno)).filter(x => x > 0),
     cal = hs.map(h => num(h.calidad)).filter((x, i) => x >= 1 && num(hs[i].sueno) > 0)
+  const ci = hs.filter(checkinHecho),
+    mci = k => (ci.length ? r1(media(ci.map(h => +h[k]))) : null)
   const aguas = hs.map(h => +h.agua || 0).filter(x => x > 0)
   // comidas por día
   const porDia = {}
@@ -95,6 +98,7 @@ export function informeSemana({
       calidadMedia: cal.length ? r1(media(cal)) : null,
       diasMenosDe6h: horas.filter(h => h < 6).length
     },
+    checkin: {dias: ci.length, energia: mci('energia'), animo: mci('animo'), dolor: mci('dolor')},
     agua: {
       diasConDato: aguas.length,
       mlMedios: aguas.length ? Math.round(media(aguas)) : null,
@@ -116,6 +120,7 @@ export const hayDatos = i =>
   i.entreno.sesiones > 0 ||
   i.sueno.diasConDato > 0 ||
   i.agua.diasConDato > 0 ||
+  i.checkin.dias > 0 ||
   i.comida.diasConDato > 0 ||
   i.entreno.reps > 0
 
@@ -137,6 +142,9 @@ export function textoInforme(i, coach) {
     `Sueño: ${i.sueno.diasConDato ? f(i.sueno.horasMedias) + ' h de media en ' + i.sueno.diasConDato + ' días' + (i.sueno.diasMenosDe6h ? ' (' + i.sueno.diasMenosDe6h + ' con menos de 6 h)' : '') : 'sin datos'}`
   )
   L.push(
+    `Check-in: ${i.checkin.dias ? i.checkin.dias + ' días · energía ' + f(i.checkin.energia) + ' · ánimo ' + f(i.checkin.animo) + ' · dolor muscular ' + f(i.checkin.dolor) + ' (escala 1 a 5)' : 'sin datos'}`
+  )
+  L.push(
     `Agua: ${i.agua.diasConDato ? i.agua.mlMedios + ' ml de media · meta cumplida ' + i.agua.diasMeta + ' de ' + i.agua.diasConDato + ' días' : 'sin datos'}`
   )
   L.push(
@@ -154,7 +162,7 @@ export function textoInforme(i, coach) {
 
 // ---- Coach IA ----
 export const P_COACH =
-  'Sos un coach de entrenamiento y hábitos, cercano y concreto, en español rioplatense (vos). Recibís el resumen numérico de UNA semana de una persona que entrena fuerza/funcional y, si está, su puntaje de preparación de hoy. Devolvé SOLO JSON: {"resumen":"2 frases como máximo","logros":["hasta 3 cosas que salieron bien, con el dato"],"mejoras":["hasta 3 cosas a mejorar, con el dato"],"plan":["hasta 3 acciones concretas y chicas para la semana próxima"],"alerta":""}. Reglas: basate SOLO en los números recibidos y no inventes datos ni cifras; si algo viene en null o con pocos días, decí que falta información en vez de suponer; no des diagnósticos ni consejos médicos ni de suplementos, ni pautas de dieta con cifras (calorías o macros) más allá de comparar con la meta que ya tiene; "alerta" va vacía salvo que haya algo claramente preocupante en los datos (por ejemplo varios días con menos de 6 h de sueño junto con carga en aumento), y en ese caso sugerí descansar y consultar a un profesional si persiste. Cada ítem de hasta 160 caracteres.'
+  'Sos un coach de entrenamiento y hábitos, cercano y concreto, en español rioplatense (vos). Recibís el resumen numérico de UNA semana de una persona que entrena fuerza/funcional y, si está, su puntaje de preparación de hoy. Devolvé SOLO JSON: {"resumen":"2 frases como máximo","logros":["hasta 3 cosas que salieron bien, con el dato"],"mejoras":["hasta 3 cosas a mejorar, con el dato"],"plan":["hasta 3 acciones concretas y chicas para la semana próxima"],"alerta":""}. Reglas: basate SOLO en los números recibidos y no inventes datos ni cifras; si algo viene en null o con pocos días, decí que falta información en vez de suponer; no des diagnósticos ni consejos médicos ni de suplementos, ni pautas de dieta con cifras (calorías o macros) más allá de comparar con la meta que ya tiene; "alerta" va vacía salvo que haya algo claramente preocupante en los datos (por ejemplo varios días con menos de 6 h de sueño junto con carga en aumento), y en ese caso sugerí descansar y consultar a un profesional si persiste. Check-in: energía y ánimo de 1 (muy bajo) a 5 (muy alto); dolor muscular de 1 (nada) a 5 (mucho). Cada ítem de hasta 160 caracteres.'
 
 export function cuerpoCoach(informe, prep) {
   const {desde, hasta, ...resto} = informe
