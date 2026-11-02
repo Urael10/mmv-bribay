@@ -5,15 +5,16 @@ import {Preparacion} from '../coach/Coach'
 import {TarjetaCuerpo} from '../cuerpo/Cuerpo'
 import {CHECKIN} from '../../domain/checkin'
 import {AvisoDescarga} from '../progreso/Pilares'
-import {videosPendientes} from '../../domain/entreno'
+import {videosPendientes, haySesionEnCurso} from '../../domain/entreno'
 import {sumaDias} from '../../domain/stats'
+import {dejarFoto} from '../../services/pendiente'
 
 export default function Hoy({onEmpezar}) {
   const [h, setH] = useState({fecha: hoy(), agua: 0, sueno: '', calidad: 3}),
     [otro, setOtro] = useState(''),
     [videos, setVideos] = useState([]),
     meta = +cfg('meta', 2500),
-    enCurso = !!localStorage.getItem('mv_sesion')
+    enCurso = haySesionEnCurso(localStorage.getItem('mv_sesion'))
   useEffect(() => {
     db.habitos.get(hoy()).then(x => x && setH(x))
     db.sesiones
@@ -87,13 +88,38 @@ export default function Hoy({onEmpezar}) {
       <Preparacion h={h} />
       <AvisoDescarga />
       <div style={{gridColumn: 'span 2'}}>
-        <button className="cta" onClick={onEmpezar}>
-          {enCurso ? 'CONTINUAR ENTRENO' : 'EMPEZAR ENTRENO'}
-        </button>
+        <div className="ctafila">
+          <button className="cta" onClick={onEmpezar}>
+            {enCurso ? 'CONTINUAR ENTRENO' : 'EMPEZAR ENTRENO'}
+          </button>
+          {!enCurso && (
+            <>
+              <button
+                className="cta ctafoto"
+                aria-label="Empezar con una foto de la pizarra"
+                onClick={e => e.currentTarget.nextSibling.click()}
+              >
+                📷
+              </button>
+              <input
+                hidden
+                type="file"
+                accept="image/*"
+                onChange={e => {
+                  const f = e.target.files[0]
+                  e.target.value = ''
+                  if (!f) return
+                  dejarFoto(f)
+                  onEmpezar()
+                }}
+              />
+            </>
+          )}
+        </div>
         <small className="mu" style={{display: 'block', marginTop: -6}}>
           {enCurso
             ? 'Tenés una sesión sin terminar.'
-            : 'Repetir la última, usar una plantilla, foto de la pizarra o sesión manual.'}
+            : 'Con 📷 empezás directo desde la foto de la pizarra; también podés repetir la última, usar una plantilla o armarla a mano.'}
         </small>
         {videos.length > 0 && (
           <small className="mu" style={{display: 'block', marginTop: 4}}>

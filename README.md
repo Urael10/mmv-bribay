@@ -1,4 +1,4 @@
-# Mi Mejor Versión (MMV) · Entrega 10 (v0.12.0)
+# Mi Mejor Versión (MMV) · Entrega 12 (v0.14.0)
 
 ## Estructura (desde la entrega 6)
 ```

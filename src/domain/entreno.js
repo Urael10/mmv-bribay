@@ -1,8 +1,10 @@
-// Entreno ágil (entrega 9): repetir sesión, plantillas, RPE por bloque, serie pesada y video. Funciones puras.
+// Entreno ágil (entrega 9) y pizarra simple (entrega 11): repetir sesión, plantillas, RPE por bloque, serie pesada, video,
+// revisión de la lectura de la pizarra e «igual que la última». Funciones puras.
 // Las plantillas y «repetir» copian la ESTRUCTURA (tipo, minutos, ejercicios y tiempos del reloj),
 // nunca lo que anotaste: ningún peso ni repetición se guarda como hecho sin que lo cargues vos.
 import {claveAl} from './alimentos.js'
 import {sumaDias} from './stats.js'
+import {TIPOS} from './temporizador.js'
 
 const CAMPOS_ESTRUCTURA = ['tipo', 'nombre', 'minutos', 'ejercicios', 'intervalo', 'trab', 'desc', 'rond']
 const num = x => {
@@ -96,4 +98,116 @@ export function videosPendientes(sesiones, fecha, dias = 14) {
           for (const e of b.ejercicios || [])
             if (llevaVideo(e)) out.push({fecha: s.fecha, nombre: String(e).replace(/[*?]/g, '').trim()})
   return out
+}
+
+// ======================= Entrega 11: pizarra simple =======================
+// ---- Clave de un ejercicio (sin números, * ni ?): enlaza «Última», récords y 1RM con tu historial ----
+export const claveEjercicio = s =>
+  String(s ?? '')
+    .replace(/[\d*?]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+
+// ---- Qué bloques piden kg y reps ----
+// Movilidad y warm up son de tiempo (p. ej. 40 s, 2 rondas): no piden cargas; se pueden anotar aparte, si querés.
+export const SIN_CARGAS = ['movilidad', 'warmup']
+export const pideCargas = b => !SIN_CARGAS.includes(b?.tipo)
+
+// ---- Lectura de la pizarra ----
+const SINONIMOS = {
+  movilidad: 'movilidad',
+  warmup: 'warmup',
+  calentamiento: 'warmup',
+  emom: 'emom',
+  amrap: 'amrap',
+  tabata: 'tabata',
+  fortime: 'forTime'
+}
+const normTipo = t => SINONIMOS[String(t ?? '').toLowerCase().replace(/[\s_-]/g, '')] || 'amrap'
+// Convierte lo que devolvió la IA en una sesión válida (nunca rompe aunque venga mal armada).
+export function lecturaASesion(r) {
+  const lista = Array.isArray(r?.bloques) ? r.bloques : Array.isArray(r) ? r : []
+  const bloques = lista
+    .filter(b => b && typeof b === 'object')
+    .map(b => {
+      const m = num(b.minutos),
+        o = estructuraBloque({...b, tipo: normTipo(b.tipo), minutos: m > 0 ? m : undefined})
+      o.ejercicios = o.ejercicios.map(e => e.trim()).filter(Boolean)
+      return o
+    })
+  return {bloques}
+}
+const limpio = e => String(e ?? '').replace(/[*?]/g, '').replace(/\s+/g, ' ').trim()
+// Lo que se muestra en la pantalla de revisión: texto limpio, dudas (?) y videos (*).
+export function revisionLectura(bloques) {
+  let nEjercicios = 0,
+    nDudas = 0,
+    nVideos = 0
+  const out = (bloques || []).map(b => {
+    const ejercicios = (b?.ejercicios || [])
+      .filter(e => String(e ?? '').trim())
+      .map(e => {
+        const duda = String(e).includes('?'),
+          video = llevaVideo(e)
+        nEjercicios++
+        if (duda) nDudas++
+        if (video) nVideos++
+        return {texto: limpio(e), duda, video}
+      })
+    return {tipo: b?.tipo, minutos: num(b?.minutos) > 0 ? num(b.minutos) : 0, ejercicios}
+  })
+  return {bloques: out, nEjercicios, nDudas, nVideos, vacia: nEjercicios === 0}
+}
+// «Está bien»: las lecturas dudosas quedan confirmadas, se les saca el «?» (el «*» se conserva).
+export const confirmarLectura = bloques =>
+  (bloques || []).map(b => ({
+    ...b,
+    ejercicios: (b?.ejercicios || []).map(e => String(e ?? '').replace(/\?/g, '').replace(/\s+/g, ' ').trim())
+  }))
+
+// ---- «Igual que la última» ----
+export const hayCarga = x => !!x && (num(x.kg) > 0 || num(x.reps) > 0 || num(x.repsL) > 0 || num(x.repsR) > 0)
+export const textoUltima = u =>
+  u ? `${num(u.kg) || 0} kg × ${u.uni ? `${num(u.repsL) || 0}/${num(u.repsR) || 0}` : num(u.reps) || 0}` : ''
+export const valoresDeUltima = u => ({kg: u.kg, reps: u.reps, repsL: u.repsL, repsR: u.repsR, uni: u.uni})
+// De los registros de un ejercicio: el último del mismo tipo de bloque o, si no hay, el último de todos.
+export function elegirUltima(registros, tipo) {
+  const a = [...(registros || [])].sort((x, y) =>
+    x.fecha < y.fecha ? -1 : x.fecha > y.fecha ? 1 : (x.id || 0) - (y.id || 0)
+  )
+  return [...a].reverse().find(r => r.tipo === tipo) || a[a.length - 1] || null
+}
+// Completa SOLO lo que falta con la última vez (mapa: clave → registro). Lo que ya cargaste no se toca,
+// salvo que pidas sobrescribir. Devuelve el nuevo `reg` y cuántos ejercicios se completaron.
+export function aplicarUltimas(b, mapa, clave = claveEjercicio, sobrescribir = false) {
+  const reg = {...(b?.reg || {})}
+  let n = 0
+  ;(b?.ejercicios || []).forEach((e, j) => {
+    const k = String(e ?? '').trim() ? clave(e) : '',
+      u = k ? mapa?.[k] : null
+    if (!u || (!sobrescribir && hayCarga(reg[j]))) return
+    reg[j] = {...reg[j], ...valoresDeUltima(u)}
+    n++
+  })
+  return {reg, n}
+}
+
+// ---- Entrada a Entreno: el método que usaste la última vez va primero (por defecto, la pizarra) ----
+const ENTRADAS = ['pizarra', 'ultima', 'plantillas']
+export function ordenEntrada(ultimo) {
+  const u = ultimo === 'manual' ? 'pizarra' : ultimo === 'plantilla' ? 'plantillas' : ultimo
+  return ENTRADAS.includes(u) ? [u, ...ENTRADAS.filter(x => x !== u)] : [...ENTRADAS]
+}
+
+// ---- Sesión en curso (guardada como texto en el navegador) ----
+// Antes, al terminar o descartar se guardaba el texto «null» y Hoy seguía diciendo «CONTINUAR ENTRENO».
+export function haySesionEnCurso(raw) {
+  if (!raw) return false
+  try {
+    const s = JSON.parse(raw)
+    return !!s && typeof s === 'object' && Array.isArray(s.bloques)
+  } catch {
+    return false
+  }
 }
