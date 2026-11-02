@@ -1,3 +1,6 @@
+## 0.15.1
+- Corrige la pantalla negra: sw.js con caché `mv2` (no guarda HTML como archivo, borra cachés viejas), pantalla de rescate en index.html y límite de errores en main.jsx.
+
 # Historial de versiones de MMV
 
 ## v0.15.0 · Entrega 13 · La IA dice qué falla y no gasta tu cuota (02/11/2026)
