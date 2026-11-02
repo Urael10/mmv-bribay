@@ -118,9 +118,9 @@ function pararTick() {
 
 // Arranca de inmediato (se llama desde un toque, así el navegador permite el sonido).
 export function iniciar(b, bi) {
-  const {tipo, minutos, intervalo, trab, desc, rond} = b
+  const {tipo, minutos, intervalo, trab, desc, rond, vueltas, ejercicios} = b
   st = {
-    b: {tipo, minutos, intervalo, trab, desc, rond},
+    b: {tipo, minutos, intervalo, trab, desc, rond, vueltas, ejercicios},
     bi,
     ac: 0,
     ini: Date.now(),

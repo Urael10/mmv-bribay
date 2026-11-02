@@ -10,10 +10,16 @@ export const TIPOS = {
   tabata: 'Tabata',
   forTime: 'For time'
 }
-export const CON_RELOJ = ['emom', 'amrap', 'tabata', 'forTime']
+export const CON_RELOJ = ['movilidad', 'warmup', 'emom', 'amrap', 'tabata', 'forTime']
+export const POR_EJERCICIO = ['movilidad', 'warmup'] // 40 s por ejercicio, en vueltas (entrega 12)
 export const PREVIO = 5 // segundos de "Preparate" antes de empezar
 
 const pos = (x, d) => (Number.isFinite(+x) && +x > 0 ? Math.round(+x) : d)
+// Nombres de los ejercicios del bloque, sin * ni ? y sin líneas vacías (el reloj dice cuál toca).
+export const nombresEj = b =>
+  (Array.isArray(b?.ejercicios) ? b.ejercicios : [])
+    .map(e => String(e ?? '').replace(/[*?]/g, '').replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
 
 // Segmentos del bloque: [{l: etiqueta, s: segundos, previo?, sube?}]
 export function armarSegmentos(b) {
@@ -30,21 +36,51 @@ export function armarSegmentos(b) {
       }))
     ]
   }
+  const nom = nombresEj(b),
+    N = nom.length,
+    ej = r => (N ? nom[r % N] : undefined),
+    con = (seg, o) => (N ? {...seg, ...Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined))} : seg)
   if (b.tipo === 'tabata') {
+    // Con 2 o 4 ejercicios se alternan: la ronda 1 es el ejercicio 1, la 2 el 2, y así.
     const t = pos(b.trab, 20),
       d = pos(b.desc, 10),
       n = pos(b.rond, 8)
     return [
-      previo,
-      ...Array.from({length: n * 2}, (_, i) =>
-        i % 2 ? {l: 'Descanso', s: d} : {l: `Trabajo ${i / 2 + 1}/${n}`, s: t}
-      )
+      con(previo, {sig: ej(0)}),
+      ...Array.from({length: n * 2}, (_, i) => {
+        const r = Math.floor(i / 2)
+        return i % 2
+          ? con({l: 'Descanso', s: d}, {sig: r + 1 < n ? ej(r + 1) : undefined})
+          : con({l: `Trabajo ${r + 1}/${n}`, s: t}, {ej: ej(r), sig: r + 1 < n ? ej(r + 1) : undefined})
+      })
     ]
+  }
+  if (POR_EJERCICIO.includes(b.tipo)) {
+    // Movilidad y warm up: t segundos por ejercicio (40 por defecto), `vueltas` vueltas (2 por defecto).
+    // Con 3 ejercicios son 6 intervalos y con 4, 8. Descanso/cambio opcional (0 por defecto).
+    const t = pos(b.trab, 40),
+      d = Math.max(0, Math.round(+b.desc) || 0),
+      v = Math.min(10, pos(b.vueltas, 2)),
+      n = (N || 3) * v,
+      out = [con(previo, {sig: ej(0)})]
+    for (let r = 0; r < n; r++) {
+      out.push(con({l: `Ejercicio ${r + 1}/${n}`, s: t}, {ej: ej(r), sig: r + 1 < n ? ej(r + 1) : undefined}))
+      if (d > 0 && r < n - 1) out.push(con({l: 'Cambio', s: d}, {sig: ej(r + 1)}))
+    }
+    return out
   }
   if (b.tipo === 'forTime') return [previo, {l: 'For time (tope)', s: m * 60, sube: true}]
   return [previo, {l: TIPOS[b.tipo] || 'Bloque', s: m * 60}]
 }
 
+// Resumen corto del reloj de un bloque por intervalos, p. ej. «40 s × 6» o «20/10 × 8 rondas». '' si no aplica.
+export function resumenReloj(b) {
+  if (!POR_EJERCICIO.includes(b?.tipo) && b?.tipo !== 'tabata') return ''
+  const trabajo = armarSegmentos(b).filter(x => /^(Ejercicio|Trabajo) /.test(x.l))
+  if (!trabajo.length) return ''
+  if (b.tipo === 'tabata') return `${trabajo[0].s}/${pos(b.desc, 10)} × ${trabajo.length} rondas`
+  return `${trabajo[0].s} s × ${trabajo.length}`
+}
 export const duracionTotal = segs => segs.reduce((a, s) => a + s.s, 0)
 
 // Dónde estamos a los `ms` milisegundos de haber arrancado.

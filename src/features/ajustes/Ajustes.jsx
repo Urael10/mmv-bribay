@@ -3,6 +3,7 @@ import {db, hoy, cfg, setCfg} from '../../data/db'
 import {exportar, restaurar, puedeCompartir, ultimoBackup} from '../../data/backup'
 import {diasDesde} from '../../domain/backup'
 import {edadDe, proteinaObjetivo, ultima, PROT_KG} from '../../domain/cuerpo'
+import {probarIA} from '../../services/ia'
 import {INFO, fechaBuild, buscarActualizacion, actualizarAhora} from '../../version'
 
 function Version() {
@@ -214,6 +215,49 @@ function Perfil() {
   )
 }
 
+function ProbarIA({modelo, onModelo}) {
+  const [r, setR] = useState(null),
+    [ocupado, setOcupado] = useState(false)
+  return (
+    <>
+      <div className="row">
+        <button
+          className="ghost"
+          disabled={ocupado}
+          onClick={async () => {
+            setOcupado(true)
+            setR(await probarIA({key: cfg('key'), modelo}))
+            setOcupado(false)
+          }}
+        >
+          {ocupado ? 'Probando…' : '🔎 Probar la IA'}
+        </button>
+      </div>
+      {r && (
+        <div role="status">
+          {r.lineas.map((l, i) => (
+            <small key={i} className="mu" style={{display: 'block'}}>
+              {l}
+            </small>
+          ))}
+          {r.sugeridos.length > 0 && (
+            <>
+              <small className="tag">Modelos disponibles: tocá uno para usarlo</small>
+              <div className="row" style={{flexWrap: 'wrap'}}>
+                {r.sugeridos.slice(0, 8).map(n => (
+                  <button key={n} className={n === modelo ? 'mini' : 'ghost mini'} onClick={() => onModelo(n)}>
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </>
+  )
+}
+
 export default function Ajustes() {
   const [k, setK] = useState(cfg('key')),
     [m, setM] = useState(cfg('modelo', 'gemini-3.8-flash')),
@@ -253,6 +297,13 @@ export default function Ajustes() {
           <option value="gemini-3.8-flash" />
           <option value="gemini-flash-latest" />
         </datalist>
+        <ProbarIA
+          modelo={m}
+          onModelo={n => {
+            setM(n)
+            setCfg('modelo', n)
+          }}
+        />
         <p>Meta de agua (ml)</p>
         <input
           type="number"

@@ -22,7 +22,11 @@ import {
   conPorcion,
   porcionDe,
   plantillaDesdeItems,
-  itemsDePlantilla
+  itemsDePlantilla,
+  comidasParecidas,
+  itemsDeComida,
+  itemRapido,
+  faltaProteina
 } from '../../domain/registro'
 import {
   MOMENTOS,
@@ -385,8 +389,10 @@ function Escaner({alLeer, cerrar}) {
 }
 
 // Una sola entrada para agregar: buscador (con código de barras), cámara, recientes, comidas guardadas y respaldo web.
-function Agregar({base, sug, plant, agregar, libre, nuevo, usarPlantilla, usarWeb, foto}) {
-  const [q, setQ] = useState(''),
+function Agregar({base, sug, plant, parecidas, usarComida, agregar, libre, nuevo, usarPlantilla, usarWeb, foto}) {
+  const [rap, setRap] = useState({nombre: '', kcal: '', p: ''}),
+    [rapErr, setRapErr] = useState(''),
+    [q, setQ] = useState(''),
     [cam, setCam] = useState(false),
     [web, setWeb] = useState(null),
     [esc, setEsc] = useState(false)
@@ -491,6 +497,74 @@ function Agregar({base, sug, plant, agregar, libre, nuevo, usarPlantilla, usarWe
               </div>
             </div>
           )}
+          {parecidas.length > 0 && (
+            <div style={{marginTop: 10}}>
+              <small className="tag">Comí algo parecido a…</small>
+              <div className="row" style={{marginTop: 4}}>
+                {parecidas.map(c => (
+                  <button
+                    key={c.k}
+                    className="chip"
+                    title={`${c.kcal} kcal · P ${fmt(c.p)} g · ${c.veces} ${c.veces === 1 ? 'vez' : 'veces'}`}
+                    onClick={() => usarComida(c.comida)}
+                  >
+                    {c.nombre} · {c.kcal} kcal
+                  </button>
+                ))}
+              </div>
+              <small className="mu" style={{display: 'block', marginTop: 4}}>
+                Se carga en tu comida para que ajustes porciones antes de guardar.
+              </small>
+            </div>
+          )}
+          <details style={{marginTop: 10}}>
+            <summary className="tag">⚡ Estimar rápido (solo calorías y proteína)</summary>
+            <div className="row" style={{marginTop: 6}}>
+              <input
+                style={{flex: 1, minWidth: 140}}
+                type="text"
+                maxLength={60}
+                aria-label="Nombre (opcional)"
+                placeholder="nombre (opcional)"
+                value={rap.nombre}
+                onChange={e => setRap({...rap, nombre: e.target.value})}
+              />
+              <input
+                type="number"
+                inputMode="decimal"
+                aria-label="Calorías estimadas"
+                placeholder="kcal"
+                value={rap.kcal}
+                onChange={e => setRap({...rap, kcal: e.target.value})}
+              />
+              <input
+                type="number"
+                inputMode="decimal"
+                aria-label="Proteína estimada en gramos"
+                placeholder="prot. g"
+                value={rap.p}
+                onChange={e => setRap({...rap, p: e.target.value})}
+              />
+              <button
+                className="ghost"
+                onClick={() => {
+                  try {
+                    agregar(itemRapido(rap))
+                    setRap({nombre: '', kcal: '', p: ''})
+                    setRapErr('')
+                  } catch (e) {
+                    setRapErr(e.message)
+                  }
+                }}
+              >
+                Agregar
+              </button>
+            </div>
+            {rapErr && <small className="warn">{rapErr}</small>}
+            <small className="mu" style={{display: 'block', marginTop: 4}}>
+              Es una estimación, no un dato medido: se guarda como «estimado» y no crea ningún alimento en tu base.
+            </small>
+          </details>
           {sug.length > 0 && (
             <div style={{marginTop: 10}}>
               <small className="tag">Recientes y frecuentes</small>
@@ -508,7 +582,7 @@ function Agregar({base, sug, plant, agregar, libre, nuevo, usarPlantilla, usarWe
               </div>
             </div>
           )}
-          {!sug.length && !plant.length && (
+          {!sug.length && !plant.length && !parecidas.length && (
             <p className="mu" style={{marginBottom: 0}}>
               Buscá un alimento, escaneá o escribí un código de barras, o sacá una foto. Lo que más
               cargues va a aparecer acá como atajo.
@@ -723,6 +797,13 @@ export default function Comidas() {
           a.sort((x, y) => (y.usos || 0) - (x.usos || 0) || x.nombre.localeCompare(y.nombre, 'es'))
         )
       )
+  const [peso, setPeso] = useState(null)
+  useEffect(() => {
+    db.medidas
+      .toArray()
+      .then(ms => setPeso(ultima(ms)?.peso ?? null))
+      .catch(() => setPeso(null))
+  }, [])
   const cargarHist = () =>
     db.comidas.where('fecha').aboveOrEqual(sumaDias(hoy(), -90)).toArray().then(setHist)
   useEffect(() => {
@@ -738,6 +819,13 @@ export default function Comidas() {
     esHoy = fecha === hoy()
   const momentoAct = bor?.momento || momentoPorHora(new Date().getHours())
   const sug = useMemo(() => sugeridos(hist, momentoAct, {hoy: hoy(), n: 8}), [hist, momentoAct])
+  const parecidas = useMemo(
+    () => comidasParecidas(hist, momentoAct, {hoy: hoy(), n: 5}),
+    [hist, momentoAct]
+  )
+  const factorP = +String(cfg('protkg', PROT_KG)).replace(',', '.') || PROT_KG,
+    metaP = proteinaObjetivo(peso, factorP),
+    prot = faltaProteina(tot.p, metaP)
   const porcionBase = it => base.find(a => a.id === it.alimentoId)?.porcion || it.g
   const agregar = its =>
     setBor(b => {
@@ -886,6 +974,17 @@ export default function Comidas() {
     } catch (e) {
       setMsg('No pude guardarla: ' + e.message)
     }
+  }
+  const usarComida = c => {
+    setBor(b => {
+      const x = b || nuevoBor()
+      return {
+        ...x,
+        momento: b?.items?.length ? x.momento : c.momento || x.momento,
+        items: [...x.items, ...itemsDeComida(c, base)]
+      }
+    })
+    setVista('diario')
   }
   const usarPlantilla = async pl => {
     setBor(b => {
@@ -1059,11 +1158,37 @@ export default function Comidas() {
               <i style={{width: Math.min(100, (tot.kcal / meta) * 100) + '%'}} />
             </div>
             <Macros t={tot} />
+            {prot ? (
+              <>
+                <div className="lin" style={{borderColor: 'rgba(255,255,255,.14)'}}>
+                  <span>Proteína</span>
+                  <span className="mono">
+                    {fmt(tot.p)} / {metaP} g
+                  </span>
+                </div>
+                <div className="bar">
+                  <i style={{width: prot.pct + '%'}} />
+                </div>
+                <small className="mu">
+                  {prot.cumplida
+                    ? 'Meta de proteína cumplida.'
+                    : `Faltan ${prot.falta} g para tu meta (orientativa: ${String(factorP).replace('.', ',')} g por kg).`}
+                </small>
+              </>
+            ) : (
+              peso === null && (
+                <small className="mu" style={{display: 'block', marginTop: 4}}>
+                  Registrá tu peso (Hoy → tarjeta Cuerpo) y acá aparece tu meta de proteína.
+                </small>
+              )
+            )}
           </section>
           <Agregar
             base={base}
             sug={sug}
             plant={plant}
+            parecidas={parecidas}
+            usarComida={usarComida}
             agregar={agregar}
             libre={() =>
               agregar({

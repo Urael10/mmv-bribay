@@ -30,7 +30,13 @@ export function Timer({onCerrar, onMinimizar}) {
       <small>
         {TIPOS[b.tipo]} · {pos.seg.l}
       </small>
+      {pos.seg.ej && <div className="ejahora">{pos.seg.ej}</div>}
       <div className="big">{mmss(mostrar(pos))}</div>
+      {pos.seg.sig && (
+        <small className="mu">
+          {previo ? 'Primero' : 'Sigue'}: {pos.seg.sig}
+        </small>
+      )}
       {sube && !previo && <small className="mu">tope {mmss(pos.seg.s)}</small>}
       {contar && !previo && (
         <button className="plus" onClick={sumarRonda}>
@@ -74,7 +80,7 @@ export function BarraReloj({onAbrir}) {
         {pos.fin ? '✔' : on ? '⏸' : '▶'}
       </button>
       <span className="mono">
-        {TIPOS[st.b.tipo]} · {pos.seg.l}
+        {TIPOS[st.b.tipo]} · {pos.seg.ej || pos.seg.l}
       </span>
       <b className="mono">{mmss(mostrar(pos))}</b>
       <button className="ghost mini" onClick={onAbrir}>
