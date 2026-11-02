@@ -13,18 +13,22 @@ const TABS = [
   ['hoy', 'Hoy'],
   ['entreno', 'Entreno'],
   ['comidas', 'Comidas'],
-  ['progreso', 'Progreso'],
-  ['ajustes', 'Ajustes']
+  ['progreso', 'Progreso']
 ]
 
 export default function App() {
   const [tab, setTab] = useState('hoy'),
+    [previa, setPrevia] = useState('hoy'),
     [nueva, setNueva] = useState(false),
     [bk, setBk] = useState(null),
     [oculto, setOculto] = useState(false)
   useEffect(() => {
     buscarActualizacion().then(r => r?.nueva && setNueva(true))
   }, [])
+  const ir = t => {
+    if (t !== 'ajustes') setPrevia(t)
+    setTab(t)
+  }
   const revisarBackup = async () =>
     setBk(avisoBackup({ultimo: ultimoBackup(), hayDatos: await hayDatos()}))
   useEffect(() => {
@@ -38,6 +42,13 @@ export default function App() {
         <small className="ver" onClick={() => setTab('ajustes')}>
           {etiqueta}
         </small>
+        <button
+          className={'gear' + (tab === 'ajustes' ? ' on' : '')}
+          aria-label={tab === 'ajustes' ? 'Cerrar ajustes' : 'Ajustes'}
+          onClick={() => (tab === 'ajustes' ? setTab(previa) : setTab('ajustes'))}
+        >
+          ⚙
+        </button>
       </header>
       {nueva && (
         <button className="upd" onClick={actualizarAhora}>
@@ -66,9 +77,9 @@ export default function App() {
           </div>
         </div>
       )}
-      {tab !== 'entreno' && <BarraReloj onAbrir={() => setTab('entreno')} />}
+      {tab !== 'entreno' && <BarraReloj onAbrir={() => ir('entreno')} />}
       <main>
-        {tab === 'hoy' && <Hoy />}
+        {tab === 'hoy' && <Hoy onEmpezar={() => ir('entreno')} />}
         {tab === 'entreno' && <Entreno />}
         {tab === 'comidas' && <Comidas />}
         {tab === 'progreso' && <Progreso />}
@@ -76,7 +87,7 @@ export default function App() {
       </main>
       <nav>
         {TABS.map(([k, n]) => (
-          <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
+          <button key={k} className={tab === k ? 'on' : ''} onClick={() => ir(k)}>
             {n}
           </button>
         ))}

@@ -1,12 +1,12 @@
-# Mi Mejor Versión (MMV) · Entrega 6 (v0.8.0)
+# Mi Mejor Versión (MMV) · Entrega 7 (v0.9.0)
 
 ## Estructura (desde la entrega 6)
 ```
-src/domain/    lógica pura con pruebas: stats, preparacion, informe, alimentos, registro, temporizador, backup
-src/data/      base de datos (Dexie v5), semilla de alimentos, backup
+src/domain/    lógica pura con pruebas: stats, preparacion (v2), checkin, cuerpo, informe, alimentos, registro, temporizador, backup
+src/data/      base de datos (Dexie v6), semilla de alimentos, backup
 src/services/  IA (Gemini), Open Food Facts, escáner de código de barras, reloj del entrenamiento, imágenes
-src/features/  pantallas: hoy, entreno (+Timer), comidas, progreso, coach, ajustes
-tests/         `npm test` (87 pruebas)
+src/features/  pantallas: hoy, entreno (+Timer), comidas, progreso, cuerpo, coach, ajustes
+tests/         `npm test` (103 pruebas)
 ```
 Publicación: ver `.github/workflows/publicar.yml` y `publicar.sh` (GitHub compila, prueba y publica en Cloudflare Pages).
 Formato: `.prettierrc` (Prettier 3, sin punto y coma, comillas simples).

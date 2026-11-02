@@ -7,6 +7,7 @@ db.version(2).stores({ejercicios: '&clave', registros: '++id,fecha,clave'})
 db.version(3).stores({alimentos: '++id,&clave', comidas: '++id,fecha'}) // 2C: solo agrega tablas; no toca tus datos
 db.version(4).stores({coach: '&semana'}) // 3: solo agrega la tabla de consejos del coach por semana (clave = lunes de la semana)
 db.version(5).stores({alimentos: '++id,&clave,fuenteId', plantillas: '++id,&clave'}) // 4: índice por código de barras (fuenteId) y comidas guardadas; no toca tus datos
+db.version(6).stores({medidas: 'fecha'}) // 7: peso y composición (una medida por día); solo agrega una tabla, no toca tus datos
 export const TABLAS = [
   'sesiones',
   'habitos',
@@ -16,7 +17,8 @@ export const TABLAS = [
   'alimentos',
   'comidas',
   'coach',
-  'plantillas'
+  'plantillas',
+  'medidas'
 ]
 export const hoy = () =>
   new Date(Date.now() - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 10)

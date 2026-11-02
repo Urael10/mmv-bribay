@@ -3,6 +3,7 @@ import {db, hoy, cfg, sembrar} from '../../data/db'
 import {pedirIA} from '../../services/ia'
 import {chica} from '../../services/img'
 import {sumaDias} from '../../domain/stats'
+import {ultima, proteinaObjetivo, PROT_KG} from '../../domain/cuerpo'
 import {
   buscarOFF,
   buscarCodigoOFF,
@@ -71,9 +72,11 @@ const Macros = ({t}) => (
   </small>
 )
 
-// Resumen de calorías de hoy para la pestaña Hoy.
+// Resumen de calorías y proteína de hoy para la pestaña Hoy.
+// La meta de proteína sale del último peso registrado (g por kg configurable en Ajustes → Perfil y objetivo).
 export function ResumenHoy() {
   const [t, setT] = useState(null),
+    [peso, setPeso] = useState(undefined),
     meta = +cfg('metakcal', 2200) || 2200
   useEffect(() => {
     db.comidas
@@ -81,8 +84,14 @@ export function ResumenHoy() {
       .equals(hoy())
       .toArray()
       .then(a => setT(totales(a.flatMap(c => c.items || []))))
+    db.medidas
+      .toArray()
+      .then(ms => setPeso(ultima(ms)?.peso ?? null))
+      .catch(() => setPeso(null))
   }, [])
   if (!t) return null
+  const factor = +String(cfg('protkg', PROT_KG)).replace(',', '.') || PROT_KG,
+    metaP = proteinaObjetivo(peso, factor)
   return (
     <section className="hero">
       <h3>Alimentación de hoy</h3>
@@ -94,6 +103,29 @@ export function ResumenHoy() {
         <i style={{width: Math.min(100, (t.kcal / meta) * 100) + '%'}} />
       </div>
       <Macros t={t} />
+      {metaP ? (
+        <>
+          <div className="lin" style={{borderColor: 'rgba(255,255,255,.14)'}}>
+            <span>Proteína</span>
+            <span className="mono">
+              {fmt(t.p)} / {metaP} g
+            </span>
+          </div>
+          <div className="bar">
+            <i style={{width: Math.min(100, (t.p / metaP) * 100) + '%'}} />
+          </div>
+          <small className="mu">
+            Meta orientativa: {String(factor).replace('.', ',')} g por kg ×{' '}
+            {String(peso).replace('.', ',')} kg.
+          </small>
+        </>
+      ) : (
+        peso === null && (
+          <small className="mu" style={{display: 'block', marginTop: 4}}>
+            Registrá tu peso (tarjeta Cuerpo) y acá aparece tu meta de proteína.
+          </small>
+        )
+      )}
     </section>
   )
 }

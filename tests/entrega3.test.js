@@ -65,30 +65,26 @@ test('hidratación: ayer / meta, tope 100', () => {
   assert.equal(puntajeHidratacion([{fecha: ayer, agua: 4000}], HOY, 2500).p, 100)
   assert.equal(puntajeHidratacion([], HOY, 2500), null)
 })
-test('preparación: con menos de 2 componentes no calcula y dice qué falta', () => {
+test('preparación v2: con menos de 2 componentes no calcula y dice qué falta', () => {
   const r = preparacion({fecha: HOY, habitos: [{fecha: HOY, sueno: '8', calidad: 4}]})
   assert.equal(r.ok, false)
-  assert.ok(r.faltan.includes('Hidratación'))
+  assert.ok(r.faltan.includes('Hábitos de ayer'))
+  assert.ok(r.faltan.includes('Cómo te sentís'))
 })
-test('preparación: reparte los pesos entre los componentes con datos y informa la confianza', () => {
+test('preparación v2: reparte los pesos 40/30/20/10 entre los componentes con datos y informa la confianza', () => {
   const ayer = sumaDias(HOY, -1)
-  const r = preparacion({
-    fecha: HOY,
-    habitos: [
-      {fecha: HOY, sueno: '8', calidad: 5},
-      {fecha: ayer, agua: 2500}
-    ]
-  })
+  const habs = [
+    {fecha: HOY, sueno: '8', calidad: 5, energia: 5, animo: 5, dolor: 1},
+    {fecha: ayer, agua: 2500}
+  ]
+  const r = preparacion({fecha: HOY, habitos: habs})
   assert.equal(r.ok, true)
-  assert.equal(r.confianza, 50) // sueño 35 + agua 15
+  assert.equal(r.confianza, 80) // subjetivo 40 + sueño 30 + hábitos 10
   assert.ok(r.puntaje >= 95)
-  assert.deepEqual(r.faltan.sort(), ['Alimentación', 'Carga reciente'])
+  assert.deepEqual(r.faltan, ['Carga reciente'])
   const todo = preparacion({
     fecha: HOY,
-    habitos: [
-      {fecha: HOY, sueno: '8', calidad: 5},
-      {fecha: ayer, agua: 2500}
-    ],
+    habitos: habs,
     comidas: [{fecha: ayer, kcal: 2200}],
     sesiones: [-27, -24, -20, -17, -13, -10, -6, -3].map(d => ses(sumaDias(HOY, d)))
   })

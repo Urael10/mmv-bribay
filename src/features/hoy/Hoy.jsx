@@ -2,8 +2,10 @@ import {useState, useEffect} from 'react'
 import {db, hoy, cfg} from '../../data/db'
 import {ResumenHoy} from '../comidas/Comidas'
 import {Preparacion} from '../coach/Coach'
+import {TarjetaCuerpo} from '../cuerpo/Cuerpo'
+import {CHECKIN} from '../../domain/checkin'
 
-export default function Hoy() {
+export default function Hoy({onEmpezar}) {
   const [h, setH] = useState({fecha: hoy(), agua: 0, sueno: '', calidad: 3}),
     [otro, setOtro] = useState(''),
     meta = +cfg('meta', 2500)
@@ -28,8 +30,54 @@ export default function Hoy() {
   }
   return (
     <div className="bento">
-      <ResumenHoy />
+      <section>
+        <h3>Check-in de hoy · 20 segundos</h3>
+        {CHECKIN.map(c => (
+          <div key={c.k}>
+            <b style={{fontSize: 14}}>{c.n}</b>
+            <div className="escala" role="group" aria-label={c.n}>
+              {[1, 2, 3, 4, 5].map(n => (
+                <button
+                  key={n}
+                  className={+h[c.k] === n ? 'on' : ''}
+                  aria-pressed={+h[c.k] === n}
+                  onClick={() => g({[c.k]: +h[c.k] === n ? null : n})}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+            <small className="mu">
+              <span>1 · {c.bajo}</span>
+              <span>5 · {c.alto}</span>
+            </small>
+          </div>
+        ))}
+        <div className="row" style={{marginTop: 10}}>
+          <b style={{fontSize: 14}}>Sueño de anoche</b>
+          <input
+            type="number"
+            inputMode="decimal"
+            step="0.5"
+            placeholder="horas"
+            value={h.sueno}
+            onChange={e => g({sueno: e.target.value})}
+          />
+          <input
+            type="range"
+            min="1"
+            max="5"
+            value={h.calidad}
+            aria-label="Calidad del sueño"
+            onChange={e => g({calidad: +e.target.value})}
+          />
+          <span>calidad {h.calidad}/5</span>
+        </div>
+      </section>
       <Preparacion h={h} />
+      <button className="cta" onClick={onEmpezar}>
+        EMPEZAR ENTRENO
+      </button>
       <section>
         <h3>Hidratación</h3>
         <div className="big">
@@ -77,26 +125,8 @@ export default function Hoy() {
           </button>
         </div>
       </section>
-      <section>
-        <h3>Sueño de anoche</h3>
-        <div className="row">
-          <input
-            type="number"
-            step="0.5"
-            placeholder="horas"
-            value={h.sueno}
-            onChange={e => g({sueno: e.target.value})}
-          />
-          <input
-            type="range"
-            min="1"
-            max="5"
-            value={h.calidad}
-            onChange={e => g({calidad: +e.target.value})}
-          />
-          <span>calidad {h.calidad}/5</span>
-        </div>
-      </section>
+      <ResumenHoy />
+      <TarjetaCuerpo />
     </div>
   )
 }

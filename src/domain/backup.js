@@ -1,7 +1,17 @@
 // Backup: reglas puras (sin base de datos ni navegador).
 export const DIAS_AVISO = 7
 // Ajustes que viajan en el backup. La clave de IA NO va nunca.
-export const AJUSTES = ['meta', 'metakcal', 'modelo', 'sonido']
+export const AJUSTES = [
+  'meta',
+  'metakcal',
+  'modelo',
+  'sonido',
+  'altura',
+  'nac',
+  'pesoobj',
+  'fechaobj',
+  'protkg'
+]
 
 export const diasDesde = (iso, ahora = Date.now()) => {
   const t = Date.parse(iso || '')

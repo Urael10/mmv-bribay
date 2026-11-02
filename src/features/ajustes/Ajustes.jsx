@@ -2,6 +2,7 @@ import {useState, useEffect} from 'react'
 import {db, hoy, cfg, setCfg} from '../../data/db'
 import {exportar, restaurar, puedeCompartir, ultimoBackup} from '../../data/backup'
 import {diasDesde} from '../../domain/backup'
+import {edadDe, proteinaObjetivo, ultima, PROT_KG} from '../../domain/cuerpo'
 import {INFO, fechaBuild, buscarActualizacion, actualizarAhora} from '../../version'
 
 function Version() {
@@ -135,6 +136,84 @@ function Respaldo() {
   )
 }
 
+function Perfil() {
+  const [v, setV] = useState({
+      altura: cfg('altura'),
+      nac: cfg('nac'),
+      pesoobj: cfg('pesoobj'),
+      fechaobj: cfg('fechaobj'),
+      protkg: cfg('protkg', String(PROT_KG).replace('.', ','))
+    }),
+    [peso, setPeso] = useState(null)
+  useEffect(() => {
+    db.medidas
+      .toArray()
+      .then(ms => setPeso(ultima(ms)?.peso ?? null))
+      .catch(() => {})
+  }, [])
+  const set = (k, x) => {
+    setV(o => ({...o, [k]: x}))
+    setCfg(k, x)
+  }
+  const edad = edadDe(v.nac, hoy()),
+    pr = proteinaObjetivo(peso, String(v.protkg).replace(',', '.'))
+  return (
+    <section>
+      <h3>Perfil y objetivo</h3>
+      <p>Estos datos se guardan solo en este dispositivo (y en tu backup).</p>
+      <div className="grid2">
+        <label className="mu">
+          Altura (cm)
+          <input
+            type="text"
+            inputMode="numeric"
+            value={v.altura}
+            onChange={e => set('altura', e.target.value)}
+          />
+        </label>
+        <label className="mu">
+          Año de nacimiento{edad !== null ? ` (${edad} años)` : ''}
+          <input
+            type="text"
+            inputMode="numeric"
+            value={v.nac}
+            onChange={e => set('nac', e.target.value)}
+          />
+        </label>
+        <label className="mu">
+          Peso objetivo (kg)
+          <input
+            type="text"
+            inputMode="decimal"
+            value={v.pesoobj}
+            onChange={e => set('pesoobj', e.target.value)}
+          />
+        </label>
+        <label className="mu">
+          Fecha del objetivo
+          <input type="date" value={v.fechaobj} onChange={e => set('fechaobj', e.target.value)} />
+        </label>
+        <label className="mu">
+          Proteína (g por kg de peso)
+          <input
+            type="text"
+            inputMode="decimal"
+            value={v.protkg}
+            onChange={e => set('protkg', e.target.value)}
+          />
+        </label>
+      </div>
+      <small className="mu">
+        {pr
+          ? `Con tu último peso (${String(peso).replace('.', ',')} kg), la meta de proteína de Hoy es ${pr} g.`
+          : 'La meta de proteína aparece cuando registres tu peso.'}{' '}
+        1,6 g/kg es un valor de partida; en deporte se usan rangos de unos 1,4 a 2,0. Si tenés una
+        condición de salud (por ejemplo renal), consultá antes con un profesional.
+      </small>
+    </section>
+  )
+}
+
 export default function Ajustes() {
   const [k, setK] = useState(cfg('key')),
     [m, setM] = useState(cfg('modelo', 'gemini-3.8-flash')),
@@ -145,6 +224,7 @@ export default function Ajustes() {
     <>
       <Version />
       <Respaldo />
+      <Perfil />
       <UsoIA />
       <section>
         <h3>Ajustes</h3>

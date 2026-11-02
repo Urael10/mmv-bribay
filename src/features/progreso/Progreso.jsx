@@ -1,6 +1,7 @@
 import {useState, useEffect, useMemo} from 'react'
 import {db, hoy} from '../../data/db'
 import {Informe} from '../coach/Coach'
+import {VistaCuerpo} from '../cuerpo/Cuerpo'
 import {
   PATRONES,
   patron,
@@ -444,6 +445,7 @@ export default function Progreso() {
           ['semana', 'Semana'],
           ['historial', 'Historial'],
           ['records', 'Récords'],
+          ['cuerpo', 'Cuerpo'],
           ['informe', 'Informe']
         ].map(([k, n]) => (
           <button key={k} className={'chip' + (sub === k ? ' on' : '')} onClick={() => setSub(k)}>
@@ -456,6 +458,7 @@ export default function Progreso() {
         <Historial ses={d.ses} reg={d.reg} marcas={marcas} recargar={cargar} />
       )}
       {sub === 'records' && <Records reg={d.reg} ej={d.ej} recargar={cargar} />}
+      {sub === 'cuerpo' && <VistaCuerpo />}
       {sub === 'informe' && <Informe ses={d.ses} reg={d.reg} manual={manual} />}
     </>
   )

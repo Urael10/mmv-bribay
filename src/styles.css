@@ -427,3 +427,75 @@ nav button.on {
   border: 1px solid var(--pr);
   text-align: left;
 }
+
+/* v0.9.0 · entrega 7: Hoy como centro de mando, check-in, cuerpo */
+.gear {
+  background: transparent;
+  color: var(--mu);
+  border: 1px solid var(--ln);
+  border-radius: 12px;
+  padding: 6px 10px;
+  min-height: 40px;
+  font-size: 18px;
+  line-height: 1;
+}
+.gear.on {
+  color: var(--ac);
+  border-color: var(--ac);
+}
+header .ver {
+  margin-left: auto;
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 8px 0;
+}
+.grid2 label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+.grid2 input,
+section input[type='date'] {
+  width: 100%;
+}
+.escala {
+  display: flex;
+  gap: 6px;
+  margin: 4px 0 10px;
+}
+.escala button {
+  flex: 1;
+  padding: 10px 0;
+  min-height: 44px;
+  background: transparent;
+  color: var(--mu);
+  border: 1px solid var(--ln);
+  border-radius: 12px;
+  font-weight: 700;
+}
+.escala button.on {
+  background: var(--ac);
+  border-color: var(--ac);
+  color: #041014;
+}
+.escala + small {
+  display: flex;
+  justify-content: space-between;
+}
+.cta {
+  width: 100%;
+  min-height: 56px;
+  font-size: 18px;
+  font-family: 'Chakra Petch', sans-serif;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+  background: var(--pr);
+}
+
+header {
+  align-items: center;
+}

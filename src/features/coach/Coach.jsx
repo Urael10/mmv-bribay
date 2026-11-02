@@ -68,6 +68,12 @@ export function Preparacion({h}) {
             <i style={{width: r.puntaje + '%'}} />
           </div>
           <b>{r.etiqueta.t}</b>
+          <p style={{margin: '4px 0 0', fontSize: 14}}>{r.recomendacion.texto}</p>
+          {r.recomendacion.avisos.map(a => (
+            <small key={a} className="warn">
+              {a}
+            </small>
+          ))}
           {r.faltan.length > 0 && (
             <small className="mu" style={{display: 'block', marginTop: 4}}>
               Calculado con el {r.confianza}% de los datos. Falta:{' '}
@@ -86,8 +92,10 @@ export function Preparacion({h}) {
               </div>
             ))}
             <small className="mu" style={{display: 'block', marginTop: 6}}>
-              Sueño 35 %, carga reciente 30 %, alimentación 20 %, hidratación 15 %. Es una
-              orientación basada en tus propios datos, no una medición médica.
+              Cómo te sentís 40 %, sueño contra tu propio promedio 30 %, carga reciente 20 %,
+              hábitos de ayer (comida y agua) 10 %. Los pesos son una propuesta de diseño, no salen
+              de un estudio: es una orientación basada en tus propios datos, no una medición médica.
+              Un dolor agudo o en una articulación no es dolor muscular: parar y consultar.
             </small>
           </details>
         </>
@@ -95,8 +103,8 @@ export function Preparacion({h}) {
         <>
           <div className="mu">Todavía no hay datos suficientes para calcularlo.</div>
           <small className="mu" style={{display: 'block', marginTop: 4}}>
-            Cargá tu sueño de anoche y, con los días, tus comidas, el agua y tus sesiones. Falta:{' '}
-            {r.faltan.join(', ').toLowerCase()}.
+            Hacé el check-in de arriba y cargá tu sueño de anoche; con los días se suman tus
+            comidas, el agua y tus sesiones. Falta: {r.faltan.join(', ').toLowerCase()}.
           </small>
         </>
       )}
