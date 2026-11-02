@@ -3,6 +3,14 @@
 
 # Historial de versiones de MMV
 
+## v0.17.0 · Entrega 15 · Sesión manual con tus 5 bloques (02/11/2026)
+- **PZ10:** en Entreno, **✍ Sesión manual con mis 5 bloques** arma de una vez Movilidad (4 min) · Warm up (4 min) · EMOM 12 min (6 lugares) · For time 10 min · Tabata 20/10 (2 lugares), con el editor de ejercicios ya abierto. **Solo escribís los ejercicios**: no se inventa ningún nombre, peso ni repetición. Sirve cuando Google falla, no hay señal o no tenés la foto. «Sesión en blanco» sigue disponible.
+- **El reloj funciona desde el primer momento**, sin escribir nada: Movilidad y Warm up 40 s × 6, EMOM 12 intervalos de 60 s, For time con tope de 10 min, Tabata 20/10 × 8 rondas. Al escribir los ejercicios, el reloj dice cuál toca (con 4 de movilidad son 40 s × 8; el Tabata alterna).
+- **Al guardar la sesión** se descartan los bloques que quedaron sin ejercicios ni resultados (por ejemplo un Tabata que ese día no hubo) y los espacios en blanco del final de cada lista; los del medio se conservan porque los registros van por posición. Esto vale para toda sesión (también la de pizarra). El historial y «Repetir la última» quedan limpios.
+- Se puede **guardar como plantilla** (la estructura sin lo que anotaste) y usar «✓ Igual que la última» como siempre.
+- Sin cambios en Dexie (sigue **v9**), backup, menú privado ni IA.
+- **Pruebas: 183** (176 + 7 nuevas en `entrega15.test.js`), todas pasan. Probado en navegador de escritorio (manual → escribir ejercicios → reloj → guardar: la sesión quedó con solo los 2 bloques usados). **No probado:** celular.
+
 ## v0.16.0 · Entrega 14 · Menú privado «Bienestar» (02/11/2026)
 - **Acceso oculto (H1-A):** 5 toques seguidos (en menos de 3 s) sobre la versión del encabezado. No hay pestaña, botón ni ítem en Ajustes. Un toque solo sigue abriendo Ajustes (con una espera de 0,7 s). Dentro del menú, tocar la versión no hace nada.
 - **Clave y cifrado real (H2-B):** la clave nunca se guarda. Se deriva con PBKDF2-SHA256 (250 000 vueltas) y los datos se cifran con AES-GCM, **un bloque por mes**, atado a su mes. Una fila `_meta` guarda la sal y una verificación para saber si la clave es correcta. **Olvidar la clave = perder estos datos** (H8-A, sin recuperación); la pantalla lo pide confirmar al crearla. Mínimo 4 caracteres, con aviso si son menos de 8.

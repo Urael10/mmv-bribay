@@ -193,6 +193,34 @@ export function aplicarUltimas(b, mapa, clave = claveEjercicio, sobrescribir = f
   return {reg, n}
 }
 
+// ---- Sesión manual con tus 5 bloques (entrega 15, PZ10) ----
+// La estructura de tu clase: movilidad, warm up, EMOM de 12 min con 6 ejercicios, For time de 10 min y Tabata 20/10.
+// Los ejercicios vienen en blanco (solo los espacios para escribirlos): ningún nombre, peso ni repetición se inventa.
+// Los tiempos del reloj usan los valores de siempre (40 s × 2 vueltas, EMOM cada 60 s, Tabata 20/10 × 8 rondas).
+const hueco = n => Array.from({length: n}, () => '')
+export const sesionManual5 = () => ({
+  bloques: [
+    {tipo: 'movilidad', minutos: 4, ejercicios: hueco(3)},
+    {tipo: 'warmup', minutos: 4, ejercicios: hueco(3)},
+    {tipo: 'emom', minutos: 12, ejercicios: hueco(6)},
+    {tipo: 'forTime', minutos: 10, ejercicios: hueco(3)},
+    {tipo: 'tabata', minutos: 4, ejercicios: hueco(2)}
+  ]
+})
+const tieneTexto = b => (b?.ejercicios || []).some(e => String(e ?? '').trim())
+const tieneResultado = b => ['rondas', 'extra', 'minOk', 'tiempo', 'rpe'].some(k => num(b?.[k]) > 0)
+// Al guardar la sesión: se van los bloques que quedaron sin ejercicios ni resultados (por ejemplo un Tabata que ese día no hubo)
+// y los espacios en blanco del final de cada lista. Los espacios del medio se conservan: los registros se indexan por posición.
+export function podarBloquesVacios(bloques) {
+  return (bloques || [])
+    .filter(b => tieneTexto(b) || tieneResultado(b))
+    .map(b => {
+      const ej = [...(b.ejercicios || [])]
+      while (ej.length && !String(ej[ej.length - 1] ?? '').trim()) ej.pop()
+      return {...b, ejercicios: ej}
+    })
+}
+
 // ---- Entrada a Entreno: el método que usaste la última vez va primero (por defecto, la pizarra) ----
 const ENTRADAS = ['pizarra', 'ultima', 'plantillas']
 export function ordenEntrada(ultimo) {
