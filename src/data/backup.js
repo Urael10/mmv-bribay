@@ -2,6 +2,7 @@
 import {db, hoy, cfg, setCfg, TABLAS, importarTabla} from './db.js'
 import {INFO} from '../version.js'
 import {AJUSTES, ajustesDe, nombreBackup, validarBackup} from '../domain/backup.js'
+import {META, planRestaurarPrivado} from '../domain/privado.js'
 
 export async function armarBackup() {
   const d = {
@@ -68,7 +69,17 @@ export async function exportar({compartir = false} = {}) {
 export async function restaurar(d) {
   if (!validarBackup(d)) throw new Error('No parece un backup de MMV.')
   let omitidas = 0
-  for (const t of TABLAS) if (Array.isArray(d[t])) omitidas += await importarTabla(t, d[t])
+  for (const t of TABLAS) {
+    if (!Array.isArray(d[t])) continue
+    if (t === 'privado') {
+      // El registro privado viaja cifrado: solo se importa si la clave del backup es la de este equipo (o aquí no hay ninguna).
+      const plan = planRestaurarPrivado(await db.privado.get(META), d[t])
+      omitidas += plan.omitidas
+      if (plan.importar.length) omitidas += await importarTabla(t, plan.importar)
+      continue
+    }
+    omitidas += await importarTabla(t, d[t])
+  }
   if (d._ajustes && typeof d._ajustes === 'object')
     for (const k of AJUSTES) if (d._ajustes[k]) setCfg(k, String(d._ajustes[k]))
   try {
