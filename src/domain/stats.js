@@ -67,7 +67,10 @@ export const epley = (kg, reps) => {
   reps = +reps || 0
   return kg > 0 && reps > 0 && reps <= EPLEY_MAX ? +(kg * (1 + reps / 30)).toFixed(1) : 0
 }
-export const e1rm = r => epley(r.kg, repsLado(r))
+// Serie pesada (entrega 9): si el registro trae la serie más cargada (pkg × preps), el 1RM estimado toma la mejor de las dos.
+export const e1rm = r => Math.max(epley(r.kg, repsLado(r)), epley(r.pkg, r.preps))
+// Carga más alta del registro (la del resumen o la de la serie pesada).
+export const kgMax = r => Math.max(+r.kg || 0, +r.pkg || 0)
 
 // Fechas (YYYY-MM-DD, hora local)
 const iso = d =>
@@ -92,7 +95,7 @@ export function marcar(registros) {
     out = {}
   for (const r of orden) {
     const v = {
-      kg: +r.kg || 0,
+      kg: kgMax(r),
       e1: e1rm(r),
       vol: volumen(r),
       reps: (+r.kg || 0) > 0 ? 0 : repsTot(r)
@@ -139,7 +142,7 @@ export function mejores(arr) {
       return v > (b?.v || 0) ? {v, r} : b
     }, null)
   return {
-    carga: top(r => +r.kg || 0),
+    carga: top(kgMax),
     e1: top(e1rm),
     vol: top(volumen),
     reps: top(r => ((+r.kg || 0) > 0 ? 0 : repsTot(r)))

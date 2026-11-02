@@ -1,5 +1,15 @@
 # Historial de versiones de MMV
 
+## v0.11.0 · Entrega 9 · Entreno ágil (01/11/2026)
+- **Entrar a entrenar en 2 toques:** EMPEZAR ENTRENO (Hoy) lleva a Entreno, que ahora ofrece **↻ Repetir la última sesión**, **Mis plantillas** (usar o borrar con ✕), foto de la pizarra y sesión manual. Si hay una sesión sin terminar, Hoy dice **CONTINUAR ENTRENO**.
+- **Repetir y plantillas copian solo la estructura** (tipo de bloque, minutos, ejercicios y tiempos del reloj). No copian pesos, repeticiones, rondas, tiempos, RPE ni video: nada queda registrado como hecho si no lo cargás vos. Tabla nueva `rutinas` (Dexie **v8**, solo agrega tabla; viaja en el backup). «Guardar como plantilla» está al final de la sesión; con el mismo nombre se reemplaza (pide confirmación).
+- **↺ Cargar las últimas** (por bloque): llena kg y reps con tu último registro de cada ejercicio (del mismo tipo de bloque si existe). Se pueden editar antes de guardar.
+- **RPE por bloque** (opcional, 1–10): se guarda en la sesión y en cada registro (`rpeBloque`). El RPE de la sesión sigue siendo el que manda para la carga; la app sugiere el promedio de tus bloques ponderado por minutos y lo aplicás con un toque.
+- **Serie pesada** (opcional, por ejercicio): kg y repeticiones de tu serie más cargada. Mejora el **1RM estimado** (se toma el mayor entre el resumen y la serie pesada) y cuenta para el récord de carga. El **volumen no cambia**: sigue saliendo del resumen kg × reps. Los registros anteriores no cambian.
+- **Casilla «Video grabado»** en los bloques con ejercicios marcados con `*`. Hoy avisa cuántos ejercicios con `*` de los últimos 14 días siguen sin marcar.
+- **Aviso de descarga en Hoy:** misma regla que en Progreso → Pilares (2 o más señales); se muestra debajo de la preparación.
+- **Pruebas: 123 esperadas** (112 + 9 de lógica en `entrega9.test.js` + 2 de datos en `entrega9-datos.test.js`). **En esta entrega solo se pudieron correr las que no necesitan `npm`: 92 de 92 pasan (83 anteriores + 9 nuevas)**; el compilado y las pruebas con base simulada (29 anteriores + 2 nuevas) las corre GitHub Actions al publicar.
+
 ## v0.10.0 · Entrega 8 · Progreso con 4 pilares, tests de referencia, progresión y descarga (01/11/2026)
 - **Progreso → Pilares (nueva pestaña inicial):** gráfico de carga semanal (RPE × minutos, 8 semanas) y un resumen de **Fuerza** (1RM estimado de 28 días contra los 28 anteriores, por ejercicio y contexto), **Resistencia** (repeticiones de cardio, sesiones por semana y tests), **Composición** (peso, grasa y músculo contra hace 4 semanas, sin juzgar si es bueno o malo: depende de tu objetivo) y **Hábitos** (constancia de los últimos 7 días).
 - **Progresión (D11):** por ejercicio y tipo de bloque, sugerencia de carga según los dos últimos registros (probar +2,5 % redondeado a 0,5 kg, consolidar o repetir). **Descarga:** aviso cuando se cumplen 2 o más señales (carga +20 % sobre tu promedio, RPE medio ≥ 8, dolor muscular alto o poco sueño). Umbrales de diseño, no indicaciones médicas.
