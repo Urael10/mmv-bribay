@@ -1,6 +1,6 @@
 // Registro rápido de comidas: recientes y frecuentes, porciones y comidas guardadas.
 // Funciones puras (sin React ni base de datos). Las cuentas siguen haciéndolas alimentos.js.
-import {claveAl, itemDesde, gramos} from './alimentos.js'
+import {claveAl, itemDesde, gramos, totales} from './alimentos.js'
 import {sumaDias} from './stats.js'
 
 export const MULTIPLOS = [
@@ -110,4 +110,76 @@ export function itemsDePlantilla(pl, base) {
       ? conPorcion(itemDesde(al, i.g, 'base'), al.porcion || i.g)
       : conPorcion(itemDesde({nombre: i.nombre, ...i.b}, i.g, i.origen || 'manual'), i.g)
   })
+}
+
+// ---- Modo rápido (entrega 10): «comí algo parecido a…» y estimación sin alimentos ----
+// Identifica una comida por sus alimentos (no por los gramos): dos desayunos con los mismos alimentos son «la misma comida».
+export const firmaComida = c =>
+  (c?.items || [])
+    .map(i => (i.alimentoId != null ? 'a' + i.alimentoId : 'n' + claveAl(i.nombre || '')))
+    .filter(k => k.length > 1)
+    .sort()
+    .join('|')
+
+// Comidas completas que más repetís, ordenadas para el momento del día (veces + 2 × veces en ese momento + 1 si fue esta semana).
+// Devuelve la ocurrencia más reciente de cada una, con su nombre corto y sus totales.
+export function comidasParecidas(comidas, momento, {hoy, n = 5, dias = 90} = {}) {
+  const desde = hoy ? sumaDias(hoy, -dias) : '',
+    reciente = hoy ? sumaDias(hoy, -7) : '9999'
+  const orden = [...(comidas || [])]
+    .filter(c => (!desde || c.fecha >= desde) && firmaComida(c))
+    .sort((a, b) => (a.fecha + (a.hora || '')).localeCompare(b.fecha + (b.hora || '')))
+  const m = new Map()
+  for (const c of orden) {
+    const k = firmaComida(c),
+      o = m.get(k) || {k, veces: 0, delMomento: 0, reciente: false}
+    o.veces++
+    if (c.momento === momento) o.delMomento++
+    if (c.fecha >= reciente) o.reciente = true
+    o.comida = c // al estar ordenado, queda la última
+    m.set(k, o)
+  }
+  return [...m.values()]
+    .map(o => {
+      const nombres = o.comida.items.map(i => String(i.nombre || '').trim()).filter(Boolean),
+        t = totales(o.comida.items)
+      return {
+        k: o.k,
+        comida: o.comida,
+        veces: o.veces,
+        nombre: nombres.slice(0, 2).join(' + ') + (nombres.length > 2 ? ` +${nombres.length - 2}` : ''),
+        kcal: t.kcal,
+        p: t.p,
+        puntaje: o.veces + 2 * o.delMomento + (o.reciente ? 1 : 0)
+      }
+    })
+    .sort((a, b) => b.puntaje - a.puntaje || b.comida.fecha.localeCompare(a.comida.fecha))
+    .slice(0, n)
+}
+// Ítems de una comida anterior para el borrador (con los valores ACTUALES de tu base si el alimento sigue existiendo).
+export const itemsDeComida = (c, base) => itemsDePlantilla({items: c?.items}, base)
+
+const numero = x => {
+  const n = parseFloat(String(x ?? '').replace(',', '.'))
+  return Number.isFinite(n) ? n : null
+}
+// Estimación rápida: solo calorías y proteína (opcional). Se guarda como un ítem de 100 g con esos valores.
+export function itemRapido({nombre, kcal, p} = {}) {
+  const k = numero(kcal),
+    pr = p === '' || p === undefined || p === null ? 0 : numero(p)
+  if (!(k > 0) || k > 5000) throw new Error('Poné las calorías estimadas (entre 1 y 5000).')
+  if (pr === null || pr < 0 || pr > 300) throw new Error('La proteína tiene que estar entre 0 y 300 g.')
+  const n = String(nombre || '').replace(/\s+/g, ' ').trim().slice(0, 60) || 'Estimado rápido'
+  return conPorcion(
+    itemDesde({nombre: n, kcal100: k, p100: pr, c100: 0, g100: 0}, 100, 'manual', {estimado: true}),
+    100
+  )
+}
+
+// Lo que falta para la meta de proteína (null sin meta).
+export function faltaProteina(p, meta) {
+  const m = numero(meta)
+  if (!(m > 0)) return null
+  const v = numero(p) || 0
+  return {falta: Math.max(0, Math.round(m - v)), pct: Math.min(100, Math.round((v / m) * 100)), cumplida: v >= m}
 }

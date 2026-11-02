@@ -1,5 +1,13 @@
 # Historial de versiones de MMV
 
+## v0.12.0 · Entrega 10 · Comidas simples (01/11/2026)
+- **«Comí algo parecido a…» (Comidas → ＋ Agregar):** atajos con tus comidas completas más repetidas de los últimos 90 días, ordenadas para el momento del día (veces + doble peso si fue en ese mismo momento + 1 si fue esta semana). Dos desayunos con los mismos alimentos cuentan como la misma comida aunque cambien los gramos. Tocar uno **lo carga en tu comida sin guardarla**, para ajustar porciones (½ · 1 · 1½ · 2) y guardar; usa los valores actuales de tu base si el alimento sigue existiendo.
+- **⚡ Estimar rápido:** solo calorías (obligatorio, 1 a 5000) y proteína (opcional, 0 a 300 g), con nombre opcional. Se agrega como un ítem de 100 g marcado «estimado» y **no crea ningún alimento en tu base**.
+- **Meta de proteína también en Comidas:** el Diario muestra proteína del día contra tu meta (la misma de Hoy: último peso × g por kg de Ajustes), con barra y cuánto falta. Sin peso cargado, avisa dónde registrarlo.
+- **Código de barras y Open Food Facts: sin cambios.** El informe proponía pausarlo hasta recibir el «Detalle»; como el producto no falló y el escáner anda, no se pausó. Tampoco se armó el proxy de Cloudflare (solo era para el caso de fallos sistemáticos).
+- Sin cambios en Dexie (sigue **v8**): ningún campo nuevo en las tablas. Los ítems estimados usan el mismo formato de ítem que el resto.
+- **Pruebas: 128 esperadas** (123 + 5 nuevas en `entrega10.test.js`). **Sin `npm` en la sesión: solo se corrieron 97 (las 92 de la entrega 9 + las 5 nuevas), todas pasan**; el compilado y las pruebas con base simulada las corre GitHub Actions al publicar.
+
 ## v0.11.0 · Entrega 9 · Entreno ágil (01/11/2026)
 - **Entrar a entrenar en 2 toques:** EMPEZAR ENTRENO (Hoy) lleva a Entreno, que ahora ofrece **↻ Repetir la última sesión**, **Mis plantillas** (usar o borrar con ✕), foto de la pizarra y sesión manual. Si hay una sesión sin terminar, Hoy dice **CONTINUAR ENTRENO**.
 - **Repetir y plantillas copian solo la estructura** (tipo de bloque, minutos, ejercicios y tiempos del reloj). No copian pesos, repeticiones, rondas, tiempos, RPE ni video: nada queda registrado como hecho si no lo cargás vos. Tabla nueva `rutinas` (Dexie **v8**, solo agrega tabla; viaja en el backup). «Guardar como plantilla» está al final de la sesión; con el mismo nombre se reemplaza (pide confirmación).
