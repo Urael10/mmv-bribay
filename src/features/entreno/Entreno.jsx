@@ -35,7 +35,9 @@ import {
   valoresDeUltima,
   elegirUltima,
   aplicarUltimas,
-  ordenEntrada
+  ordenEntrada,
+  sesionManual5,
+  podarBloquesVacios
 } from '../../domain/entreno'
 
 const P =
@@ -276,11 +278,12 @@ export default function Entreno() {
         const err = validarSeriePesada(b.reg?.[j])
         if (err) return setMsg(`${e.replace(/[*?]/g, '').trim() || 'Ejercicio'}: ${err}`)
       }
-    const fecha = hoy(),
-      sid = await db.sesiones.add({fecha, rpe, bloques: s.bloques}),
+    const bloques = podarBloquesVacios(s.bloques),
+      fecha = hoy(),
+      sid = await db.sesiones.add({fecha, rpe, bloques}),
       R = [],
       E = []
-    s.bloques.forEach(b =>
+    bloques.forEach(b =>
       (b.ejercicios || []).forEach((e, j) => {
         const x = b.reg?.[j],
           c = key(e)
@@ -407,8 +410,21 @@ export default function Entreno() {
               <button onClick={() => run(fx)}>🔁 Reintentar con la misma foto</button>
             </p>
           )}
-          <button className="ghost" onClick={() => empezar({bloques: []}, 'manual')}>
-            Sesión manual
+          <p className="mu" style={{margin: '8px 0'}}>¿Sin foto o sin IA? Armá la sesión a mano:</p>
+          <button
+            style={{width: '100%'}}
+            onClick={() => {
+              empezar(sesionManual5(), 'manual')
+              setCorregir(true)
+            }}
+          >
+            ✍ Sesión manual con mis 5 bloques
+            <small style={{display: 'block', fontWeight: 400}}>
+              Movilidad · Warm up · EMOM 12 min · For time · Tabata. Solo escribís los ejercicios.
+            </small>
+          </button>
+          <button className="ghost" style={{marginTop: 8}} onClick={() => empezar({bloques: []}, 'manual')}>
+            Sesión en blanco
           </button>
         </section>
       )
