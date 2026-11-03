@@ -574,3 +574,49 @@ header {
   gap: 8px;
   flex-wrap: wrap;
 }
+
+/* Entrega 18: chips fijos de bloques y biblioteca de ejercicios */
+.bchips {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 8px 0;
+  margin-bottom: 4px;
+  background: var(--bg);
+  scrollbar-width: none;
+}
+.bchips::-webkit-scrollbar {
+  display: none;
+}
+.bchips .chip {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.bib input[type='text'],
+.bib input[type='search'],
+.bib select {
+  width: 100%;
+}
+.bib label.mu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 8px 0;
+}
+.bibfila {
+  border-top: 1px solid var(--ln);
+  padding: 8px 0;
+}
+.bibfila:first-of-type {
+  border-top: 0;
+}
+.bibfila summary {
+  cursor: pointer;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}

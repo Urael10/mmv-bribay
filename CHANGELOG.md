@@ -3,6 +3,16 @@
 
 # Historial de versiones de MMV
 
+## v0.20.0 · Entrega 18 · Menos scroll y biblioteca de ejercicios (03/11/2026)
+- **Menos scroll al editar (pedido):** la sesión ahora muestra **un bloque abierto a la vez**. Arriba, **chips fijos** («1 · Movilidad · 2 · Warm up · 3 · EMOM…») para saltar de un bloque a otro con un toque; los demás bloques quedan plegados en una línea («3. EMOM · 12 min — 6 ejercicios · 2 con carga · tocá para abrir»). **Siguiente bloque ›** al final de cada bloque, y «Ver todo» / «Plegar» para volver a verlos todos como antes. Al agregar un bloque se abre solo.
+- **Biblioteca de ejercicios (pedido):** nueva pantalla **📚 Biblioteca de ejercicios** (Entreno, al empezar). Buscar (sin acentos ni mayúsculas), **agregar** ejercicios con su patrón de movimiento y «un lado por vez», **renombrar**, cambiar el patrón y quitar de la biblioteca.
+- **Renombrar cambia el historial entero:** el nombre nuevo se aplica a tus **registros, sesiones guardadas, plantillas y la sesión en curso**, conservando la cantidad del principio y los `*` / `?` del final (por ejemplo «10 Lagartijas*» → «10 Push up*»). Si el nombre nuevo ya existe, pide confirmar y **fusiona** los dos (el historial se junta). Lo que anotaste (kg y repeticiones) no se mueve.
+- **Agregar de la biblioteca a un bloque:** en cada bloque, **📚 Agregar de la biblioteca** (ocupa el primer lugar en blanco de la sesión manual; «Agregar y usar» crea el ejercicio y lo pone). Se queda abierta para sumar varios y se cierra con «Listo».
+- **La biblioteca se completa sola:** al guardar una sesión, todos los ejercicios con nombre (también los de Movilidad y Warm up, que no llevan carga) pasan a la biblioteca, y al abrirla se suman los de tus sesiones y plantillas anteriores.
+- «Quitar de la biblioteca» solo saca la fila: tus registros y sesiones no se tocan (si lo usás de nuevo, reaparece).
+- Sin cambios en Dexie (sigue **v9**), backup, menú privado, IA ni Comidas.
+- **Pruebas: 211** (196 + 15 nuevas: 8 de lógica en `entrega18.test.js` y 7 con base simulada en `entrega18-datos.test.js`), todas pasan; `npm ci` y build en verde. Probado en navegador de escritorio a 400 px: chips y bloques plegados, agregar desde la biblioteca, guardar la sesión y renombrar «Cat camel» → «Gato camello» (la sesión guardada quedó con el nombre nuevo); sin errores de consola. **No probado:** celular.
+
 ## v0.19.0 · Entrega 17 · Cambiar el orden de los ejercicios (03/11/2026)
 - **Pedido:** poder cambiar el orden de los ejercicios del EMOM. En cada bloque con 2 o más ejercicios aparece **«Cambiar el orden»** (en el EMOM, «Cambiar el orden (uno por minuto)») con **↑ ↓** por ejercicio. El reloj sigue el nuevo orden: «Primero: …» y cada minuto toca el ejercicio que quedó en esa posición, en las 2 vueltas. Hay que cambiarlo **antes de tocar ▶** (un reloj ya en marcha sigue como estaba).
 - **Lo que ya cargaste viaja con su ejercicio** (los kg y repeticiones se guardan por posición, así que al mover se mueven juntos); un ejercicio sin carga no inventa ninguna. Funciona en todos los tipos de bloque (en el Tabata cambia el orden en que se alternan).
