@@ -221,6 +221,24 @@ export function podarBloquesVacios(bloques) {
     })
 }
 
+// ---- Orden de los ejercicios (entrega 17) ----
+// Mueve el ejercicio `i` una posición (d = -1 sube, +1 baja). Lo anotado (`reg`) viaja con su ejercicio, porque los
+// registros se asocian por posición. Devuelve un bloque nuevo; si no se puede mover, devuelve el mismo bloque.
+export function moverEjercicio(b, i, d) {
+  const ej = [...(b?.ejercicios || [])],
+    j = i + d
+  if (!Number.isInteger(i) || (d !== -1 && d !== 1) || i < 0 || i >= ej.length || j < 0 || j >= ej.length) return b
+  ;[ej[i], ej[j]] = [ej[j], ej[i]]
+  const out = {...b, ejercicios: ej}
+  if (b.reg) {
+    const reg = {...b.reg}
+    ;[reg[i], reg[j]] = [b.reg[j], b.reg[i]]
+    for (const k of [i, j]) if (reg[k] === undefined) delete reg[k]
+    out.reg = reg
+  }
+  return out
+}
+
 // ---- Entrada a Entreno: el método que usaste la última vez va primero (por defecto, la pizarra) ----
 const ENTRADAS = ['pizarra', 'ultima', 'plantillas']
 export function ordenEntrada(ultimo) {

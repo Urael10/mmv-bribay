@@ -37,6 +37,7 @@ import {
   aplicarUltimas,
   ordenEntrada,
   sesionManual5,
+  moverEjercicio,
   podarBloquesVacios
 } from '../../domain/entreno'
 
@@ -617,6 +618,44 @@ export default function Entreno() {
                 onChange={e => up(i, {ejercicios: e.target.value.split('\n')})}
               />
             </details>
+            {(b.ejercicios || []).filter(x => x.trim()).length > 1 && (
+              <details>
+                <summary className="tag">Cambiar el orden{b.tipo === 'emom' ? ' (uno por minuto)' : ''}</summary>
+                {(b.ejercicios || []).map(
+                  (e, j) =>
+                    e.trim() && (
+                      <div className="lin" key={j}>
+                        <span>
+                          <b className="mono">{j + 1}</b> · {e.replace(/[*?]/g, '').trim()}
+                        </span>
+                        <span className="row">
+                          <button
+                            className="ghost mini"
+                            aria-label={`Subir ${e.replace(/[*?]/g, '').trim()}`}
+                            disabled={j === 0}
+                            onClick={() => save({...s, bloques: s.bloques.map((x, k) => (k === i ? moverEjercicio(x, j, -1) : x))})}
+                          >
+                            ↑
+                          </button>
+                          <button
+                            className="ghost mini"
+                            aria-label={`Bajar ${e.replace(/[*?]/g, '').trim()}`}
+                            disabled={j === (b.ejercicios || []).length - 1}
+                            onClick={() => save({...s, bloques: s.bloques.map((x, k) => (k === i ? moverEjercicio(x, j, 1) : x))})}
+                          >
+                            ↓
+                          </button>
+                        </span>
+                      </div>
+                    )
+                )}
+                <small className="mu">
+                  {b.tipo === 'emom'
+                    ? 'El reloj los va diciendo uno por minuto, en este orden; al llegar al último vuelve al primero. Cambialo antes de tocar ▶.'
+                    : 'Lo que ya cargaste viaja con su ejercicio. Cambialo antes de tocar ▶.'}
+                </small>
+              </details>
+            )}
             {pideCargas(b) ? (
               filas
             ) : (
@@ -636,6 +675,11 @@ export default function Entreno() {
                   </details>
                 )}
               </>
+            )}
+            {b.tipo === 'emom' && hayEj && (
+              <small className="mu" style={{display: 'block'}}>
+                ⏱ {resumenReloj(b)} · los ejercicios rotan; el reloj dice cuál toca
+              </small>
             )}
             {b.tipo === 'tabata' && hayEj && (
               <small className="mu" style={{display: 'block'}}>
