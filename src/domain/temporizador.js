@@ -21,25 +21,32 @@ export const nombresEj = b =>
     .map(e => String(e ?? '').replace(/[*?]/g, '').replace(/\s+/g, ' ').trim())
     .filter(Boolean)
 
+export const emomIntervalo = b => Math.max(10, pos(b?.intervalo, 60))
+export const emomIntervalos = b => Math.max(1, Math.round((pos(b?.minutos, 10) * 60) / emomIntervalo(b)))
+
 // Segmentos del bloque: [{l: etiqueta, s: segundos, previo?, sube?}]
 export function armarSegmentos(b) {
   const m = pos(b.minutos, 10)
   const previo = {l: 'Preparate', s: PREVIO, previo: true}
-  if (b.tipo === 'emom') {
-    const iv = Math.max(10, pos(b.intervalo, 60))
-    const n = Math.max(1, Math.round((m * 60) / iv))
-    return [
-      previo,
-      ...Array.from({length: n}, (_, i) => ({
-        l: `${iv === 60 ? 'Min' : 'Intervalo'} ${i + 1}/${n}`,
-        s: iv
-      }))
-    ]
-  }
   const nom = nombresEj(b),
     N = nom.length,
     ej = r => (N ? nom[r % N] : undefined),
     con = (seg, o) => (N ? {...seg, ...Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined))} : seg)
+  if (b.tipo === 'emom') {
+    // Con ejercicios cargados, rotan UNO POR INTERVALO (entrega 16): con 6 ejercicios y 12 minutos, el minuto 1 es el
+    // ejercicio 1, …, el 7 vuelve al 1. Sin ejercicios, el EMOM cuenta intervalos como siempre.
+    const iv = emomIntervalo(b),
+      n = emomIntervalos(b)
+    return [
+      con(previo, {sig: ej(0)}),
+      ...Array.from({length: n}, (_, i) =>
+        con(
+          {l: `${iv === 60 ? 'Min' : 'Intervalo'} ${i + 1}/${n}`, s: iv},
+          {ej: ej(i), sig: i + 1 < n ? ej(i + 1) : undefined}
+        )
+      )
+    ]
+  }
   if (b.tipo === 'tabata') {
     // Con 2 o 4 ejercicios se alternan: la ronda 1 es el ejercicio 1, la 2 el 2, y así.
     const t = pos(b.trab, 20),
@@ -75,6 +82,13 @@ export function armarSegmentos(b) {
 
 // Resumen corto del reloj de un bloque por intervalos, p. ej. «40 s × 6» o «20/10 × 8 rondas». '' si no aplica.
 export function resumenReloj(b) {
+  if (b?.tipo === 'emom') {
+    const N = nombresEj(b).length
+    if (!N) return ''
+    const iv = emomIntervalo(b),
+      n = emomIntervalos(b)
+    return iv === 60 ? `1 ejercicio por minuto × ${n} min` : `1 ejercicio cada ${iv} s × ${n}`
+  }
   if (!POR_EJERCICIO.includes(b?.tipo) && b?.tipo !== 'tabata') return ''
   const trabajo = armarSegmentos(b).filter(x => /^(Ejercicio|Trabajo) /.test(x.l))
   if (!trabajo.length) return ''

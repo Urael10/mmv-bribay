@@ -3,6 +3,21 @@
 
 # Historial de versiones de MMV
 
+## v0.19.0 · Entrega 17 · Cambiar el orden de los ejercicios (03/11/2026)
+- **Pedido:** poder cambiar el orden de los ejercicios del EMOM. En cada bloque con 2 o más ejercicios aparece **«Cambiar el orden»** (en el EMOM, «Cambiar el orden (uno por minuto)») con **↑ ↓** por ejercicio. El reloj sigue el nuevo orden: «Primero: …» y cada minuto toca el ejercicio que quedó en esa posición, en las 2 vueltas. Hay que cambiarlo **antes de tocar ▶** (un reloj ya en marcha sigue como estaba).
+- **Lo que ya cargaste viaja con su ejercicio** (los kg y repeticiones se guardan por posición, así que al mover se mueven juntos); un ejercicio sin carga no inventa ninguna. Funciona en todos los tipos de bloque (en el Tabata cambia el orden en que se alternan).
+- Incluye la **v0.18.0 (entrega 16, PZ12)**: el EMOM con ejercicios rota uno por minuto y el reloj dice cuál toca.
+- Sin cambios en Dexie (sigue **v9**), backup, menú privado, IA ni Comidas.
+- **Pruebas: 196** (191 + 5 nuevas en `entrega17.test.js`), todas pasan; `npm ci` y build en verde. Probado en navegador de escritorio: se escriben 6 ejercicios en el EMOM de la sesión manual, se baja el primero y se sube el último, y el reloj arranca con «Primero: Remo». **No probado:** celular.
+
+## v0.18.0 · Entrega 16 · El EMOM dice qué ejercicio toca (03/11/2026)
+- **PZ12 (opción A que elegiste):** con ejercicios cargados, el reloj del EMOM rota **un ejercicio por minuto**. Con 6 ejercicios en 12 min son 2 vueltas: el minuto 1 es el ejercicio 1, …, el 6 el ejercicio 6 y el 7 vuelve al 1. Se ve en grande el ejercicio del minuto, abajo **«Sigue: …»**, y en «Preparate» dice **«Primero: …»**; la barra chica del reloj muestra el ejercicio actual (igual que en el Tabata).
+- **Otras cantidades:** con 5 ejercicios en 12 min la rotación sigue de corrido (E1…E5, E1…E5, E1, E2); con 1 solo se repite; si hay más ejercicios que minutos se usan los primeros. Con intervalo distinto de 60 s (por ejemplo 90 s) rota igual y los intervalos se llaman «Intervalo». Los renglones en blanco y los `*` no cuentan como ejercicios.
+- **Sin ejercicios cargados el EMOM queda igual que antes** (solo cuenta minutos). El tiempo total no cambia.
+- **En la lista del bloque** aparece «⏱ 1 ejercicio por minuto × 12 min · los ejercicios rotan; el reloj dice cuál toca».
+- Sin cambios en Dexie (sigue **v9**), backup, menú privado, IA ni Comidas. Un reloj ya en marcha antes de actualizar sigue como estaba.
+- **Pruebas: 191** (183 + 8 nuevas en `entrega16.test.js`), todas pasan; `npm ci` y build en verde. Probado en navegador de escritorio con el tiempo adelantado (Preparate → Min 2 → Min 7), sin errores de consola. **No probado:** sonido, vibración y pantalla encendida en celular real.
+
 ## v0.17.0 · Entrega 15 · Sesión manual con tus 5 bloques (02/11/2026)
 - **PZ10:** en Entreno, **✍ Sesión manual con mis 5 bloques** arma de una vez Movilidad (4 min) · Warm up (4 min) · EMOM 12 min (6 lugares) · For time 10 min · Tabata 20/10 (2 lugares), con el editor de ejercicios ya abierto. **Solo escribís los ejercicios**: no se inventa ningún nombre, peso ni repetición. Sirve cuando Google falla, no hay señal o no tenés la foto. «Sesión en blanco» sigue disponible.
 - **El reloj funciona desde el primer momento**, sin escribir nada: Movilidad y Warm up 40 s × 6, EMOM 12 intervalos de 60 s, For time con tope de 10 min, Tabata 20/10 × 8 rondas. Al escribir los ejercicios, el reloj dice cuál toca (con 4 de movilidad son 40 s × 8; el Tabata alterna).
