@@ -11,26 +11,39 @@ import {
   TEST_DIAS
 } from '../../domain/progreso'
 import {sumaDias} from '../../domain/stats'
+import {fmtVal, fmtSigno, hayDato, nombreEjercicio} from '../../domain/formato'
+import {claseVariacion} from '../../domain/variacion'
+import Estado from '../../ui/Estado'
+import Plegable from '../../ui/Plegable'
+
+const sinDatos = p => p.etiqueta === 'Sin datos suficientes'
 
 const TIPO = {movilidad: 'Movilidad', warmup: 'Warm up', emom: 'EMOM', amrap: 'AMRAP', tabata: 'Tabata', forTime: 'For time'}
 const f1 = n => (n === null || n === undefined ? '–' : String(n).replace('.', ','))
 const sg = n => (n === null || n === undefined ? '–' : (n > 0 ? '+' : '') + f1(n))
 const fF = f => f.split('-').reverse().slice(0, 2).join('/')
-const clase = d => 'delta ' + (d > 0 ? 'up' : d < 0 ? 'down' : '')
+const clase = d => claseVariacion(d)
 
 function Barras({datos}) {
   const W = 280,
     H = 64,
+    T = 16, // aire arriba para el valor de la semana en curso
     mx = Math.max(1, ...datos.map(d => d.y)),
-    bw = W / datos.length
+    bw = W / datos.length,
+    ult = datos.length - 1
   return (
-    <svg viewBox={`0 0 ${W} ${H + 14}`} width="100%" role="img" aria-label="Carga de entrenamiento por semana">
+    <svg viewBox={`0 0 ${W} ${T + H + 14}`} width="100%" role="img" aria-label={`Carga de entrenamiento por semana. Semana en curso: ${datos[ult] ? datos[ult].y : 0}`}>
       {datos.map((d, i) => {
         const h = (d.y / mx) * H
         return (
           <g key={d.x}>
-            <rect x={i * bw + 3} y={H - h} width={bw - 6} height={Math.max(h, 1)} rx="2" fill="var(--ac)" opacity={i === datos.length - 1 ? 1 : 0.5} />
-            <text x={i * bw + bw / 2} y={H + 11} fontSize="8" textAnchor="middle" fill="currentColor" opacity=".6">
+            <rect x={i * bw + 3} y={T + H - h} width={bw - 6} height={Math.max(h, 1)} rx="2" fill="var(--ac)" opacity={i === ult ? 1 : 0.5} />
+            {i === ult && (
+              <text className="barra-valor" x={i * bw + bw / 2} y={T + H - h - 4} fontSize="11" fontWeight="700" textAnchor="middle" fill="var(--tx)">
+                {Math.round(d.y).toLocaleString('es-UY')}
+              </text>
+            )}
+            <text x={i * bw + bw / 2} y={T + H + 11} fontSize="8" textAnchor="middle" fill="var(--tx-2)">
               {d.x}
             </text>
           </g>
@@ -60,7 +73,7 @@ const Pilar = ({nombre, p, children}) => (
   <section>
     <div className="row" style={{justifyContent: 'space-between'}}>
       <h3 style={{margin: 0}}>{nombre}</h3>
-      <small className={clase(p.tono === 'up' ? 1 : p.tono === 'down' ? -1 : 0)}>{p.etiqueta}</small>
+      <Estado etiqueta={p.etiqueta} tono={p.tono} />
     </div>
     {children}
   </section>
@@ -135,57 +148,103 @@ export function VistaPilares() {
     )
   const {p, des, serie, prog} = R,
     {fuerza: F, resistencia: Re, composicion: C, habitos: H} = p
+  // Cada pilar sabe qué le falta; los que no tienen datos van juntos en una sola tarjeta, después de los que sí.
+  const tarjetas = [
+    {
+      nombre: 'Fuerza',
+      p: F,
+      falta: 'Registros de pesos y repeticiones en las últimas 8 semanas (se comparan 28 días contra los 28 anteriores).',
+      cuerpo: F.comparables ? (
+        <p className="mu">
+          {F.comparables} {F.comparables === 1 ? 'ejercicio comparable' : 'ejercicios comparables'}: {F.suben} suben · {F.igual} estables · {F.bajan} bajan (1RM estimado de los últimos 28 días contra los 28 anteriores). Récords de carga en 28 días: {F.records}.
+        </p>
+      ) : null
+    },
+    {
+      nombre: 'Resistencia',
+      p: Re,
+      falta: 'Repeticiones de cardio en tus sesiones o algún test de resistencia (Progreso › Tests).',
+      cuerpo: (
+        <p className="mu">
+          Repeticiones de cardio en 28 días: <b className="mono">{Re.repsCardio}</b>
+          {Re.deltaPct !== null && <small className={clase(Re.deltaPct)}> {sg(Re.deltaPct)}%</small>} · {fmtVal(Re.sesionesPorSemana)} {+Re.sesionesPorSemana === 1 ? 'sesión' : 'sesiones'} por semana
+          {Re.testsComparados > 0 && ` · ${Re.testsMejoraron} de ${Re.testsComparados} tests de resistencia mejoraron`}.
+        </p>
+      )
+    },
+    {
+      nombre: 'Composición',
+      p: C,
+      falta: 'Tu peso registrado en varias fechas (Hoy › Cuerpo) para ver la tendencia de 4 semanas.',
+      cuerpo: (
+        <p className="mu">
+          Peso: <b className="mono">{hayDato(C.peso.actual) ? `${fmtVal(C.peso.actual)} kg` : '—'}</b>
+          {hayDato(C.peso.delta) && ` (${fmtSigno(C.peso.delta)} kg en 4 semanas)`}
+          {C.grasa.delta !== null && ` · grasa ${sg(C.grasa.delta)} puntos`}
+          {C.musculo.delta !== null && ` · músculo ${sg(C.musculo.delta)} kg`}. Si te sirve para tu objetivo lo decidís vos: acá no se juzga si es «bueno» o «malo».
+        </p>
+      )
+    },
+    {
+      nombre: 'Hábitos',
+      p: H,
+      falta: 'Check-in, sueño, agua o comidas cargados en los últimos 7 días.',
+      cuerpo: (
+        <p className="mu">
+          Últimos 7 días: check-in {H.checkin}/7 · sueño cargado {H.sueno}/7 · agua en meta {H.agua}/7 · comida cargada {H.comida}/7 · {H.entrenos} {H.entrenos === 1 ? 'día' : 'días'} de entreno.
+        </p>
+      )
+    }
+  ]
+  const conDatos = tarjetas.filter(x => !sinDatos(x.p)),
+    vacios = tarjetas.filter(x => sinDatos(x.p))
   return (
     <>
       <CajaDescarga des={des} />
       <section>
         <h3>Carga de entrenamiento</h3>
         <Barras datos={serie.map(s => ({x: fF(s.desde), y: s.carga}))} />
-        <small className="mu">Carga semanal = RPE × minutos de cada sesión. Barra clara: la semana en curso.</small>
+        <small className="mu">Carga semanal = RPE × minutos de cada sesión. Barra clara y con número: la semana en curso.</small>
       </section>
-      <Pilar nombre="Fuerza" p={F}>
-        {F.comparables ? (
-          <p className="mu">
-            {F.comparables} {F.comparables === 1 ? 'ejercicio comparable' : 'ejercicios comparables'}: {F.suben} suben · {F.igual} estables · {F.bajan} bajan (1RM estimado de los últimos 28 días contra los 28 anteriores). Récords de carga en 28 días: {F.records}.
+      {conDatos.map(x => (
+        <Pilar key={x.nombre} nombre={x.nombre} p={x.p}>
+          {x.cuerpo}
+        </Pilar>
+      ))}
+      {vacios.length > 0 && (
+        <section className="vacio">
+          <h3>Aún sin datos ({vacios.length})</h3>
+          {vacios.map(x => (
+            <Plegable key={x.nombre} tarjeta={false} titulo={x.nombre} resumen="Sin datos suficientes">
+              <p className="mu" style={{margin: 0}}>
+                Falta: {x.falta}
+              </p>
+            </Plegable>
+          ))}
+        </section>
+      )}
+      {prog.length === 0 ? (
+        <Plegable titulo="Progresión por ejercicio" resumen="Aún sin datos">
+          <p className="mu" style={{margin: 0}}>
+            Aparece cuando un ejercicio tiene al menos 2 registros con carga en el mismo tipo de bloque.
           </p>
-        ) : (
-          <p className="mu">Con registros de pesos en las últimas 8 semanas aparece acá la comparación. Récords de carga en 28 días: {F.records}.</p>
-        )}
-      </Pilar>
-      <Pilar nombre="Resistencia" p={Re}>
-        <p className="mu">
-          Repeticiones de cardio en 28 días: <b className="mono">{Re.repsCardio}</b>
-          {Re.deltaPct !== null && <small className={clase(Re.deltaPct)}> {sg(Re.deltaPct)}%</small>} · {f1(Re.sesionesPorSemana)} sesiones por semana
-          {Re.testsComparados > 0 && ` · ${Re.testsMejoraron} de ${Re.testsComparados} tests de resistencia mejoraron`}.
-        </p>
-      </Pilar>
-      <Pilar nombre="Composición" p={C}>
-        <p className="mu">
-          Peso: <b className="mono">{f1(C.peso.actual)} kg</b> ({sg(C.peso.delta)} kg en 4 semanas)
-          {C.grasa.delta !== null && ` · grasa ${sg(C.grasa.delta)} puntos`}
-          {C.musculo.delta !== null && ` · músculo ${sg(C.musculo.delta)} kg`}. Si te sirve para tu objetivo lo decidís vos: acá no se juzga si es «bueno» o «malo».
-        </p>
-      </Pilar>
-      <Pilar nombre="Hábitos" p={H}>
-        <p className="mu">
-          Últimos 7 días: check-in {H.checkin}/7 · sueño cargado {H.sueno}/7 · agua en meta {H.agua}/7 · comida cargada {H.comida}/7 · {H.entrenos} {H.entrenos === 1 ? 'día' : 'días'} de entreno.
-        </p>
-      </Pilar>
-      <section>
-        <h3>Progresión por ejercicio</h3>
-        {!prog.length && <p className="mu">Aparece cuando un ejercicio tiene al menos 2 registros con carga en el mismo tipo de bloque.</p>}
-        {prog.map(x => (
-          <div key={x.clave} className="fila">
-            <div>
-              <b>{x.nombre}</b> <small className="tag">{TIPO[x.tipo] || x.tipo}</small>
+        </Plegable>
+      ) : (
+        <section>
+          <h3>Progresión por ejercicio</h3>
+          {prog.map(x => (
+            <div key={x.clave} className="fila">
+              <div>
+                <b>{nombreEjercicio(x.nombre)}</b> <small className="tag">{TIPO[x.tipo] || x.tipo}</small>
+              </div>
+              <small className="mu">{x.texto}</small>
             </div>
-            <small className="mu">{x.texto}</small>
-          </div>
-        ))}
-        <small className="mu" style={{display: 'block', marginTop: 8}}>
-          Orientaciones de diseño, no indicaciones médicas ni un plan individual.
-        </small>
-      </section>
+          ))}
+        </section>
+      )}
+      <small className="mu" style={{display: 'block', marginBottom: 12}}>
+        Orientaciones de diseño, no indicaciones médicas ni un plan individual.
+      </small>
     </>
   )
 }
@@ -235,7 +294,7 @@ export function VistaTests() {
         <section key={x.k}>
           <div className="row" style={{justifyContent: 'space-between'}}>
             <b>{x.n}</b>
-            <small className={'tag' + (x.estado === 'toca' || x.estado === 'atrasado' ? ' on' : '')}>{ETIQ[x.estado]}</small>
+            <Estado etiqueta={ETIQ[x.estado]} />
           </div>
           {x.ultimo ? (
             <div className="lin">
@@ -253,7 +312,7 @@ export function VistaTests() {
           {ab === x.k ? (
             <div className="row" style={{marginTop: 8}}>
               <input inputMode="decimal" placeholder={x.u} value={v} onChange={e => setV(e.target.value)} style={{width: 90}} aria-label={`${x.n} en ${x.u}`} />
-              <button onClick={() => guardar(x)}>Guardar</button>
+              <button className="pri" onClick={() => guardar(x)}>Guardar</button>
               <button className="ghost" onClick={() => { setAb(null); setErr('') }}>Cancelar</button>
             </div>
           ) : (

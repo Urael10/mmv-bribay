@@ -66,13 +66,15 @@ function Crear({onListo}) {
         </small>
       )}
       <p>
-        <label>
-          <input type="checkbox" checked={ok} onChange={e => setOk(e.target.checked)} /> Entiendo que si olvido la clave
-          <b> no hay forma de recuperar estos datos</b>.
+        <label className="check">
+          <input type="checkbox" checked={ok} onChange={e => setOk(e.target.checked)} />
+          <span>
+            Entiendo que si olvido la clave <b>no hay forma de recuperar estos datos</b>.
+          </span>
         </label>
       </p>
       {err && <small className="warn">{err}</small>}
-      <button disabled={ocupado} onClick={crear}>
+      <button className="pri" disabled={ocupado} onClick={crear}>
         {ocupado ? 'Creando…' : 'Crear y abrir'}
       </button>
     </section>
@@ -119,7 +121,7 @@ function Bloqueado({onAbrir, onBorrado}) {
         </label>
         {err && <small className="warn">{err}</small>}
         <div className="row" style={{marginTop: 8}}>
-          <button type="submit" disabled={!c || ocupado}>
+          <button className="pri" type="submit" disabled={!c || ocupado}>
             {ocupado ? 'Abriendo…' : 'Abrir'}
           </button>
         </div>
@@ -230,8 +232,12 @@ function Registro({clave, bloques, recargar}) {
           </button>
         ))}
       </div>
-      <button onClick={hecho}>＋ Registrar ahora</button>
-      <small className="mu"> La hora se puede corregir en el historial.</small>
+      <button className="pri" onClick={hecho}>
+        ＋ Registrar ahora
+      </button>
+      <small className="mu" style={{display: 'block', marginTop: 8}}>
+        La hora se puede corregir en el historial.
+      </small>
       {err && <small className="warn">{err}</small>}
     </section>
   )
@@ -364,7 +370,7 @@ function Clave({clave, onNueva, onBorrado}) {
       </label>
       {a.length >= CLAVE_MIN && claveDebil(a) && <small className="warn">Mejor una frase de {CLAVE_BUENA} o más caracteres.</small>}
       <div className="row" style={{marginTop: 8}}>
-        <button disabled={ocupado || !a} onClick={cambiar}>
+        <button className="pri" disabled={ocupado || !a} onClick={cambiar}>
           {ocupado ? 'Cambiando…' : 'Cambiar clave'}
         </button>
       </div>
@@ -398,7 +404,7 @@ function Abierto({clave, onBloquear, onNueva, onBorrado}) {
   if (!bloques) return <small className="mu">Abriendo…</small>
   return (
     <>
-      <div className="row" style={{marginBottom: 8}}>
+      <div className="row pestanas" style={{marginBottom: 8}}>
         {[
           ['registro', 'Registro'],
           ['historial', 'Historial'],
@@ -408,7 +414,7 @@ function Abierto({clave, onBloquear, onNueva, onBorrado}) {
             {n}
           </button>
         ))}
-        <button className="ghost mini" style={{marginLeft: 'auto'}} onClick={onBloquear}>
+        <button className="ghost mini bloquear" onClick={onBloquear}>
           🔒 Bloquear
         </button>
       </div>

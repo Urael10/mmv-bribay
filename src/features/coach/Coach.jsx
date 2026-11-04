@@ -1,7 +1,10 @@
 import {useState, useEffect, useMemo} from 'react'
 import {db, hoy, cfg} from '../../data/db'
 import {pedirIA} from '../../services/ia'
+import NavFecha from '../../ui/NavFecha'
+import {claseVariacion} from '../../domain/variacion'
 import {lunes, sumaDias, sg} from '../../domain/stats'
+import Plegable from '../../ui/Plegable'
 import {preparacion, NOMBRES} from '../../domain/preparacion'
 import {
   informeSemana,
@@ -21,9 +24,10 @@ const metas = () => ({
   metaKcal: +cfg('metakcal', 2200) || 2200,
   metaAgua: +cfg('meta', 2500) || 2500
 })
-const Delta = ({d}) =>
+// Variación contra la semana anterior: en gris (▲/▼ sin color) mientras la semana sigue en curso.
+const Delta = ({d, neutra}) =>
   d === null || d === undefined ? null : (
-    <small className={'delta ' + (d > 0 ? 'up' : d < 0 ? 'down' : '')}> {sg(d)}%</small>
+    <small className={claseVariacion(d, {neutra})}> {sg(d)}%</small>
   )
 
 // Datos de los últimos 40 días para calcular la preparación.
@@ -55,6 +59,15 @@ export function Preparacion({h}) {
   }, [])
   const r = useMemo(() => d && calcPrep(d, h), [d, h])
   if (!r) return null
+  if (!r.ok)
+    return (
+      <Plegable titulo="Preparación" resumen="Todavía no hay datos suficientes">
+        <p className="mu" style={{margin: 0}}>
+          Para calcularla hacé el check-in de arriba y cargá tu sueño de anoche; con los días se
+          suman tus comidas, el agua y tus sesiones. Falta: {r.faltan.join(', ').toLowerCase()}.
+        </p>
+      </Plegable>
+    )
   return (
     <section>
       <h3>Preparación para entrenar</h3>
@@ -205,28 +218,15 @@ export function Informe({ses, reg, manual}) {
     <>
       <section>
         <h3>Informe semanal</h3>
-        <div className="row" style={{justifyContent: 'space-between'}}>
-          <button
-            className="ghost mini"
-            onClick={() => setW(sumaDias(w, -7))}
-            aria-label="Semana anterior"
-          >
-            ◀
-          </button>
-          <div style={{textAlign: 'center'}}>
-            <b>{actual ? 'Esta semana (en curso)' : 'Semana'}</b>
-            <br />
-            <small className="tag">{rango(w)}</small>
-          </div>
-          <button
-            className="ghost mini"
-            disabled={actual}
-            onClick={() => setW(sumaDias(w, 7))}
-            aria-label="Semana siguiente"
-          >
-            ▶
-          </button>
-        </div>
+        <NavFecha
+          titulo={actual ? 'Esta semana' : 'Semana'}
+          sub={rango(w)}
+          anteriorLabel="Semana anterior"
+          siguienteLabel="Semana siguiente"
+          sinSiguiente={actual}
+          onAnterior={() => setW(sumaDias(w, -7))}
+          onSiguiente={() => setW(sumaDias(w, 7))}
+        />
         {!hayDatos(inf) && <p className="mu">No hay datos en esta semana.</p>}
       </section>
       {hayDatos(inf) && (
@@ -247,21 +247,21 @@ export function Informe({ses, reg, manual}) {
               <span>Carga (RPE × min)</span>
               <span className="mono">
                 {e.carga}
-                <Delta d={e.cargaVsAnterior} />
+                <Delta d={e.cargaVsAnterior} neutra={actual} />
               </span>
             </div>
             <div className="lin">
               <span>Repeticiones</span>
               <span className="mono">
                 {e.reps}
-                <Delta d={e.repsVsAnterior} />
+                <Delta d={e.repsVsAnterior} neutra={actual} />
               </span>
             </div>
             <div className="lin">
               <span>Tonelaje (kg)</span>
               <span className="mono">
                 {e.tonelaje}
-                <Delta d={e.tonelajeVsAnterior} />
+                <Delta d={e.tonelajeVsAnterior} neutra={actual} />
               </span>
             </div>
             {pats.length > 0 && (
@@ -281,7 +281,7 @@ export function Informe({ses, reg, manual}) {
             <small className="mu">
               Los % comparan con la semana anterior
               {actual
-                ? ' completa; como esta semana sigue en curso, es normal que den negativos'
+                ? ' completa; como esta semana sigue en curso, las variaciones van en gris: todavía no son comparables'
                 : ''}
               .
             </small>
@@ -308,7 +308,7 @@ export function Informe({ses, reg, manual}) {
               <span>Comida</span>
               <span className="mono">
                 {inf.comida.diasConDato
-                  ? `${inf.comida.kcalMedias} kcal · P ${inf.comida.proteinaMedia} g`
+                  ? `${inf.comida.kcalMedias} kcal · proteína ${inf.comida.proteinaMedia} g`
                   : 'sin datos'}
               </span>
             </div>
@@ -362,7 +362,7 @@ export function Informe({ses, reg, manual}) {
               </p>
             )}
             <div className="row" style={{marginTop: 8}}>
-              <button disabled={ocupado} onClick={pedir}>
+              <button className="pri" disabled={ocupado} onClick={pedir}>
                 {coach ? 'Actualizar consejos' : 'Pedir consejos al coach'}
               </button>
             </div>

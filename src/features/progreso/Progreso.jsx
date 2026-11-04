@@ -1,6 +1,10 @@
 import {useState, useEffect, useMemo} from 'react'
 import {db, hoy} from '../../data/db'
 import {Informe} from '../coach/Coach'
+import NavFecha from '../../ui/NavFecha'
+import TabsDeslizables from '../../ui/TabsDeslizables'
+import {nombreEjercicio} from '../../domain/formato'
+import {claseVariacion} from '../../domain/variacion'
 import {VistaCuerpo} from '../cuerpo/Cuerpo'
 import {VistaPilares, VistaTests} from './Pilares'
 import {
@@ -78,28 +82,15 @@ function Semana({reg, manual, ses}) {
   return (
     <section>
       <h3>Volumen semanal por patrón</h3>
-      <div className="row" style={{justifyContent: 'space-between'}}>
-        <button
-          className="ghost mini"
-          onClick={() => setW(sumaDias(w, -7))}
-          aria-label="Semana anterior"
-        >
-          ◀
-        </button>
-        <div style={{textAlign: 'center'}}>
-          <b>{esActual ? 'Esta semana' : 'Semana'}</b>
-          <br />
-          <small className="tag">{rango(w)}</small>
-        </div>
-        <button
-          className="ghost mini"
-          disabled={esActual}
-          onClick={() => setW(sumaDias(w, 7))}
-          aria-label="Semana siguiente"
-        >
-          ▶
-        </button>
-      </div>
+      <NavFecha
+        titulo={esActual ? 'Esta semana' : 'Semana'}
+        sub={rango(w)}
+        anteriorLabel="Semana anterior"
+        siguienteLabel="Semana siguiente"
+        sinSiguiente={esActual}
+        onAnterior={() => setW(sumaDias(w, -7))}
+        onSiguiente={() => setW(sumaDias(w, 7))}
+      />
       <div className="row" style={{margin: '10px 0'}}>
         <button className={'chip' + (m === 'reps' ? ' on' : '')} onClick={() => setM('reps')}>
           Repeticiones
@@ -123,7 +114,7 @@ function Semana({reg, manual, ses}) {
               <span>
                 <b className="mono">{num(a)}</b>
                 {d !== null ? (
-                  <small className={'delta ' + (d > 0 ? 'up' : d < 0 ? 'down' : '')}>
+                  <small className={claseVariacion(d, {neutra: esActual})}>
                     {' '}
                     {sg(d)}%
                   </small>
@@ -146,7 +137,7 @@ function Semana({reg, manual, ses}) {
       {filas.length > 0 && (
         <small className="mu">
           Barra cian: esta semana · barra gris: semana anterior. El % compara con la semana
-          anterior.
+          anterior{esActual ? ' y va en gris mientras la semana sigue en curso' : ''}.
         </small>
       )}
     </section>
@@ -215,7 +206,7 @@ function Historial({ses, reg, marcas, recargar}) {
                       if (r) usados.add(r.id)
                       return (
                         <div key={j} className="lin">
-                          <span>{e}</span>
+                          <span>{nombreEjercicio(e)}</span>
                           {r ? (
                             <span className="mono">
                               {kg(r.kg)} kg × {r.uni ? `${r.repsL}/${r.repsR}` : r.reps}
@@ -230,14 +221,12 @@ function Historial({ses, reg, marcas, recargar}) {
                                   d = b2 > 0 && a > 0 ? pct(a, b2) : null
                                 const dr = repsTot(r) - repsTot(u)
                                 return d !== null ? (
-                                  <small
-                                    className={'delta ' + (d > 0 ? 'up' : d < 0 ? 'down' : '')}
-                                  >
+                                  <small className={claseVariacion(d)}>
                                     {' '}
                                     {sg(d)}%
                                   </small>
                                 ) : dr !== 0 ? (
-                                  <small className={'delta ' + (dr > 0 ? 'up' : 'down')}>
+                                  <small className={claseVariacion(dr)}>
                                     {' '}
                                     {sg(dr)} reps
                                   </small>
@@ -335,7 +324,7 @@ function Records({reg, ej, recargar}) {
           <section key={k}>
             <details>
               <summary>
-                <b>{n}</b> <small className="tag">{p}</small>{' '}
+                <b>{nombreEjercicio(n)}</b> <small className="tag">{p}</small>{' '}
                 <small className="tag">{T[a[a.length - 1].tipo] || a[a.length - 1].tipo}</small>
                 <br />
                 <small className="mu">
@@ -420,6 +409,16 @@ function Records({reg, ej, recargar}) {
   )
 }
 
+export const PESTANAS = [
+  ['pilares', 'Pilares'],
+  ['semana', 'Semana'],
+  ['historial', 'Historial'],
+  ['records', 'Récords'],
+  ['tests', 'Tests'],
+  ['cuerpo', 'Cuerpo'],
+  ['informe', 'Informe']
+]
+
 export default function Progreso() {
   const [d, setD] = useState(null),
     [sub, setSub] = useState('pilares')
@@ -445,21 +444,12 @@ export default function Progreso() {
     )
   return (
     <>
-      <div className="row" style={{marginBottom: 12}}>
-        {[
-          ['pilares', 'Pilares'],
-          ['semana', 'Semana'],
-          ['historial', 'Historial'],
-          ['records', 'Récords'],
-          ['tests', 'Tests'],
-          ['cuerpo', 'Cuerpo'],
-          ['informe', 'Informe']
-        ].map(([k, n]) => (
-          <button key={k} className={'chip' + (sub === k ? ' on' : '')} onClick={() => setSub(k)}>
-            {n}
-          </button>
-        ))}
-      </div>
+      <TabsDeslizables
+        etiqueta="Secciones de Progreso"
+        items={PESTANAS}
+        valor={sub}
+        onCambio={setSub}
+      />
       {sub === 'pilares' && <VistaPilares />}
       {sub === 'tests' && <VistaTests />}
       {sub === 'semana' && <Semana reg={d.reg} manual={manual} ses={d.ses} />}

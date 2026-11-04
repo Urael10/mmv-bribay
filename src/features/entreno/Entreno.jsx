@@ -1,6 +1,11 @@
 import {useState, useEffect, useSyncExternalStore} from 'react'
+import Biblioteca from '../biblioteca/Biblioteca'
+import Icono from '../../ui/Icono'
+import {agregarEjercicio, resumenBloque} from '../../domain/biblioteca'
+import {registrarNombres} from '../../data/biblioteca'
 import {db, hoy, cfg} from '../../data/db'
 import {chica} from '../../services/img'
+import {fechaDMA, nombreEjercicio} from '../../domain/formato'
 import {pedirIA} from '../../services/ia'
 import {tomarFoto} from '../../services/pendiente'
 import {volumen, repsTot, marcarPorContexto, sg} from '../../domain/stats'
@@ -221,7 +226,10 @@ export default function Entreno() {
     [ult, setUlt] = useState(null),
     [rutinas, setRutinas] = useState([]),
     [nomRutina, setNomRutina] = useState(''),
-    [ultimaEntrada] = useState(leerEntrada)
+    [ultimaEntrada] = useState(leerEntrada),
+    [biblio, setBiblio] = useState(null),
+    [bq, setBq] = useState(0),
+    [verTodo, setVerTodo] = useState(false)
   const cargarEntradas = async () => {
     setUlt(ultimaSesion(await db.sesiones.orderBy('fecha').reverse().limit(10).toArray()))
     setRutinas((await db.rutinas.toArray()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')))
@@ -264,7 +272,7 @@ export default function Entreno() {
     }
   }
   useEffect(() => {
-    // foto elegida con el botón 📷 de «Hoy»
+    // foto elegida con el botón de cámara de «Hoy»
     const f = tomarFoto()
     if (f && !s) run(f)
   }, [])
@@ -315,6 +323,7 @@ export default function Entreno() {
     await db.registros.bulkAdd(R)
     const pv = await db.ejercicios.bulkGet(E.map(e => e.clave))
     await db.ejercicios.bulkPut(E.map((e, i) => ({...pv[i], ...e})))
+    await registrarNombres(bloques) // los ejercicios sin carga (movilidad, warm up…) también entran a la biblioteca
     const todos = await db.registros.toArray(),
       M = marcarPorContexto(todos),
       nuevos = todos.filter(r => r.sesionId === sid && M[r.id]?.flags.length)
@@ -344,8 +353,25 @@ export default function Entreno() {
     setMini(false)
   }
   if (activo && !mini) return <Timer onCerrar={cerrarTimer} onMinimizar={() => setMini(true)} />
+  const agregarAlBloque = (i, nombre) =>
+    save({...s, bloques: s.bloques.map((x, k) => (k === i ? agregarEjercicio(x, nombre) : x))})
+  if (biblio)
+    return (
+      <Biblioteca
+        modo={biblio.modo}
+        onCerrar={() => setBiblio(null)}
+        onElegir={biblio.modo === 'elegir' ? n => agregarAlBloque(biblio.bloque, n) : undefined}
+        onCambio={() => {
+          try {
+            setS(JSON.parse(localStorage.getItem('mv_sesion') || 'null')) // por si se renombró un ejercicio de la sesión en curso
+          } catch {}
+        }}
+      />
+    )
   const empezar = (n, origen) => {
     setMsg('')
+    setBq(0)
+    setVerTodo(false)
     if (origen) recordarEntrada(origen)
     save(n)
   }
@@ -355,9 +381,11 @@ export default function Entreno() {
         <section key="ultima">
           <h3>Repetir la última</h3>
           <button style={{width: '100%'}} onClick={() => empezar(sesionDesdeUltima(ult), 'ultima')}>
-            ↻ Repetir la última sesión
+            <span className="btn-l">
+              <Icono n="repetir" /> Repetir la última sesión
+            </span>
             <small style={{display: 'block', fontWeight: 400}}>
-              {ult.fecha} · {resumenSesion(ult)}
+              {fechaDMA(ult.fecha)} · {resumenSesion(ult)}
             </small>
           </button>
           <p className="mu" style={{margin: '8px 0 0'}}>
@@ -400,15 +428,21 @@ export default function Entreno() {
         <section key="pizarra">
           <h3>Pizarra → sesión</h3>
           <label>
-            <button style={{width: '100%'}} onClick={e => e.currentTarget.nextSibling.click()}>
-              📷 Foto de la pizarra
+            <button className="pri" style={{width: '100%'}} onClick={e => e.currentTarget.nextSibling.click()}>
+              <span className="btn-l">
+                <Icono n="camara" /> Foto de la pizarra
+              </span>
             </button>
             <input hidden type="file" accept="image/*" onChange={scan} />
           </label>
           <p>{msg}</p>
           {fx && msg.startsWith('No pude') && (
             <p>
-              <button onClick={() => run(fx)}>🔁 Reintentar con la misma foto</button>
+              <button onClick={() => run(fx)}>
+                <span className="btn-l">
+                  <Icono n="repetir" tam={18} /> Reintentar con la misma foto
+                </span>
+              </button>
             </p>
           )}
           <p className="mu" style={{margin: '8px 0'}}>¿Sin foto o sin IA? Armá la sesión a mano:</p>
@@ -419,7 +453,9 @@ export default function Entreno() {
               setCorregir(true)
             }}
           >
-            ✍ Sesión manual con mis 5 bloques
+            <span className="btn-l">
+              <Icono n="lapiz" /> Sesión manual con mis 5 bloques
+            </span>
             <small style={{display: 'block', fontWeight: 400}}>
               Movilidad · Warm up · EMOM 12 min · For time · Tabata. Solo escribís los ejercicios.
             </small>
@@ -430,7 +466,19 @@ export default function Entreno() {
         </section>
       )
     }
-    return <>{ordenEntrada(ultimaEntrada).map(k => secciones[k])}</>
+    return (
+      <>
+        {ordenEntrada(ultimaEntrada).map(k => secciones[k])}
+        <section>
+          <button className="enlace" style={{width: '100%'}} onClick={() => setBiblio({modo: 'gestion'})}>
+            <span className="btn-l">
+              <Icono n="libro" /> Biblioteca de ejercicios
+            </span>
+            <small style={{display: 'block', fontWeight: 400}}>Agregar ejercicios y cambiar nombres.</small>
+          </button>
+        </section>
+      </>
+    )
   }
   if (s.revisar) {
     const R = revisionLectura(s.bloques)
@@ -470,7 +518,7 @@ export default function Entreno() {
               <ul className="lect">
                 {b.ejercicios.map((e, j) => (
                   <li key={j} className={e.duda ? 'duda' : ''}>
-                    {e.texto}
+                    {nombreEjercicio(e.texto)}
                     {e.video && ' 🎥'}
                     {e.duda && <span> ⚠ dudosa</span>}
                   </li>
@@ -522,7 +570,9 @@ export default function Entreno() {
                 run(fx)
               }}
             >
-              🔁 Leer de nuevo
+              <span className="btn-l">
+              <Icono n="repetir" tam={18} /> Leer de nuevo
+            </span>
             </button>
           )}
           <button className="ghost" onClick={() => save(null)}>
@@ -587,7 +637,44 @@ export default function Entreno() {
           )}
         </section>
       )}
+      <div className="bchips" role="tablist" aria-label="Bloques de la sesión">
+        {s.bloques.map((b, i) => (
+          <button
+            key={i}
+            role="tab"
+            className={'chip' + (!verTodo && i === Math.min(bq, s.bloques.length - 1) ? ' on' : '')}
+            aria-selected={!verTodo && i === Math.min(bq, s.bloques.length - 1)}
+            onClick={() => {
+              setBq(i)
+              setVerTodo(false)
+            }}
+          >
+            {i + 1} · {T[b.tipo] || b.tipo}
+          </button>
+        ))}
+        {s.bloques.length > 1 && (
+          <button className="chip" onClick={() => setVerTodo(!verTodo)}>
+            {verTodo ? 'Plegar' : 'Ver todo'}
+          </button>
+        )}
+      </div>
       {s.bloques.map((b, i) => {
+        const act = Math.min(bq, s.bloques.length - 1)
+        if (!verTodo && i !== act) {
+          const R = resumenBloque(b)
+          return (
+            <section key={i}>
+              <button className="ghost" style={{width: '100%', textAlign: 'left'}} onClick={() => setBq(i)}>
+                {i + 1}. {T[b.tipo] || b.tipo}
+                {R.minutos ? ` · ${R.minutos} min` : ''}
+                <small style={{display: 'block', fontWeight: 400}}>
+                  {R.n} {R.n === 1 ? 'ejercicio' : 'ejercicios'}
+                  {R.cargados ? ` · ${R.cargados} con carga` : ''} · tocá para abrir
+                </small>
+              </button>
+            </section>
+          )
+        }
         const filas = (b.ejercicios || []).map(
           (e, j) =>
             e.trim() && <Fila key={j} t={e} tipo={b.tipo} v={b.reg?.[j]} set={r => up(i, {reg: {...b.reg, [j]: r}})} />
@@ -618,6 +705,11 @@ export default function Entreno() {
                 onChange={e => up(i, {ejercicios: e.target.value.split('\n')})}
               />
             </details>
+            <button className="ghost mini" style={{margin: '6px 0'}} onClick={() => setBiblio({modo: 'elegir', bloque: i})}>
+              <span className="btn-l">
+                <Icono n="libro" tam={18} /> Agregar de la biblioteca
+              </span>
+            </button>
             {(b.ejercicios || []).filter(x => x.trim()).length > 1 && (
               <details>
                 <summary className="tag">Cambiar el orden{b.tipo === 'emom' ? ' (uno por minuto)' : ''}</summary>
@@ -626,7 +718,7 @@ export default function Entreno() {
                     e.trim() && (
                       <div className="lin" key={j}>
                         <span>
-                          <b className="mono">{j + 1}</b> · {e.replace(/[*?]/g, '').trim()}
+                          <b className="mono">{j + 1}</b> · {nombreEjercicio(e)}
                         </span>
                         <span className="row">
                           <button
@@ -661,7 +753,7 @@ export default function Entreno() {
             ) : (
               <>
                 <ul className="lect">
-                  {(b.ejercicios || []).filter(x => x.trim()).map((e, j) => <li key={j}>{e}</li>)}
+                  {(b.ejercicios || []).filter(x => x.trim()).map((e, j) => <li key={j}>{nombreEjercicio(e)}</li>)}
                 </ul>
                 {resumenReloj(b) && (
                   <small className="mu" style={{display: 'block'}}>
@@ -846,14 +938,27 @@ export default function Entreno() {
                 </div>
               )}
             </details>
+            {!verTodo && i < s.bloques.length - 1 && (
+              <button
+                style={{width: '100%', marginTop: 8}}
+                onClick={() => {
+                  setBq(i + 1)
+                  window.scrollTo({top: 0, behavior: 'smooth'})
+                }}
+              >
+                Siguiente bloque ›
+              </button>
+            )}
           </section>
         )
       })}
       <button
         className="ghost"
-        onClick={() =>
+        onClick={() => {
           save({...s, bloques: [...s.bloques, {tipo: 'amrap', minutos: 10, ejercicios: []}]})
-        }
+          setBq(s.bloques.length)
+          setVerTodo(false)
+        }}
       >
         + Bloque
       </button>
@@ -891,7 +996,7 @@ export default function Entreno() {
           </p>
         )}
         <div className="row">
-          <button onClick={fin}>Terminar y guardar</button>
+          <button className="pri" onClick={fin}>Terminar y guardar</button>
           <button className="ghost" onClick={() => save(null)}>
             Descartar
           </button>

@@ -156,6 +156,63 @@ export function comidasParecidas(comidas, momento, {hoy, n = 5, dias = 90} = {})
     .sort((a, b) => b.puntaje - a.puntaje || b.comida.fecha.localeCompare(a.comida.fecha))
     .slice(0, n)
 }
+// Lista única de atajos (v0.25.0): alimentos sueltos («sugeridos») y comidas completas de varios alimentos («parecidas»)
+// ordenados por el mismo puntaje. Una comida de un solo alimento ya está entre los sueltos, así que no se repite.
+// Cada fila lleva kcal y gramos de la porción. tipo 'alimento' → se agrega a la comida; 'comida' → se carga completa.
+export function atajosRecientes(sug, parecidas, base, {n = 5} = {}) {
+  const claves = new Set((sug || []).map(s => s.k))
+  const alimentos = (sug || []).map(s => {
+    const it = itemDeSugerido(s, base || [])
+    return {tipo: 'alimento', k: s.k, nombre: s.nombre, kcal: it.kcal, g: it.g, puntaje: s.puntaje, origen: s}
+  })
+  const comidas = (parecidas || [])
+    .filter(p => !claves.has(p.k))
+    .map(p => ({
+      tipo: 'comida',
+      k: 'c:' + p.k,
+      nombre: p.nombre,
+      kcal: p.kcal,
+      g: Math.round((p.comida.items || []).reduce((a, i) => a + (+i.g || 0), 0)),
+      alimentos: (p.comida.items || []).length,
+      puntaje: p.puntaje,
+      origen: p
+    }))
+  return [...alimentos, ...comidas].sort((a, b) => b.puntaje - a.puntaje).slice(0, n)
+}
+// Última fecha en que usaste cada alimento de tu base (id → 'aaaa-mm-dd') y cuántas veces en las comidas dadas.
+export function usoDeAlimentos(comidas) {
+  const m = new Map()
+  for (const c of comidas || [])
+    for (const it of c.items || []) {
+      if (it.alimentoId == null) continue
+      const o = m.get(it.alimentoId) || {ult: '', veces: 0}
+      o.veces++
+      if (c.fecha > o.ult) o.ult = c.fecha
+      m.set(it.alimentoId, o)
+    }
+  return m
+}
+// «Mis alimentos»: filtra (todos · frecuentes · propios · web) y ordena por uso reciente; los que nunca usaste, por nombre.
+export const FILTROS_ALIMENTOS = [
+  ['todos', 'Todos'],
+  ['frecuentes', 'Frecuentes'],
+  ['propios', 'Propios'],
+  ['web', 'Web']
+]
+export const MIN_FRECUENTE = 3
+export function listarAlimentos(base, uso, filtro = 'todos') {
+  const u = id => uso?.get(id) || {ult: '', veces: 0}
+  const pasa = a =>
+    filtro === 'frecuentes' ? u(a.id).veces >= MIN_FRECUENTE : filtro === 'web' ? !!a.fuente : filtro === 'propios' ? !a.fuente : true
+  return (base || [])
+    .filter(pasa)
+    .sort(
+      (a, b) =>
+        u(b.id).ult.localeCompare(u(a.id).ult) ||
+        u(b.id).veces - u(a.id).veces ||
+        String(a.nombre).localeCompare(String(b.nombre), 'es')
+    )
+}
 // Ítems de una comida anterior para el borrador (con los valores ACTUALES de tu base si el alimento sigue existiendo).
 export const itemsDeComida = (c, base) => itemsDePlantilla({items: c?.items}, base)
 

@@ -6,7 +6,7 @@ import {edadDe, proteinaObjetivo, ultima, PROT_KG} from '../../domain/cuerpo'
 import {probarIA} from '../../services/ia'
 import {INFO, fechaBuild, buscarActualizacion, actualizarAhora} from '../../version'
 
-function Version() {
+function Version({onVersion}) {
   const [r, setR] = useState(null),
     [b, setB] = useState(false),
     [pe, setPe] = useState(null)
@@ -24,7 +24,7 @@ function Version() {
   return (
     <section>
       <h3>Versión instalada</h3>
-      <div className="lin">
+      <div className="lin" onClick={onVersion}>
         <span>Versión</span>
         <span className="mono">v{INFO.version}</span>
       </div>
@@ -56,10 +56,10 @@ function Version() {
         <small className="mu">No pude consultar la versión publicada (¿sin conexión?).</small>
       )}
       {r && r !== 'offline' && !r.nueva && (
-        <small className="tag">✔ Tenés la última versión publicada.</small>
+        <small className="ok-msg">Tenés la última versión publicada.</small>
       )}
       {r && r.nueva && (
-        <small className="delta up" style={{display: 'block', marginTop: 6}}>
+        <small className="tag" style={{display: 'block', marginTop: 6}}>
           Publicada: v{r.remota.version} · {r.remota.entrega} · {fechaBuild(r.remota.build)}
         </small>
       )}
@@ -120,17 +120,19 @@ function Respaldo() {
           <>Último backup: {d === 0 ? 'hoy' : `hace ${d} ${d === 1 ? 'día' : 'días'}`}.</>
         )}
       </p>
-      <div className="row">
-        {puedeCompartir() && <button onClick={() => hacer(true)}>Compartir backup</button>}
-        <button className={puedeCompartir() ? 'ghost' : ''} onClick={() => hacer(false)}>
+      <div className="botonera">
+        {puedeCompartir() && (
+          <button className="pri" onClick={() => hacer(true)}>
+            Compartir backup
+          </button>
+        )}
+        <button className={puedeCompartir() ? '' : 'pri'} onClick={() => hacer(false)}>
           Descargar backup
         </button>
-        <label>
-          <button className="ghost" onClick={e => e.currentTarget.nextSibling.click()}>
-            Importar backup
-          </button>
-          <input hidden type="file" accept="application/json" onChange={imp} />
-        </label>
+        <button className="ghost" onClick={e => e.currentTarget.nextSibling.click()}>
+          Importar backup
+        </button>
+        <input hidden type="file" accept="application/json" onChange={imp} />
       </div>
       {msg && <small className="tag">{msg}</small>}
     </section>
@@ -220,7 +222,7 @@ function ProbarIA({modelo, onModelo}) {
     [ocupado, setOcupado] = useState(false)
   return (
     <>
-      <div className="row">
+      <div className="row" style={{marginTop: 12}}>
         <button
           className="ghost"
           disabled={ocupado}
@@ -258,7 +260,7 @@ function ProbarIA({modelo, onModelo}) {
   )
 }
 
-export default function Ajustes() {
+export default function Ajustes({onVersion}) {
   const [k, setK] = useState(cfg('key')),
     [m, setM] = useState(cfg('modelo', 'gemini-3.8-flash')),
     [a, setA] = useState(cfg('meta', 2500)),
@@ -266,7 +268,7 @@ export default function Ajustes() {
     [so, setSo] = useState(cfg('sonido', '1') !== '0')
   return (
     <>
-      <Version />
+      <Version onVersion={onVersion} />
       <Respaldo />
       <Perfil />
       <UsoIA />
@@ -323,7 +325,7 @@ export default function Ajustes() {
           }}
         />
         <p>
-          <label>
+          <label className="check">
             <input
               type="checkbox"
               checked={so}
@@ -331,8 +333,8 @@ export default function Ajustes() {
                 setSo(e.target.checked)
                 setCfg('sonido', e.target.checked ? '1' : '0')
               }}
-            />{' '}
-            Sonido del temporizador
+            />
+            <span>Sonido del temporizador</span>
           </label>
         </p>
       </section>

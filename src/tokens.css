@@ -1,0 +1,59 @@
+/* MMV · tokens de diseño (v0.24.0, Propuesta 2).
+   Único lugar donde se escriben colores. Los componentes y styles.css usan solo var(--…).
+   Excepción: index.html y manifest.webmanifest repiten --bg (theme-color); una prueba vigila que coincidan.
+   Reglas de uso y razones de contraste: DESIGN-TOKENS.md */
+:root {
+  color-scheme: dark;
+
+  /* Superficies */
+  --bg: #0a0f14; /* fondo de la app y de los campos */
+  --sf: #121923; /* tarjetas */
+  --sf-2: #1a2431; /* chips, botones deshabilitados, estados */
+
+  /* Líneas */
+  --ln: #1f2a37; /* separadores decorativos (no marcan nada tocable) */
+  --bd: #5f7083; /* borde de todo control tocable o campo (≥ 3:1) */
+
+  /* Texto */
+  --tx: #e6edf3; /* primario: títulos y valores (≥ 7:1) */
+  --tx-2: #a9b7c6; /* secundario: ayudas, unidades, etiquetas (≥ 4,5:1 también sobre el hero) */
+  --tx-3: #8d9aaa; /* placeholders (≥ 4,5:1 sobre --bg) */
+  --tx-dis: #6b7a8a; /* texto deshabilitado (exento de contraste, se lee igual) */
+  --mu: var(--tx-2); /* alias histórico: .mu y var(--mu) siguen funcionando */
+
+  /* Acción: cian = todo lo tocable. Nunca para texto informativo */
+  --ac: #22d3ee;
+  --on-ac: #041014; /* texto sobre relleno cian */
+  --ac-soft: rgba(34, 211, 238, 0.14); /* hover y selección suave */
+  --ac-press: rgba(34, 211, 238, 0.28); /* presionado */
+
+  /* Énfasis: lima = un único destacado por pantalla (CTA principal o dato clave) */
+  --pr: #c6f432;
+  --on-pr: #041014;
+
+  /* Estados (siempre con ícono o texto, nunca solo color) */
+  --pos: #4ade80;
+  --neg: #ff7a7a;
+  --warn: #ffb454;
+  --warn-2: #ffcc66; /* lectura dudosa de la pizarra */
+  --info: #8fb4ff;
+
+  /* Botón deshabilitado: gris con opacidad, sin borde ni relleno de acción */
+  --dis-bg: var(--sf-2);
+  --dis-tx: var(--tx-dis);
+
+  /* Tarjeta destacada (Alimentación de hoy) */
+  --hero-1: #0e4b57;
+  --hero-2: #0b2a35;
+  --hero-bd: #14697a;
+  --hero-tx: #b9dbe3;
+  --hero-ln: rgba(255, 255, 255, 0.14);
+
+  /* Series de datos (macronutrientes). Siempre llevan etiqueta de texto al lado */
+  --m-p: var(--ac);
+  --m-c: #8fb4ff;
+  --m-g: #c4a1ff;
+
+  /* Fondo de la cámara */
+  --scrim: #000;
+}

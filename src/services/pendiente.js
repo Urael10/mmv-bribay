@@ -1,4 +1,4 @@
-// Foto de pizarra elegida en «Hoy» (botón 📷): se deja acá y Entreno la toma al abrirse.
+// Foto de pizarra elegida en «Hoy» (botón de cámara): se deja acá y Entreno la toma al abrirse.
 // Vive solo en memoria: no se guarda en ningún lado.
 let foto = null
 export const dejarFoto = f => {

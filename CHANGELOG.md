@@ -1,7 +1,87 @@
-## 0.15.1
-- Corrige la pantalla negra: sw.js con caché `mv2` (no guarda HTML como archivo, borra cachés viejas), pantalla de rescate en index.html y límite de errores en main.jsx.
-
 # Historial de versiones de MMV
+
+## v0.26.1 · Entrega 25 · Diagnóstico de arranque (04/11/2026)
+- La pantalla «La app no arrancó» ahora capta también los archivos que no cargan (antes decía «sin mensaje») y muestra el estado y tipo de respuesta del script principal (ej. `200 text/html` = Cloudflare devolvió una página en lugar del archivo).
+- Sin cambios en Dexie (v10), cálculos ni backup. Pruebas: 278.
+
+## v0.26.0 · Entrega 24 · Propuesta 3 (parte 2): pestañas de Progreso deslizables (04/11/2026)
+- **Progreso:** las 7 pestañas (Pilares, Semana, Historial, Récords, Tests, Cuerpo, Informe) pasaron a **una sola fila con deslizamiento horizontal** (`src/ui/TabsDeslizables.jsx`). Mismo orden y nombres; ya no queda «Informe» solo en una segunda fila.
+- La pestaña activa se centra sola al abrir y al cambiar; un degradé en el borde avisa si hay más pestañas fuera de pantalla. Botones de 44 px de alto, sin barra de scroll visible.
+- Accesibilidad: `role=tablist/tab`, flechas ← → / Inicio / Fin entre pestañas, y sin animación si el sistema pide reducir movimiento.
+- Decisiones aplicadas (las recomendadas del informe de la entrega 23): Progreso con tabs deslizables (A), Pilares/Semana/Informe se mantienen separadas (A, sin cambios), filtro «Frecuentes» sin favoritos con estrella.
+- Sin cambios en Dexie (v10), cálculos ni backup. Pruebas: 278 (5 nuevas en `tests/entrega24.test.js`).
+
+## v0.25.0 · Entrega 23 · Propuesta 3 (parte 1): cabecera, barra inferior, Hoy, Comidas y Pilares (04/11/2026)
+- **Cabecera de 56 px:** solo «MMV» y el engranaje (SVG). La versión salió de la cabecera: está en Ajustes › Versión instalada, y los 5 toques seguidos sobre la línea «Versión» de esa tarjeta siguen abriendo el menú privado.
+- **Barra inferior** con íconos SVG + etiqueta (56 px de alto, ancho ≥ 86 px por botón).
+- **Hoy:** orden Check-in → Preparación → Entrenar → Alimentación → Hidratación → Actividad → Cuerpo. Check-in compacto (cada métrica en una fila, leyenda de extremos en una línea, sueño en una línea). «Alimentación de hoy» pasó a una fila compacta (kcal y proteína) que abre Comidas.
+- **Estados vacíos plegables** (`src/ui/Plegable.jsx`): «Preparación» sin datos y «Progresión por ejercicio» sin datos se ven en una línea y se expanden al tocar.
+- **Comidas:** una sola lista «Recientes y frecuentes» (alimentos sueltos y comidas completas, con kcal y gramos), 3 visibles y «Ver más».
+- **Mis alimentos:** orden por uso reciente, filtros Todos · Frecuentes · Propios · Web, leyenda 🌐/≈ arriba y «Reponer alimentos iniciales» dentro de «Avanzado».
+- **Progreso › Pilares:** los pilares con datos van primero y los demás se agrupan en «Aún sin datos» con lo que falta; la semana en curso del gráfico de carga muestra su valor.
+- Pendiente de tu decisión: tabs de Progreso (tarea 3) y fusión de Semana/Pilares/Informe (tarea 12).
+- Sin cambios en Dexie (v10), cálculos ni backup. Pruebas: 273 (7 nuevas en `tests/entrega23.test.js`).
+
+## v0.24.0 · Entrega 22 · Propuesta 2: sistema de color, contraste y estados (04/11/2026)
+- **Tokens:** todos los colores pasaron a `src/tokens.css` (documentados en `DESIGN-TOKENS.md`). Sin hex sueltos en CSS ni componentes.
+- **Contraste:** gris secundario `#7d8b9a` → `#a9b7c6` (en el hero era 2,79:1; ahora ≥ 4,5:1), placeholders ≥ 4,5:1 y bordes de controles ≥ 3:1 (antes 1,2:1, por eso botones y chips parecían deshabilitados).
+- **Botones:** por defecto secundarios (borde cian); `.pri` relleno (uno por pantalla); `.cta`/`.plus` lima; deshabilitado gris; presionado. Chips: normal, presionado y seleccionado (con ✓).
+- **Lima reservado:** ya no pinta etiquetas, deltas, puntajes, avisos ni «Igual». Queda en «Empezar entreno», «+1 ronda» y la confirmación de la pizarra.
+- **Variaciones:** en gris con ▲/▼ mientras la semana sigue en curso (Semana e Informe) y en el peso; verde/rojo con ▲/▼ en el resto.
+- **Macros:** «Proteína · Carbohidratos · Grasas» con mini-barras en lugar de «P · C · G»; en filas, «Prot. · Carb. · Gras.».
+- **Pilares y tests:** rótulos de estado como chips con ícono y color.
+- **Íconos:** set SVG propio (`src/ui/Icono.jsx`) en lugar de 📷 ✍ 📚 ↻ 🔁.
+- Un solo botón relleno por pantalla (Entreno: «Foto de la pizarra»; Hoy: solo el lima).
+- Sin cambios en Dexie (v10), cálculos ni backup. Pruebas: 266 (19 nuevas en `tests/entrega22.test.js`).
+
+## v0.23.0 · Entrega 21 · Propuesta 1: bugs visuales y componentes base (04/11/2026)
+- **Navegador de fecha/semana único** (`src/ui/NavFecha.jsx`, grid 44 px / 1fr / 44 px): Comidas, Hoy › Actividad física, Progreso › Semana e Informe. El Informe dice «Esta semana» como Semana.
+- **Inputs:** campos flexibles (`.fx`) y placeholders cortos («Buscar alimento», «Min», «Km»); la casilla de pasos ya no se corta.
+- **Código de barras:** SVG inline en lugar de «▮▯▮».
+- **Valores vacíos (causa raíz):** nuevo `src/domain/formato.js` (sin dato «—», cero «0»). Hidratación y calidad del sueño ya no quedan en blanco cuando el día tiene una fila sin esos campos; el peso oculta «(… kg en 4 semanas)» si no hay tendencia.
+- **Sueño:** la calidad se muestra en vivo.
+- **Alimentos:** ícono 🌐/≈ en columna propia y kcal sin partirse.
+- **Backup:** tres botones a ancho completo. **Ajustes:** «Probar la IA» separado del modelo; casillas con el estilo del tema. **Bienestar:** «Bloquear» a la derecha de las pestañas; ayuda de Registrar debajo del botón.
+- **Texto:** «1 sesión por semana»; fecha dd/mm/aaaa en «Repetir la última sesión»; nombres de ejercicios limpios solo al mostrar (el dato guardado no cambia).
+- Sin cambios en Dexie (v10) ni en el backup. Pruebas: 247 (7 nuevas en `tests/entrega21.test.js`).
+
+## v0.22.0 · Entrega 20 · GPS en la actividad física y lógica con pruebas (03/11/2026)
+- **Problema que reportaste:** el conteo decía «No se concedió permiso para usar el sensor». Pasa cuando el navegador (en iPhone) ofrece el permiso del sensor de movimiento y la respuesta no es «Permitir»; iOS recuerda la negativa hasta cerrar la app por completo. Ahora, si el sensor no tiene permiso, **MMV sigue contando con el GPS** y te explica cómo darle el permiso (cerrar MMV del todo, abrirlo, tocar ▶ y elegir «Permitir»). Si falla también el GPS, recién ahí avisa que no puede contar.
+- **GPS (pedido):** al tocar ▶ también se mide la distancia con el GPS. Se descartan los puntos con precisión peor que 25 m, el temblor con el teléfono quieto (menos de 3 m o menos de la mitad de la precisión), los saltos de más de 12 m/s y los tramos sin señal de más de 60 s. Se ve «GPS: 1,23 km · señal buena/débil» mientras contás.
+- **Cómo se combinan sensor y GPS:** manda el sensor. El GPS lo reemplaza solo cuando el sensor claramente se perdió pasos (más de 1,6 m de distancia por paso, o sin permiso del sensor) y estima los pasos con el largo de paso. Si el GPS midió menos que el sensor (por ejemplo dentro de un edificio) no se baja nada.
+- **Largo de paso:** arranca en 0,72 m y se ajusta solo, de a poco, con cada conteo que tenga sensor y GPS coherentes (en «Ajustes del conteo» se puede ver y corregir a mano; se guarda en el teléfono, no en el backup).
+- **Actividad sugerida:** al terminar un conteo con al menos 100 m y 1 minuto de GPS, el formulario de «Agregar actividad» queda precargado (caminata, carrera o bicicleta según el ritmo, minutos y km). Se guarda recién cuando tocás «Registrar»; Km ahora acepta coma.
+- **Pantalla encendida:** mientras contás se pide al navegador que no apague la pantalla (Wake Lock), para que el bloqueo no corte el sensor ni el GPS. Si el navegador no lo permite, queda como antes: el conteo se pausa al salir de MMV.
+- **Privacidad:** la ubicación se usa solo en el teléfono; no se guarda la ruta ni sale del dispositivo. Se guarda únicamente la distancia y el tiempo del conteo en curso (en el teléfono) para poder recuperarlo.
+- **Lógica fuera del componente (pedido):** nuevo `src/domain/actividad.js` con el filtro del acelerómetro, el tope de 200 000 pasos, la validación de actividades, la distancia GPS, la combinación sensor + GPS y el largo de paso. `ActividadFisica.jsx` solo muestra y guarda.
+- Sin cambios en Dexie (sigue **v10**) ni en el backup.
+- **Pruebas: 240** (211 + 29 nuevas en `tests/entrega20.test.js`), todas pasan; `npm ci` y build en verde. Probado en Chromium de escritorio con GPS y sensor simulados: el GPS suma distancia, el sensor cuenta, el cierre suma los pasos y precarga la actividad, sin errores de consola. **No probado:** celular real (el permiso del sensor en iPhone, la precisión del GPS caminando y el Wake Lock dependen del dispositivo).
+- Limpieza: la entrada `0.15.1` que estaba suelta arriba del título pasó a su lugar en el historial.
+
+## v0.21.1 · Entrega 19 · Corrección de pruebas (03/11/2026)
+- Corrige `tests/entrega14.test.js`: esperaba la base de datos en la versión 9 y desde la v0.21.0 va por la 10. Eso hacía fallar 3 pruebas (una directa y dos en cascada) y habría frenado la publicación automática en GitHub Actions.
+- Sin cambios en la app: mismas pantallas, misma base (Dexie v10) y mismo backup.
+- **Pruebas: 211 de 211 pasan**; `npm ci` y build en verde. Sigue pendiente validar el conteo de pasos en un teléfono real.
+
+## v0.21.0 · Entrega 19 · Actividad física diaria (03/11/2026)
+- En Hoy se agregó un contador estimado de pasos con el acelerómetro del teléfono. Se inicia con un toque, pide permiso cuando el navegador lo requiere y suma el conteo al total diario al detenerlo.
+- El panel de actividad permite recorrer fechas anteriores para consultar o corregir pasos y actividades; también permite cargar una actividad en un día pasado.
+- Las actualizaciones de pasos combinan el valor con la fila diaria existente para conservar el check-in y los demás datos. Un conteo sin cerrar se recupera al abrir MMV otro día.
+- El conteo funciona únicamente mientras la app está abierta y visible; el navegador puede pausarlo en segundo plano o con la pantalla bloqueada. No reemplaza a un podómetro del sistema o reloj, y requiere validación en el teléfono real.
+- Se pueden registrar caminatas, bicicleta, carrera, natación, deporte y otras actividades, con duración, distancia opcional y nota.
+- Dexie v10 agrega la tabla `actividades`; los pasos se guardan en el registro diario existente. La tabla nueva se incluye en backups y restauraciones.
+- El conteo del acelerómetro es una estimación y puede variar según dónde lleves el teléfono. No se usa GPS ni se envían datos fuera del dispositivo.
+- No se verificó en teléfono real en esta entrega.
+
+## v0.20.0 · Entrega 18 · Menos scroll y biblioteca de ejercicios (03/11/2026)
+- **Menos scroll al editar (pedido):** la sesión ahora muestra **un bloque abierto a la vez**. Arriba, **chips fijos** («1 · Movilidad · 2 · Warm up · 3 · EMOM…») para saltar de un bloque a otro con un toque; los demás bloques quedan plegados en una línea («3. EMOM · 12 min — 6 ejercicios · 2 con carga · tocá para abrir»). **Siguiente bloque ›** al final de cada bloque, y «Ver todo» / «Plegar» para volver a verlos todos como antes. Al agregar un bloque se abre solo.
+- **Biblioteca de ejercicios (pedido):** nueva pantalla **📚 Biblioteca de ejercicios** (Entreno, al empezar). Buscar (sin acentos ni mayúsculas), **agregar** ejercicios con su patrón de movimiento y «un lado por vez», **renombrar**, cambiar el patrón y quitar de la biblioteca.
+- **Renombrar cambia el historial entero:** el nombre nuevo se aplica a tus **registros, sesiones guardadas, plantillas y la sesión en curso**, conservando la cantidad del principio y los `*` / `?` del final (por ejemplo «10 Lagartijas*» → «10 Push up*»). Si el nombre nuevo ya existe, pide confirmar y **fusiona** los dos (el historial se junta). Lo que anotaste (kg y repeticiones) no se mueve.
+- **Agregar de la biblioteca a un bloque:** en cada bloque, **📚 Agregar de la biblioteca** (ocupa el primer lugar en blanco de la sesión manual; «Agregar y usar» crea el ejercicio y lo pone). Se queda abierta para sumar varios y se cierra con «Listo».
+- **La biblioteca se completa sola:** al guardar una sesión, todos los ejercicios con nombre (también los de Movilidad y Warm up, que no llevan carga) pasan a la biblioteca, y al abrirla se suman los de tus sesiones y plantillas anteriores.
+- «Quitar de la biblioteca» solo saca la fila: tus registros y sesiones no se tocan (si lo usás de nuevo, reaparece).
+- Sin cambios en Dexie (sigue **v9**), backup, menú privado, IA ni Comidas.
+- **Pruebas: 211** (196 + 15 nuevas: 8 de lógica en `entrega18.test.js` y 7 con base simulada en `entrega18-datos.test.js`), todas pasan; `npm ci` y build en verde. Probado en navegador de escritorio a 400 px: chips y bloques plegados, agregar desde la biblioteca, guardar la sesión y renombrar «Cat camel» → «Gato camello» (la sesión guardada quedó con el nombre nuevo); sin errores de consola. **No probado:** celular.
 
 ## v0.19.0 · Entrega 17 · Cambiar el orden de los ejercicios (03/11/2026)
 - **Pedido:** poder cambiar el orden de los ejercicios del EMOM. En cada bloque con 2 o más ejercicios aparece **«Cambiar el orden»** (en el EMOM, «Cambiar el orden (uno por minuto)») con **↑ ↓** por ejercicio. El reloj sigue el nuevo orden: «Primero: …» y cada minuto toca el ejercicio que quedó en esa posición, en las 2 vueltas. Hay que cambiarlo **antes de tocar ▶** (un reloj ya en marcha sigue como estaba).
@@ -37,6 +117,9 @@
 - **Dexie v9:** solo agrega la tabla `privado`; no toca nada anterior.
 - **Pruebas: 176** (164 + 12 nuevas en `entrega14.test.js`).
 - **No incluye (entregas 15 y 16):** estadísticas, comparativa semanal y relación con cargas.
+
+## v0.15.1 · Pantalla negra
+- Corrige la pantalla negra: `sw.js` con caché `mv2` (no guarda HTML como archivo, borra cachés viejas), pantalla de rescate en `index.html` y límite de errores en `main.jsx`.
 
 ## v0.15.0 · Entrega 13 · La IA dice qué falla y no gasta tu cuota (02/11/2026)
 - **Motivo:** «no lee, reintenta sin éxito». Hasta ahora **todo error temporal se mostraba como «alta demanda»** y se reintentaba 3 veces por modelo (6 llamadas). Si el problema era la **cuota gratuita de Google (error 429)**, cada reintento gastaba más cuota y empeoraba. No pude probarlo con Google real: es una corrección por lectura del código y pruebas con respuestas simuladas.

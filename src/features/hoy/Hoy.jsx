@@ -1,15 +1,18 @@
 import {useState, useEffect} from 'react'
 import {db, hoy, cfg} from '../../data/db'
-import {ResumenHoy} from '../comidas/Comidas'
+import {FilaAlimentacion} from '../comidas/Comidas'
 import {Preparacion} from '../coach/Coach'
 import {TarjetaCuerpo} from '../cuerpo/Cuerpo'
 import {CHECKIN} from '../../domain/checkin'
 import {AvisoDescarga} from '../progreso/Pilares'
 import {videosPendientes, haySesionEnCurso} from '../../domain/entreno'
 import {sumaDias} from '../../domain/stats'
+import {fmtVal, hayDato} from '../../domain/formato'
 import {dejarFoto} from '../../services/pendiente'
+import ActividadFisica from '../actividad/ActividadFisica'
+import Icono from '../../ui/Icono'
 
-export default function Hoy({onEmpezar}) {
+export default function Hoy({onEmpezar, onComidas}) {
   const [h, setH] = useState({fecha: hoy(), agua: 0, sueno: '', calidad: 3}),
     [otro, setOtro] = useState(''),
     [videos, setVideos] = useState([]),
@@ -41,12 +44,19 @@ export default function Hoy({onEmpezar}) {
   }
   return (
     <div className="bento">
-      <section>
+      <section className="checkin">
         <h3>Check-in de hoy · 20 segundos</h3>
         {CHECKIN.map(c => (
-          <div key={c.k}>
-            <b style={{fontSize: 14}}>{c.n}</b>
-            <div className="escala" role="group" aria-label={c.n}>
+          <div className="ck" key={c.k}>
+            <b className="ck-n" id={'ck-' + c.k}>
+              {c.n}
+            </b>
+            <div
+              className="escala"
+              role="group"
+              aria-labelledby={'ck-' + c.k}
+              aria-description={`1 ${c.bajo}, 5 ${c.alto}`}
+            >
               {[1, 2, 3, 4, 5].map(n => (
                 <button
                   key={n}
@@ -58,19 +68,20 @@ export default function Hoy({onEmpezar}) {
                 </button>
               ))}
             </div>
-            <small className="mu">
-              <span>1 · {c.bajo}</span>
-              <span>5 · {c.alto}</span>
-            </small>
           </div>
         ))}
-        <div className="row" style={{marginTop: 10}}>
-          <b style={{fontSize: 14}}>Sueño de anoche</b>
+        <small className="mu ck-leyenda">
+          {CHECKIN.map(c => `${c.n}: 1 ${c.bajo} · 5 ${c.alto}`).join(' — ')}
+        </small>
+        <div className="ck-sueno">
+          <b className="ck-n">Sueño</b>
           <input
+            className="fx"
             type="number"
             inputMode="decimal"
             step="0.5"
             placeholder="horas"
+            aria-label="Horas de sueño de anoche"
             value={h.sueno}
             onChange={e => g({sueno: e.target.value})}
           />
@@ -78,11 +89,13 @@ export default function Hoy({onEmpezar}) {
             type="range"
             min="1"
             max="5"
-            value={h.calidad}
+            value={hayDato(h.calidad) ? h.calidad : 3}
             aria-label="Calidad del sueño"
             onChange={e => g({calidad: +e.target.value})}
           />
-          <span>calidad {h.calidad}/5</span>
+          <output className="mono" aria-live="polite">
+            {fmtVal(h.calidad, {dec: 0})}/5
+          </output>
         </div>
       </section>
       <Preparacion h={h} />
@@ -95,11 +108,11 @@ export default function Hoy({onEmpezar}) {
           {!enCurso && (
             <>
               <button
-                className="cta ctafoto"
+                className="ctafoto"
                 aria-label="Empezar con una foto de la pizarra"
                 onClick={e => e.currentTarget.nextSibling.click()}
               >
-                📷
+                <Icono n="camara" tam={24} />
               </button>
               <input
                 hidden
@@ -119,7 +132,7 @@ export default function Hoy({onEmpezar}) {
         <small className="mu" style={{display: 'block', marginTop: -6}}>
           {enCurso
             ? 'Tenés una sesión sin terminar.'
-            : 'Con 📷 empezás directo desde la foto de la pizarra; también podés repetir la última, usar una plantilla o armarla a mano.'}
+            : <>Con la cámara <Icono n="camara" tam={14} className="en-texto" /> empezás directo desde la foto de la pizarra; también podés repetir la última, usar una plantilla o armarla a mano.</>}
         </small>
         {videos.length > 0 && (
           <small className="mu" style={{display: 'block', marginTop: 4}}>
@@ -127,14 +140,15 @@ export default function Hoy({onEmpezar}) {
           </small>
         )}
       </div>
+      <FilaAlimentacion onAbrir={onComidas} />
       <section>
         <h3>Hidratación</h3>
         <div className="big">
-          {h.agua}
+          {fmtVal(h.agua, {dec: 0})}
           <small> / {meta} ml</small>
         </div>
         <div className="bar">
-          <i style={{width: Math.min(100, (h.agua / meta) * 100) + '%'}} />
+          <i style={{width: Math.min(100, ((+h.agua || 0) / meta) * 100) + '%'}} />
         </div>
         <div className="row">
           {[250, 500].map(n => (
@@ -148,10 +162,10 @@ export default function Hoy({onEmpezar}) {
         </div>
         <div className="row" style={{marginTop: 8}}>
           <input
+            className="fx med"
             type="number"
             inputMode="numeric"
-            placeholder="otra cantidad (ml)"
-            style={{width: 170}}
+            placeholder="Otra cantidad (ml)"
             value={otro}
             onChange={e => setOtro(e.target.value)}
           />
@@ -174,7 +188,7 @@ export default function Hoy({onEmpezar}) {
           </button>
         </div>
       </section>
-      <ResumenHoy />
+      <ActividadFisica />
       <TarjetaCuerpo />
     </div>
   )
