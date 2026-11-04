@@ -12,12 +12,14 @@ import {
 } from '../../domain/progreso'
 import {sumaDias} from '../../domain/stats'
 import {fmtVal, fmtSigno, hayDato, nombreEjercicio} from '../../domain/formato'
+import {claseVariacion} from '../../domain/variacion'
+import Estado from '../../ui/Estado'
 
 const TIPO = {movilidad: 'Movilidad', warmup: 'Warm up', emom: 'EMOM', amrap: 'AMRAP', tabata: 'Tabata', forTime: 'For time'}
 const f1 = n => (n === null || n === undefined ? '–' : String(n).replace('.', ','))
 const sg = n => (n === null || n === undefined ? '–' : (n > 0 ? '+' : '') + f1(n))
 const fF = f => f.split('-').reverse().slice(0, 2).join('/')
-const clase = d => 'delta ' + (d > 0 ? 'up' : d < 0 ? 'down' : '')
+const clase = d => claseVariacion(d)
 
 function Barras({datos}) {
   const W = 280,
@@ -61,7 +63,7 @@ const Pilar = ({nombre, p, children}) => (
   <section>
     <div className="row" style={{justifyContent: 'space-between'}}>
       <h3 style={{margin: 0}}>{nombre}</h3>
-      <small className={clase(p.tono === 'up' ? 1 : p.tono === 'down' ? -1 : 0)}>{p.etiqueta}</small>
+      <Estado etiqueta={p.etiqueta} tono={p.tono} />
     </div>
     {children}
   </section>
@@ -237,7 +239,7 @@ export function VistaTests() {
         <section key={x.k}>
           <div className="row" style={{justifyContent: 'space-between'}}>
             <b>{x.n}</b>
-            <small className={'tag' + (x.estado === 'toca' || x.estado === 'atrasado' ? ' on' : '')}>{ETIQ[x.estado]}</small>
+            <Estado etiqueta={ETIQ[x.estado]} />
           </div>
           {x.ultimo ? (
             <div className="lin">
@@ -255,7 +257,7 @@ export function VistaTests() {
           {ab === x.k ? (
             <div className="row" style={{marginTop: 8}}>
               <input inputMode="decimal" placeholder={x.u} value={v} onChange={e => setV(e.target.value)} style={{width: 90}} aria-label={`${x.n} en ${x.u}`} />
-              <button onClick={() => guardar(x)}>Guardar</button>
+              <button className="pri" onClick={() => guardar(x)}>Guardar</button>
               <button className="ghost" onClick={() => { setAb(null); setErr('') }}>Cancelar</button>
             </div>
           ) : (

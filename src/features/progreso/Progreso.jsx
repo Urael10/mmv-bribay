@@ -3,6 +3,7 @@ import {db, hoy} from '../../data/db'
 import {Informe} from '../coach/Coach'
 import NavFecha from '../../ui/NavFecha'
 import {nombreEjercicio} from '../../domain/formato'
+import {claseVariacion} from '../../domain/variacion'
 import {VistaCuerpo} from '../cuerpo/Cuerpo'
 import {VistaPilares, VistaTests} from './Pilares'
 import {
@@ -112,7 +113,7 @@ function Semana({reg, manual, ses}) {
               <span>
                 <b className="mono">{num(a)}</b>
                 {d !== null ? (
-                  <small className={'delta ' + (d > 0 ? 'up' : d < 0 ? 'down' : '')}>
+                  <small className={claseVariacion(d, {neutra: esActual})}>
                     {' '}
                     {sg(d)}%
                   </small>
@@ -135,7 +136,7 @@ function Semana({reg, manual, ses}) {
       {filas.length > 0 && (
         <small className="mu">
           Barra cian: esta semana · barra gris: semana anterior. El % compara con la semana
-          anterior.
+          anterior{esActual ? ' y va en gris mientras la semana sigue en curso' : ''}.
         </small>
       )}
     </section>
@@ -219,14 +220,12 @@ function Historial({ses, reg, marcas, recargar}) {
                                   d = b2 > 0 && a > 0 ? pct(a, b2) : null
                                 const dr = repsTot(r) - repsTot(u)
                                 return d !== null ? (
-                                  <small
-                                    className={'delta ' + (d > 0 ? 'up' : d < 0 ? 'down' : '')}
-                                  >
+                                  <small className={claseVariacion(d)}>
                                     {' '}
                                     {sg(d)}%
                                   </small>
                                 ) : dr !== 0 ? (
-                                  <small className={'delta ' + (dr > 0 ? 'up' : 'down')}>
+                                  <small className={claseVariacion(dr)}>
                                     {' '}
                                     {sg(dr)} reps
                                   </small>

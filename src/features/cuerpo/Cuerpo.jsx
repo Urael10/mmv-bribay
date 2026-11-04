@@ -1,6 +1,7 @@
 import {useState, useEffect, useCallback} from 'react'
 import {db, hoy, cfg} from '../../data/db'
 import {sumaDias} from '../../domain/stats'
+import {claseVariacion} from '../../domain/variacion'
 import {
   CAMPOS,
   AVISO_BIA,
@@ -79,7 +80,9 @@ function FormMedida({inicial, onGuardar, onCancelar}) {
       </small>
       {err && <small className="warn">{err}</small>}
       <div className="row" style={{marginTop: 8}}>
-        <button onClick={guardar}>Guardar medida</button>
+        <button className="pri" onClick={guardar}>
+          Guardar medida
+        </button>
         {onCancelar && (
           <button className="ghost" onClick={onCancelar}>
             Cancelar
@@ -118,7 +121,7 @@ export function TarjetaCuerpo() {
                 <small> kg · {dias <= 0 ? 'hoy' : `hace ${dias} d`}</small>
               </div>
               {t.delta !== null ? (
-                <small className={'delta ' + (t.delta > 0 ? 'up' : t.delta < 0 ? 'down' : '')}>
+                <small className={claseVariacion(t.delta, {neutra: true})}>
                   {sg(t.delta)} kg vs hace 4 semanas (promedios de 7 días)
                 </small>
               ) : (
@@ -217,7 +220,9 @@ export function VistaCuerpo() {
             onCancelar={() => setForm(null)}
           />
         ) : (
-          <button onClick={() => setForm('nueva')}>Registrar medida</button>
+          <button className="pri" onClick={() => setForm('nueva')}>
+            Registrar medida
+          </button>
         )}
       </section>
       {ms.length === 0 && (

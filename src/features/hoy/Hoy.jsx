@@ -10,6 +10,7 @@ import {sumaDias} from '../../domain/stats'
 import {fmtVal, hayDato} from '../../domain/formato'
 import {dejarFoto} from '../../services/pendiente'
 import ActividadFisica from '../actividad/ActividadFisica'
+import Icono from '../../ui/Icono'
 
 export default function Hoy({onEmpezar}) {
   const [h, setH] = useState({fecha: hoy(), agua: 0, sueno: '', calidad: 3}),
@@ -101,11 +102,11 @@ export default function Hoy({onEmpezar}) {
           {!enCurso && (
             <>
               <button
-                className="cta ctafoto"
+                className="ctafoto"
                 aria-label="Empezar con una foto de la pizarra"
                 onClick={e => e.currentTarget.nextSibling.click()}
               >
-                📷
+                <Icono n="camara" tam={24} />
               </button>
               <input
                 hidden
@@ -125,7 +126,7 @@ export default function Hoy({onEmpezar}) {
         <small className="mu" style={{display: 'block', marginTop: -6}}>
           {enCurso
             ? 'Tenés una sesión sin terminar.'
-            : 'Con 📷 empezás directo desde la foto de la pizarra; también podés repetir la última, usar una plantilla o armarla a mano.'}
+            : <>Con la cámara <Icono n="camara" tam={14} className="en-texto" /> empezás directo desde la foto de la pizarra; también podés repetir la última, usar una plantilla o armarla a mano.</>}
         </small>
         {videos.length > 0 && (
           <small className="mu" style={{display: 'block', marginTop: 4}}>

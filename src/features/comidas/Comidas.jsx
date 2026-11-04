@@ -3,6 +3,8 @@ import {db, hoy, cfg, sembrar} from '../../data/db'
 import {pedirIA} from '../../services/ia'
 import {chica} from '../../services/img'
 import NavFecha from '../../ui/NavFecha'
+import Icono from '../../ui/Icono'
+import {repartoMacros} from '../../domain/variacion'
 import {sumaDias} from '../../domain/stats'
 import {ultima, proteinaObjetivo, PROT_KG} from '../../domain/cuerpo'
 import {
@@ -71,11 +73,35 @@ async function leer(file, prompt, prog, fn) {
   await db.uso.add({fecha: hoy(), fn})
   return r
 }
-const Macros = ({t}) => (
-  <small className="mu">
-    P {fmt(t.p)} · C {fmt(t.c)} · G {fmt(t.gr)} g
-  </small>
-)
+// Macronutrientes con nombre completo. `compacto` = una línea de texto para filas; si no, tres columnas con mini-barra
+// (la barra muestra el reparto por gramos entre proteína, carbohidratos y grasas).
+const MACROS = [
+  ['Proteína', 'Prot.', 'p', '--m-p'],
+  ['Carbohidratos', 'Carb.', 'c', '--m-c'],
+  ['Grasas', 'Gras.', 'gr', '--m-g']
+]
+const Macros = ({t, compacto}) => {
+  if (compacto)
+    return (
+      <small className="mu">
+        {MACROS.map(([, corto, k]) => `${corto} ${fmt(t[k])} g`).join(' · ')}
+      </small>
+    )
+  const rp = repartoMacros(t)
+  return (
+    <div className="macros" role="group" aria-label="Macronutrientes">
+      {MACROS.map(([largo, , k, col]) => (
+        <div className="macro" key={k}>
+          <span className="macro-n">{largo}</span>
+          <b className="mono macro-v">{fmt(t[k])} g</b>
+          <span className="macro-bar" aria-hidden="true">
+            <i style={{width: rp[k] + '%', background: `var(${col})`}} />
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 // Resumen de calorías y proteína de hoy para la pestaña Hoy.
 // La meta de proteína sale del último peso registrado (g por kg configurable en Ajustes → Perfil y objetivo).
@@ -110,7 +136,7 @@ export function ResumenHoy() {
       <Macros t={t} />
       {metaP ? (
         <>
-          <div className="lin" style={{borderColor: 'rgba(255,255,255,.14)'}}>
+          <div className="lin" style={{borderColor: 'var(--hero-ln)'}}>
             <span>Proteína</span>
             <span className="mono">
               {fmt(t.p)} / {metaP} g
@@ -226,7 +252,7 @@ function Borrador({b, setB, base, fecha, guardar, cancelar, guardarEnBase, guard
               ))}
               <small className="mu">× porción de {fmt(por)} g</small>
             </div>
-            <Macros t={it} />
+            <Macros t={it} compacto />
             {it.origen === 'base' && (
               <small className="tag" style={{display: 'block'}}>
                 ✔ valores de tu base
@@ -298,7 +324,9 @@ function Borrador({b, setB, base, fecha, guardar, cancelar, guardarEnBase, guard
       </div>
       <Macros t={T} />
       <div className="row" style={{marginTop: 10}}>
-        <button onClick={guardar}>Guardar comida</button>
+        <button className="pri" onClick={guardar}>
+          Guardar comida
+        </button>
         {b.items.length > 0 && (
           <button className="ghost" onClick={() => guardarPlantilla(b.items, b.momento)}>
             ⭐ Guardar como habitual
@@ -371,7 +399,7 @@ function Escaner({alLeer, cerrar}) {
               width: '100%',
               maxHeight: 260,
               borderRadius: 12,
-              background: '#000',
+              background: 'var(--scrim)',
               objectFit: 'cover'
             }}
           />
@@ -455,7 +483,7 @@ function Agregar({base, sug, plant, parecidas, usarComida, agregar, libre, nuevo
           }}
         />
         <button
-          className={esc ? '' : 'ghost'}
+          className={esc ? 'sel' : ''}
           aria-label="Escanear código de barras con la cámara"
           aria-expanded={esc}
           onClick={() => {
@@ -475,7 +503,7 @@ function Agregar({base, sug, plant, parecidas, usarComida, agregar, libre, nuevo
           </svg>
         </button>
         <button
-          className={cam ? '' : 'ghost'}
+          className={cam ? 'sel' : ''}
           aria-label="Cámara: foto del plato o de una etiqueta"
           aria-expanded={cam}
           onClick={() => {
@@ -483,7 +511,7 @@ function Agregar({base, sug, plant, parecidas, usarComida, agregar, libre, nuevo
             setEsc(false)
           }}
         >
-          📷
+          <Icono n="camara" />
         </button>
       </div>
       {esc && <Escaner alLeer={alLeerCodigo} cerrar={() => setEsc(false)} />}
@@ -515,7 +543,7 @@ function Agregar({base, sug, plant, parecidas, usarComida, agregar, libre, nuevo
                   <button
                     key={c.k}
                     className="chip"
-                    title={`${c.kcal} kcal · P ${fmt(c.p)} g · ${c.veces} ${c.veces === 1 ? 'vez' : 'veces'}`}
+                    title={`${c.kcal} kcal · proteína ${fmt(c.p)} g · ${c.veces} ${c.veces === 1 ? 'vez' : 'veces'}`}
                     onClick={() => usarComida(c.comida)}
                   >
                     {c.nombre} · {c.kcal} kcal
@@ -667,7 +695,7 @@ function Agregar({base, sug, plant, parecidas, usarComida, agregar, libre, nuevo
                   >
                     <span>🌐 {r.alimento.nombre}</span>{' '}
                     <small className="mu">
-                      {r.alimento.kcal100} kcal · P {r.alimento.p100} · C {r.alimento.c100} · G{' '}
+                      {r.alimento.kcal100} kcal · Prot. {r.alimento.p100} · Carb. {r.alimento.c100} · Gras.{' '}
                       {r.alimento.g100} /100 g
                     </small>
                   </button>
@@ -756,7 +784,9 @@ function FormAlimento({f, setF, guardar, borrar, cancelar}) {
         </small>
       )}
       <div className="row" style={{marginTop: 10}}>
-        <button onClick={guardar}>{f.alAgregar && !f.id ? 'Guardar y agregar' : 'Guardar'}</button>
+        <button className="pri" onClick={guardar}>
+          {f.alAgregar && !f.id ? 'Guardar y agregar' : 'Guardar'}
+        </button>
         <button className="ghost" onClick={cancelar}>
           Cancelar
         </button>
@@ -1091,7 +1121,9 @@ export default function Comidas() {
     fx && msg.startsWith('No pude') ? (
       <p>
         <button disabled={ocupado} onClick={() => run(fx.file, fx.m)}>
-          🔁 Reintentar con la misma foto
+          <span className="btn-l">
+            <Icono n="repetir" tam={18} /> Reintentar con la misma foto
+          </span>
         </button>
       </p>
     ) : null
@@ -1156,7 +1188,7 @@ export default function Comidas() {
             <Macros t={tot} />
             {prot ? (
               <>
-                <div className="lin" style={{borderColor: 'rgba(255,255,255,.14)'}}>
+                <div className="lin" style={{borderColor: 'var(--hero-ln)'}}>
                   <span>Proteína</span>
                   <span className="mono">
                     {fmt(tot.p)} / {metaP} g
@@ -1256,7 +1288,7 @@ export default function Comidas() {
                   <span className="mono kcal">{it.kcal} kcal</span>
                 </div>
               ))}
-              <Macros t={c} />
+              <Macros t={c} compacto />
               <div className="row" style={{marginTop: 8}}>
                 <button className="ghost mini" onClick={() => editar(c)}>
                   Editar
@@ -1290,6 +1322,7 @@ export default function Comidas() {
           <section>
             <div className="row">
               <button
+                className="pri"
                 onClick={() => {
                   setForm({
                     nombre: '',

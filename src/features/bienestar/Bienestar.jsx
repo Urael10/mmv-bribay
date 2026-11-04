@@ -74,7 +74,7 @@ function Crear({onListo}) {
         </label>
       </p>
       {err && <small className="warn">{err}</small>}
-      <button disabled={ocupado} onClick={crear}>
+      <button className="pri" disabled={ocupado} onClick={crear}>
         {ocupado ? 'Creando…' : 'Crear y abrir'}
       </button>
     </section>
@@ -121,7 +121,7 @@ function Bloqueado({onAbrir, onBorrado}) {
         </label>
         {err && <small className="warn">{err}</small>}
         <div className="row" style={{marginTop: 8}}>
-          <button type="submit" disabled={!c || ocupado}>
+          <button className="pri" type="submit" disabled={!c || ocupado}>
             {ocupado ? 'Abriendo…' : 'Abrir'}
           </button>
         </div>
@@ -232,7 +232,9 @@ function Registro({clave, bloques, recargar}) {
           </button>
         ))}
       </div>
-      <button onClick={hecho}>＋ Registrar ahora</button>
+      <button className="pri" onClick={hecho}>
+        ＋ Registrar ahora
+      </button>
       <small className="mu" style={{display: 'block', marginTop: 8}}>
         La hora se puede corregir en el historial.
       </small>
@@ -368,7 +370,7 @@ function Clave({clave, onNueva, onBorrado}) {
       </label>
       {a.length >= CLAVE_MIN && claveDebil(a) && <small className="warn">Mejor una frase de {CLAVE_BUENA} o más caracteres.</small>}
       <div className="row" style={{marginTop: 8}}>
-        <button disabled={ocupado || !a} onClick={cambiar}>
+        <button className="pri" disabled={ocupado || !a} onClick={cambiar}>
           {ocupado ? 'Cambiando…' : 'Cambiar clave'}
         </button>
       </div>

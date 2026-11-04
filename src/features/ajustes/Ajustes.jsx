@@ -56,10 +56,10 @@ function Version() {
         <small className="mu">No pude consultar la versión publicada (¿sin conexión?).</small>
       )}
       {r && r !== 'offline' && !r.nueva && (
-        <small className="tag">✔ Tenés la última versión publicada.</small>
+        <small className="ok-msg">Tenés la última versión publicada.</small>
       )}
       {r && r.nueva && (
-        <small className="delta up" style={{display: 'block', marginTop: 6}}>
+        <small className="tag" style={{display: 'block', marginTop: 6}}>
           Publicada: v{r.remota.version} · {r.remota.entrega} · {fechaBuild(r.remota.build)}
         </small>
       )}
@@ -121,8 +121,12 @@ function Respaldo() {
         )}
       </p>
       <div className="botonera">
-        {puedeCompartir() && <button onClick={() => hacer(true)}>Compartir backup</button>}
-        <button className={puedeCompartir() ? 'ghost' : ''} onClick={() => hacer(false)}>
+        {puedeCompartir() && (
+          <button className="pri" onClick={() => hacer(true)}>
+            Compartir backup
+          </button>
+        )}
+        <button className={puedeCompartir() ? '' : 'pri'} onClick={() => hacer(false)}>
           Descargar backup
         </button>
         <button className="ghost" onClick={e => e.currentTarget.nextSibling.click()}>

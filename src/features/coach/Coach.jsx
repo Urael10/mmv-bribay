@@ -2,6 +2,7 @@ import {useState, useEffect, useMemo} from 'react'
 import {db, hoy, cfg} from '../../data/db'
 import {pedirIA} from '../../services/ia'
 import NavFecha from '../../ui/NavFecha'
+import {claseVariacion} from '../../domain/variacion'
 import {lunes, sumaDias, sg} from '../../domain/stats'
 import {preparacion, NOMBRES} from '../../domain/preparacion'
 import {
@@ -22,9 +23,10 @@ const metas = () => ({
   metaKcal: +cfg('metakcal', 2200) || 2200,
   metaAgua: +cfg('meta', 2500) || 2500
 })
-const Delta = ({d}) =>
+// Variación contra la semana anterior: en gris (▲/▼ sin color) mientras la semana sigue en curso.
+const Delta = ({d, neutra}) =>
   d === null || d === undefined ? null : (
-    <small className={'delta ' + (d > 0 ? 'up' : d < 0 ? 'down' : '')}> {sg(d)}%</small>
+    <small className={claseVariacion(d, {neutra})}> {sg(d)}%</small>
   )
 
 // Datos de los últimos 40 días para calcular la preparación.
@@ -235,21 +237,21 @@ export function Informe({ses, reg, manual}) {
               <span>Carga (RPE × min)</span>
               <span className="mono">
                 {e.carga}
-                <Delta d={e.cargaVsAnterior} />
+                <Delta d={e.cargaVsAnterior} neutra={actual} />
               </span>
             </div>
             <div className="lin">
               <span>Repeticiones</span>
               <span className="mono">
                 {e.reps}
-                <Delta d={e.repsVsAnterior} />
+                <Delta d={e.repsVsAnterior} neutra={actual} />
               </span>
             </div>
             <div className="lin">
               <span>Tonelaje (kg)</span>
               <span className="mono">
                 {e.tonelaje}
-                <Delta d={e.tonelajeVsAnterior} />
+                <Delta d={e.tonelajeVsAnterior} neutra={actual} />
               </span>
             </div>
             {pats.length > 0 && (
@@ -269,7 +271,7 @@ export function Informe({ses, reg, manual}) {
             <small className="mu">
               Los % comparan con la semana anterior
               {actual
-                ? ' completa; como esta semana sigue en curso, es normal que den negativos'
+                ? ' completa; como esta semana sigue en curso, las variaciones van en gris: todavía no son comparables'
                 : ''}
               .
             </small>
@@ -296,7 +298,7 @@ export function Informe({ses, reg, manual}) {
               <span>Comida</span>
               <span className="mono">
                 {inf.comida.diasConDato
-                  ? `${inf.comida.kcalMedias} kcal · P ${inf.comida.proteinaMedia} g`
+                  ? `${inf.comida.kcalMedias} kcal · proteína ${inf.comida.proteinaMedia} g`
                   : 'sin datos'}
               </span>
             </div>
@@ -350,7 +352,7 @@ export function Informe({ses, reg, manual}) {
               </p>
             )}
             <div className="row" style={{marginTop: 8}}>
-              <button disabled={ocupado} onClick={pedir}>
+              <button className="pri" disabled={ocupado} onClick={pedir}>
                 {coach ? 'Actualizar consejos' : 'Pedir consejos al coach'}
               </button>
             </div>

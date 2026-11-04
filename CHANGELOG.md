@@ -1,5 +1,17 @@
 # Historial de versiones de MMV
 
+## v0.24.0 · Entrega 22 · Propuesta 2: sistema de color, contraste y estados (04/11/2026)
+- **Tokens:** todos los colores pasaron a `src/tokens.css` (documentados en `DESIGN-TOKENS.md`). Sin hex sueltos en CSS ni componentes.
+- **Contraste:** gris secundario `#7d8b9a` → `#a9b7c6` (en el hero era 2,79:1; ahora ≥ 4,5:1), placeholders ≥ 4,5:1 y bordes de controles ≥ 3:1 (antes 1,2:1, por eso botones y chips parecían deshabilitados).
+- **Botones:** por defecto secundarios (borde cian); `.pri` relleno (uno por pantalla); `.cta`/`.plus` lima; deshabilitado gris; presionado. Chips: normal, presionado y seleccionado (con ✓).
+- **Lima reservado:** ya no pinta etiquetas, deltas, puntajes, avisos ni «Igual». Queda en «Empezar entreno», «+1 ronda» y la confirmación de la pizarra.
+- **Variaciones:** en gris con ▲/▼ mientras la semana sigue en curso (Semana e Informe) y en el peso; verde/rojo con ▲/▼ en el resto.
+- **Macros:** «Proteína · Carbohidratos · Grasas» con mini-barras en lugar de «P · C · G»; en filas, «Prot. · Carb. · Gras.».
+- **Pilares y tests:** rótulos de estado como chips con ícono y color.
+- **Íconos:** set SVG propio (`src/ui/Icono.jsx`) en lugar de 📷 ✍ 📚 ↻ 🔁.
+- Un solo botón relleno por pantalla (Entreno: «Foto de la pizarra»; Hoy: solo el lima).
+- Sin cambios en Dexie (v10), cálculos ni backup. Pruebas: 266 (19 nuevas en `tests/entrega22.test.js`).
+
 ## v0.23.0 · Entrega 21 · Propuesta 1: bugs visuales y componentes base (04/11/2026)
 - **Navegador de fecha/semana único** (`src/ui/NavFecha.jsx`, grid 44 px / 1fr / 44 px): Comidas, Hoy › Actividad física, Progreso › Semana e Informe. El Informe dice «Esta semana» como Semana.
 - **Inputs:** campos flexibles (`.fx`) y placeholders cortos («Buscar alimento», «Min», «Km»); la casilla de pasos ya no se corta.

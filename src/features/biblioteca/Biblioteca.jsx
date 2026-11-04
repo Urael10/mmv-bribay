@@ -1,5 +1,6 @@
 // Biblioteca de ejercicios: modo «gestion» (agregar, renombrar, patrón, quitar) y modo «elegir» (agregar a un bloque con un toque).
 import {nombreEjercicio} from '../../domain/formato'
+import Icono from '../../ui/Icono'
 import {useState, useEffect, useCallback, useMemo} from 'react'
 import {PATRONES, patron as patronAuto} from '../../domain/stats'
 import {filtrarBiblioteca, validarNombre} from '../../domain/biblioteca'
@@ -126,7 +127,9 @@ export default function Biblioteca({modo = 'gestion', onCerrar, onElegir, onCamb
   return (
     <div className="bib">
       <div className="row" style={{marginBottom: 8}}>
-        <b className="mono">📚 {elegir ? 'Agregar al bloque' : 'Biblioteca de ejercicios'}</b>
+        <b className="mono btn-l">
+          <Icono n="libro" /> {elegir ? 'Agregar al bloque' : 'Biblioteca de ejercicios'}
+        </b>
         <button className="ghost mini" style={{marginLeft: 'auto'}} onClick={onCerrar}>
           {elegir ? 'Listo' : 'Cerrar'}
         </button>
@@ -180,7 +183,7 @@ export default function Biblioteca({modo = 'gestion', onCerrar, onElegir, onCamb
             <span>Un lado por vez</span>
           </label>
         </details>
-        <button disabled={!nuevo.nombre.trim()} onClick={crear}>
+        <button className="pri" disabled={!nuevo.nombre.trim()} onClick={crear}>
           {elegir ? 'Agregar y usar' : 'Agregar'}
         </button>
       </section>

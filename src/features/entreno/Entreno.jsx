@@ -1,5 +1,6 @@
 import {useState, useEffect, useSyncExternalStore} from 'react'
 import Biblioteca from '../biblioteca/Biblioteca'
+import Icono from '../../ui/Icono'
 import {agregarEjercicio, resumenBloque} from '../../domain/biblioteca'
 import {registrarNombres} from '../../data/biblioteca'
 import {db, hoy, cfg} from '../../data/db'
@@ -271,7 +272,7 @@ export default function Entreno() {
     }
   }
   useEffect(() => {
-    // foto elegida con el botón 📷 de «Hoy»
+    // foto elegida con el botón de cámara de «Hoy»
     const f = tomarFoto()
     if (f && !s) run(f)
   }, [])
@@ -380,7 +381,9 @@ export default function Entreno() {
         <section key="ultima">
           <h3>Repetir la última</h3>
           <button style={{width: '100%'}} onClick={() => empezar(sesionDesdeUltima(ult), 'ultima')}>
-            ↻ Repetir la última sesión
+            <span className="btn-l">
+              <Icono n="repetir" /> Repetir la última sesión
+            </span>
             <small style={{display: 'block', fontWeight: 400}}>
               {fechaDMA(ult.fecha)} · {resumenSesion(ult)}
             </small>
@@ -425,15 +428,21 @@ export default function Entreno() {
         <section key="pizarra">
           <h3>Pizarra → sesión</h3>
           <label>
-            <button style={{width: '100%'}} onClick={e => e.currentTarget.nextSibling.click()}>
-              📷 Foto de la pizarra
+            <button className="pri" style={{width: '100%'}} onClick={e => e.currentTarget.nextSibling.click()}>
+              <span className="btn-l">
+                <Icono n="camara" /> Foto de la pizarra
+              </span>
             </button>
             <input hidden type="file" accept="image/*" onChange={scan} />
           </label>
           <p>{msg}</p>
           {fx && msg.startsWith('No pude') && (
             <p>
-              <button onClick={() => run(fx)}>🔁 Reintentar con la misma foto</button>
+              <button onClick={() => run(fx)}>
+                <span className="btn-l">
+                  <Icono n="repetir" tam={18} /> Reintentar con la misma foto
+                </span>
+              </button>
             </p>
           )}
           <p className="mu" style={{margin: '8px 0'}}>¿Sin foto o sin IA? Armá la sesión a mano:</p>
@@ -444,7 +453,9 @@ export default function Entreno() {
               setCorregir(true)
             }}
           >
-            ✍ Sesión manual con mis 5 bloques
+            <span className="btn-l">
+              <Icono n="lapiz" /> Sesión manual con mis 5 bloques
+            </span>
             <small style={{display: 'block', fontWeight: 400}}>
               Movilidad · Warm up · EMOM 12 min · For time · Tabata. Solo escribís los ejercicios.
             </small>
@@ -459,8 +470,10 @@ export default function Entreno() {
       <>
         {ordenEntrada(ultimaEntrada).map(k => secciones[k])}
         <section>
-          <button className="ghost" style={{width: '100%'}} onClick={() => setBiblio({modo: 'gestion'})}>
-            📚 Biblioteca de ejercicios
+          <button className="enlace" style={{width: '100%'}} onClick={() => setBiblio({modo: 'gestion'})}>
+            <span className="btn-l">
+              <Icono n="libro" /> Biblioteca de ejercicios
+            </span>
             <small style={{display: 'block', fontWeight: 400}}>Agregar ejercicios y cambiar nombres.</small>
           </button>
         </section>
@@ -557,7 +570,9 @@ export default function Entreno() {
                 run(fx)
               }}
             >
-              🔁 Leer de nuevo
+              <span className="btn-l">
+              <Icono n="repetir" tam={18} /> Leer de nuevo
+            </span>
             </button>
           )}
           <button className="ghost" onClick={() => save(null)}>
@@ -691,7 +706,9 @@ export default function Entreno() {
               />
             </details>
             <button className="ghost mini" style={{margin: '6px 0'}} onClick={() => setBiblio({modo: 'elegir', bloque: i})}>
-              📚 Agregar de la biblioteca
+              <span className="btn-l">
+                <Icono n="libro" tam={18} /> Agregar de la biblioteca
+              </span>
             </button>
             {(b.ejercicios || []).filter(x => x.trim()).length > 1 && (
               <details>
@@ -979,7 +996,7 @@ export default function Entreno() {
           </p>
         )}
         <div className="row">
-          <button onClick={fin}>Terminar y guardar</button>
+          <button className="pri" onClick={fin}>Terminar y guardar</button>
           <button className="ghost" onClick={() => save(null)}>
             Descartar
           </button>
