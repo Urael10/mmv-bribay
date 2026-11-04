@@ -3,6 +3,21 @@
 
 # Historial de versiones de MMV
 
+## v0.21.1 · Entrega 19 · Corrección de pruebas (03/11/2026)
+- Corrige `tests/entrega14.test.js`: esperaba la base de datos en la versión 9 y desde la v0.21.0 va por la 10. Eso hacía fallar 3 pruebas (una directa y dos en cascada) y habría frenado la publicación automática en GitHub Actions.
+- Sin cambios en la app: mismas pantallas, misma base (Dexie v10) y mismo backup.
+- **Pruebas: 211 de 211 pasan**; `npm ci` y build en verde. Sigue pendiente validar el conteo de pasos en un teléfono real.
+
+## v0.21.0 · Entrega 19 · Actividad física diaria (03/11/2026)
+- En Hoy se agregó un contador estimado de pasos con el acelerómetro del teléfono. Se inicia con un toque, pide permiso cuando el navegador lo requiere y suma el conteo al total diario al detenerlo.
+- El panel de actividad permite recorrer fechas anteriores para consultar o corregir pasos y actividades; también permite cargar una actividad en un día pasado.
+- Las actualizaciones de pasos combinan el valor con la fila diaria existente para conservar el check-in y los demás datos. Un conteo sin cerrar se recupera al abrir MMV otro día.
+- El conteo funciona únicamente mientras la app está abierta y visible; el navegador puede pausarlo en segundo plano o con la pantalla bloqueada. No reemplaza a un podómetro del sistema o reloj, y requiere validación en el teléfono real.
+- Se pueden registrar caminatas, bicicleta, carrera, natación, deporte y otras actividades, con duración, distancia opcional y nota.
+- Dexie v10 agrega la tabla `actividades`; los pasos se guardan en el registro diario existente. La tabla nueva se incluye en backups y restauraciones.
+- El conteo del acelerómetro es una estimación y puede variar según dónde lleves el teléfono. No se usa GPS ni se envían datos fuera del dispositivo.
+- No se verificó en teléfono real en esta entrega.
+
 ## v0.20.0 · Entrega 18 · Menos scroll y biblioteca de ejercicios (03/11/2026)
 - **Menos scroll al editar (pedido):** la sesión ahora muestra **un bloque abierto a la vez**. Arriba, **chips fijos** («1 · Movilidad · 2 · Warm up · 3 · EMOM…») para saltar de un bloque a otro con un toque; los demás bloques quedan plegados en una línea («3. EMOM · 12 min — 6 ejercicios · 2 con carga · tocá para abrir»). **Siguiente bloque ›** al final de cada bloque, y «Ver todo» / «Plegar» para volver a verlos todos como antes. Al agregar un bloque se abre solo.
 - **Biblioteca de ejercicios (pedido):** nueva pantalla **📚 Biblioteca de ejercicios** (Entreno, al empezar). Buscar (sin acentos ni mayúsculas), **agregar** ejercicios con su patrón de movimiento y «un lado por vez», **renombrar**, cambiar el patrón y quitar de la biblioteca.

@@ -8,6 +8,7 @@ import {AvisoDescarga} from '../progreso/Pilares'
 import {videosPendientes, haySesionEnCurso} from '../../domain/entreno'
 import {sumaDias} from '../../domain/stats'
 import {dejarFoto} from '../../services/pendiente'
+import ActividadFisica from '../actividad/ActividadFisica'
 
 export default function Hoy({onEmpezar}) {
   const [h, setH] = useState({fecha: hoy(), agua: 0, sueno: '', calidad: 3}),
@@ -174,6 +175,7 @@ export default function Hoy({onEmpezar}) {
           </button>
         </div>
       </section>
+      <ActividadFisica />
       <ResumenHoy />
       <TarjetaCuerpo />
     </div>

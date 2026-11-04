@@ -24,7 +24,7 @@ export async function armarBackup() {
 }
 
 export async function hayDatos() {
-  for (const t of ['sesiones', 'registros', 'comidas', 'habitos'])
+  for (const t of ['sesiones', 'registros', 'comidas', 'habitos', 'actividades'])
     if (await db[t].count()) return true
   return false
 }
