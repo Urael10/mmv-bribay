@@ -1,5 +1,9 @@
 # Historial de versiones de MMV
 
+## v0.26.1 · Entrega 25 · Diagnóstico de arranque (04/11/2026)
+- La pantalla «La app no arrancó» ahora capta también los archivos que no cargan (antes decía «sin mensaje») y muestra el estado y tipo de respuesta del script principal (ej. `200 text/html` = Cloudflare devolvió una página en lugar del archivo).
+- Sin cambios en Dexie (v10), cálculos ni backup. Pruebas: 278.
+
 ## v0.26.0 · Entrega 24 · Propuesta 3 (parte 2): pestañas de Progreso deslizables (04/11/2026)
 - **Progreso:** las 7 pestañas (Pilares, Semana, Historial, Récords, Tests, Cuerpo, Informe) pasaron a **una sola fila con deslizamiento horizontal** (`src/ui/TabsDeslizables.jsx`). Mismo orden y nombres; ya no queda «Informe» solo en una segunda fila.
 - La pestaña activa se centra sola al abrir y al cambiar; un degradé en el borde avisa si hay más pestañas fuera de pantalla. Botones de 44 px de alto, sin barra de scroll visible.
