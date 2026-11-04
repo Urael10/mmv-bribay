@@ -1,7 +1,17 @@
-## 0.15.1
-- Corrige la pantalla negra: sw.js con caché `mv2` (no guarda HTML como archivo, borra cachés viejas), pantalla de rescate en index.html y límite de errores en main.jsx.
-
 # Historial de versiones de MMV
+
+## v0.22.0 · Entrega 20 · GPS en la actividad física y lógica con pruebas (03/11/2026)
+- **Problema que reportaste:** el conteo decía «No se concedió permiso para usar el sensor». Pasa cuando el navegador (en iPhone) ofrece el permiso del sensor de movimiento y la respuesta no es «Permitir»; iOS recuerda la negativa hasta cerrar la app por completo. Ahora, si el sensor no tiene permiso, **MMV sigue contando con el GPS** y te explica cómo darle el permiso (cerrar MMV del todo, abrirlo, tocar ▶ y elegir «Permitir»). Si falla también el GPS, recién ahí avisa que no puede contar.
+- **GPS (pedido):** al tocar ▶ también se mide la distancia con el GPS. Se descartan los puntos con precisión peor que 25 m, el temblor con el teléfono quieto (menos de 3 m o menos de la mitad de la precisión), los saltos de más de 12 m/s y los tramos sin señal de más de 60 s. Se ve «GPS: 1,23 km · señal buena/débil» mientras contás.
+- **Cómo se combinan sensor y GPS:** manda el sensor. El GPS lo reemplaza solo cuando el sensor claramente se perdió pasos (más de 1,6 m de distancia por paso, o sin permiso del sensor) y estima los pasos con el largo de paso. Si el GPS midió menos que el sensor (por ejemplo dentro de un edificio) no se baja nada.
+- **Largo de paso:** arranca en 0,72 m y se ajusta solo, de a poco, con cada conteo que tenga sensor y GPS coherentes (en «Ajustes del conteo» se puede ver y corregir a mano; se guarda en el teléfono, no en el backup).
+- **Actividad sugerida:** al terminar un conteo con al menos 100 m y 1 minuto de GPS, el formulario de «Agregar actividad» queda precargado (caminata, carrera o bicicleta según el ritmo, minutos y km). Se guarda recién cuando tocás «Registrar»; Km ahora acepta coma.
+- **Pantalla encendida:** mientras contás se pide al navegador que no apague la pantalla (Wake Lock), para que el bloqueo no corte el sensor ni el GPS. Si el navegador no lo permite, queda como antes: el conteo se pausa al salir de MMV.
+- **Privacidad:** la ubicación se usa solo en el teléfono; no se guarda la ruta ni sale del dispositivo. Se guarda únicamente la distancia y el tiempo del conteo en curso (en el teléfono) para poder recuperarlo.
+- **Lógica fuera del componente (pedido):** nuevo `src/domain/actividad.js` con el filtro del acelerómetro, el tope de 200 000 pasos, la validación de actividades, la distancia GPS, la combinación sensor + GPS y el largo de paso. `ActividadFisica.jsx` solo muestra y guarda.
+- Sin cambios en Dexie (sigue **v10**) ni en el backup.
+- **Pruebas: 240** (211 + 29 nuevas en `tests/entrega20.test.js`), todas pasan; `npm ci` y build en verde. Probado en Chromium de escritorio con GPS y sensor simulados: el GPS suma distancia, el sensor cuenta, el cierre suma los pasos y precarga la actividad, sin errores de consola. **No probado:** celular real (el permiso del sensor en iPhone, la precisión del GPS caminando y el Wake Lock dependen del dispositivo).
+- Limpieza: la entrada `0.15.1` que estaba suelta arriba del título pasó a su lugar en el historial.
 
 ## v0.21.1 · Entrega 19 · Corrección de pruebas (03/11/2026)
 - Corrige `tests/entrega14.test.js`: esperaba la base de datos en la versión 9 y desde la v0.21.0 va por la 10. Eso hacía fallar 3 pruebas (una directa y dos en cascada) y habría frenado la publicación automática en GitHub Actions.
@@ -62,6 +72,9 @@
 - **Dexie v9:** solo agrega la tabla `privado`; no toca nada anterior.
 - **Pruebas: 176** (164 + 12 nuevas en `entrega14.test.js`).
 - **No incluye (entregas 15 y 16):** estadísticas, comparativa semanal y relación con cargas.
+
+## v0.15.1 · Pantalla negra
+- Corrige la pantalla negra: `sw.js` con caché `mv2` (no guarda HTML como archivo, borra cachés viejas), pantalla de rescate en `index.html` y límite de errores en `main.jsx`.
 
 ## v0.15.0 · Entrega 13 · La IA dice qué falla y no gasta tu cuota (02/11/2026)
 - **Motivo:** «no lee, reintenta sin éxito». Hasta ahora **todo error temporal se mostraba como «alta demanda»** y se reintentaba 3 veces por modelo (6 llamadas). Si el problema era la **cuota gratuita de Google (error 429)**, cada reintento gastaba más cuota y empeoraba. No pude probarlo con Google real: es una corrección por lectura del código y pruebas con respuestas simuladas.

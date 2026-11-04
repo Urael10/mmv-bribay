@@ -1,40 +1,35 @@
-# Mi Mejor Versión (MMV) · Entrega 19 (v0.21.1)
+# Mi Mejor Versión (MMV) · Entrega 20 (v0.22.0)
 
-## Estructura (desde la entrega 6)
+App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 10). Historial completo de cambios en `CHANGELOG.md`.
+
+## Estructura
 ```
-src/domain/    lógica pura con pruebas: biblioteca (ejercicios), privado (cifrado), stats, preparacion (v2), checkin, cuerpo, progreso, entreno (plantillas, repetir, serie pesada), informe, alimentos, registro, temporizador, backup
-src/data/      base de datos (Dexie v10), semilla de alimentos, backup
-src/services/  IA (Gemini), Open Food Facts, escáner de código de barras, reloj del entrenamiento, imágenes
-src/features/  pantallas: hoy, actividad física, entreno (+Timer), comidas, progreso, cuerpo, coach, ajustes, bienestar (menú privado cifrado), biblioteca (ejercicios)
-tests/         `npm test` (211 pruebas de las entregas anteriores; la función nueva de pasos requiere pruebas en dispositivo real)
+src/domain/    lógica pura con pruebas: actividad (pasos, GPS, actividades), alimentos, backup, biblioteca, checkin, cuerpo, entreno, informe, preparacion, privado (cifrado), progreso, registro, stats, temporizador
+src/data/      base de datos (Dexie v10), backup, biblioteca, menú privado, semilla de alimentos
+src/services/  IA (Gemini), Open Food Facts, escáner de código de barras, imágenes, reloj del entrenamiento, pendientes
+src/features/  pantallas: hoy, actividad (pasos y actividades), entreno, comidas, progreso, cuerpo, coach, ajustes, bienestar (menú privado), biblioteca (ejercicios)
+tests/         pruebas con `node --test` (240 en total; `entrega20.test.js` cubre la lógica de actividad física)
+public/        manifest, íconos y service worker (`sw.js`)
 ```
-Publicación: ver `.github/workflows/publicar.yml` y `publicar.sh` (GitHub compila, prueba y publica en Cloudflare Pages).
-Formato: `.prettierrc` (Prettier 3, sin punto y coma, comillas simples).
+Los componentes de `features/` solo muestran y guardan; las reglas y cálculos viven en `domain/` para poder probarlos.
 
-# Entregas anteriores (v0.7.2)
-Requisitos para compilar: Node 20.19 o superior (la compilación se hace en la sesión de Claude, no en la Celeron). Para probar: `npm install`, `npm test`, `npm run dev`.
-1. `npm install`
-2. `npm test` (opcional: pruebas de la lógica de alimentos y calorías)
-3. `npm run dev` o `npm run build` y publicar `dist` en Cloudflare Pages (proyecto `mmv-bribay`).
-4. En Ajustes pegá tu clave gratuita de https://aistudio.google.com/apikey
+## Comandos
+Requiere Node 20.19 o superior (ver `.node-version`).
+```
+npm ci          # instala exactamente lo del lockfile
+npm test        # pruebas
+npm run dev     # servidor local (accesible desde el celular en la misma red)
+npm run build   # compila a dist/ (agrega version.json con versión y fecha de compilación)
+```
 
-## Novedades de la entrega 4
-Ver CHANGELOG.md. Archivos nuevos: `src/off.js` (cliente de Open Food Facts), `src/registro.js` (recientes, porciones y comidas guardadas), `tests/entrega4.test.js`. `src/Comidas.jsx` se reescribió. Base de datos Dexie v5.
+## Publicación
+Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.zip "texto del cambio" [rama]`. El script reemplaza el código por el del zip y lo sube a GitHub; `.github/workflows/publicar.yml` ejecuta `npm ci`, `npm test` y `npm run build`, y publica en Cloudflare Pages (proyecto `mmv-bribay`, https://mmv-bribay.pages.dev). Si una prueba falla, no se publica. La rama `main` es producción; la rama `prueba` publica en una dirección aparte.
 
-## Novedades de la entrega 3
-Ver CHANGELOG.md. Archivos nuevos: `src/preparacion.js` (puntaje), `src/informe.js` (informe y coach, lógica pura), `src/Entrega3.jsx` (pantallas), `tests/entrega3.test.js`. Base de datos Dexie v4 (agrega la tabla `coach`).
+## Actividad física (v0.22.0)
+- Pasos: se pueden cargar a mano o contar con el acelerómetro (solo con MMV abierto y visible; la pantalla se mantiene encendida mientras se cuenta).
+- GPS: mide la distancia, corrige el conteo cuando el sensor se perdió pasos o no tiene permiso, y precarga la actividad (tipo, minutos y km). La ubicación no se guarda ni sale del teléfono.
+- El conteo es una estimación y depende de dónde lleves el teléfono. No reemplaza a un podómetro del sistema o del reloj.
+- Sensor y GPS requieren https (el sitio publicado lo cumple).
 
-## Novedades de la 2C
-Ver CHANGELOG.md. Archivos nuevos: `src/Comidas.jsx` (pantalla), `src/alimentos.js` (cálculos, búsqueda, validaciones), `src/semilla.js` (alimentos iniciales), `src/img.js`, `tests/alimentos.test.js`.
-
-## Novedades de la 2B
-- Pestaña **Progreso** con tres vistas: Semana, Historial y Récords.
-- Volumen semanal por patrón de movimiento (Empuje, Tirón, Rodilla, Cadera, Core, Cardio, Movilidad, Otro), en repeticiones o tonelaje, con comparación contra la semana anterior.
-- Historial de sesiones con detalle por bloque, 🏆 en marcas superadas, variación contra la vez anterior y opción de borrar una sesión.
-- Récords por ejercicio: carga máxima, 1RM estimado (Epley, solo con 12 reps o menos), mejor volumen, reps máximas sin carga y gráfico de evolución.
-- En Entreno: "vs última" en vivo mientras cargás kg y reps, y aviso de récords al guardar la sesión.
-- El patrón de cada ejercicio es automático (palabras clave) y se puede corregir a mano en Récords.
-- No cambia la base de datos (sigue Dexie versión 2): tus datos y backups actuales funcionan igual.
-
-## Archivos
-`src/stats.js` (cálculos), `src/Progreso.jsx` (pestaña nueva), `src/App.jsx` (Entreno con deltas y récords).
+## Formato
+`.prettierrc` (Prettier 3: sin punto y coma, comillas simples, 100 columnas).
