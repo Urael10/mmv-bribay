@@ -4,6 +4,7 @@ import {agregarEjercicio, resumenBloque} from '../../domain/biblioteca'
 import {registrarNombres} from '../../data/biblioteca'
 import {db, hoy, cfg} from '../../data/db'
 import {chica} from '../../services/img'
+import {fechaDMA, nombreEjercicio} from '../../domain/formato'
 import {pedirIA} from '../../services/ia'
 import {tomarFoto} from '../../services/pendiente'
 import {volumen, repsTot, marcarPorContexto, sg} from '../../domain/stats'
@@ -381,7 +382,7 @@ export default function Entreno() {
           <button style={{width: '100%'}} onClick={() => empezar(sesionDesdeUltima(ult), 'ultima')}>
             ↻ Repetir la última sesión
             <small style={{display: 'block', fontWeight: 400}}>
-              {ult.fecha} · {resumenSesion(ult)}
+              {fechaDMA(ult.fecha)} · {resumenSesion(ult)}
             </small>
           </button>
           <p className="mu" style={{margin: '8px 0 0'}}>
@@ -504,7 +505,7 @@ export default function Entreno() {
               <ul className="lect">
                 {b.ejercicios.map((e, j) => (
                   <li key={j} className={e.duda ? 'duda' : ''}>
-                    {e.texto}
+                    {nombreEjercicio(e.texto)}
                     {e.video && ' 🎥'}
                     {e.duda && <span> ⚠ dudosa</span>}
                   </li>
@@ -700,7 +701,7 @@ export default function Entreno() {
                     e.trim() && (
                       <div className="lin" key={j}>
                         <span>
-                          <b className="mono">{j + 1}</b> · {e.replace(/[*?]/g, '').trim()}
+                          <b className="mono">{j + 1}</b> · {nombreEjercicio(e)}
                         </span>
                         <span className="row">
                           <button
@@ -735,7 +736,7 @@ export default function Entreno() {
             ) : (
               <>
                 <ul className="lect">
-                  {(b.ejercicios || []).filter(x => x.trim()).map((e, j) => <li key={j}>{e}</li>)}
+                  {(b.ejercicios || []).filter(x => x.trim()).map((e, j) => <li key={j}>{nombreEjercicio(e)}</li>)}
                 </ul>
                 {resumenReloj(b) && (
                   <small className="mu" style={{display: 'block'}}>

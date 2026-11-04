@@ -1,4 +1,5 @@
 // Biblioteca de ejercicios: modo «gestion» (agregar, renombrar, patrón, quitar) y modo «elegir» (agregar a un bloque con un toque).
+import {nombreEjercicio} from '../../domain/formato'
 import {useState, useEffect, useCallback, useMemo} from 'react'
 import {PATRONES, patron as patronAuto} from '../../domain/stats'
 import {filtrarBiblioteca, validarNombre} from '../../domain/biblioteca'
@@ -30,7 +31,7 @@ function Fila({e, claves, onCambio, setMsg}) {
   return (
     <details className="bibfila">
       <summary>
-        <b>{e.nombre}</b>
+        <b>{nombreEjercicio(e.nombre)}</b>
         <small className="mu">
           {' '}
           · {e.patron || auto}
@@ -197,7 +198,7 @@ export default function Biblioteca({modo = 'gestion', onCerrar, onElegir, onCamb
           elegir ? (
             <div className="lin" key={e.clave}>
               <span>
-                <b>{e.nombre}</b>
+                <b>{nombreEjercicio(e.nombre)}</b>
                 <small className="mu"> · {e.patron || patronAuto(e.nombre, '', undefined)}</small>
               </span>
               <button className={puestos.has(e.nombre) ? 'ghost mini' : 'mini'} onClick={() => poner(e.nombre)}>

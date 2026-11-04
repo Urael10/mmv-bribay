@@ -7,6 +7,7 @@ import {CHECKIN} from '../../domain/checkin'
 import {AvisoDescarga} from '../progreso/Pilares'
 import {videosPendientes, haySesionEnCurso} from '../../domain/entreno'
 import {sumaDias} from '../../domain/stats'
+import {fmtVal, hayDato} from '../../domain/formato'
 import {dejarFoto} from '../../services/pendiente'
 import ActividadFisica from '../actividad/ActividadFisica'
 
@@ -68,10 +69,12 @@ export default function Hoy({onEmpezar}) {
         <div className="row" style={{marginTop: 10}}>
           <b style={{fontSize: 14}}>Sueño de anoche</b>
           <input
+            className="fx med"
             type="number"
             inputMode="decimal"
             step="0.5"
             placeholder="horas"
+            aria-label="Horas de sueño"
             value={h.sueno}
             onChange={e => g({sueno: e.target.value})}
           />
@@ -79,11 +82,13 @@ export default function Hoy({onEmpezar}) {
             type="range"
             min="1"
             max="5"
-            value={h.calidad}
+            value={hayDato(h.calidad) ? h.calidad : 3}
             aria-label="Calidad del sueño"
             onChange={e => g({calidad: +e.target.value})}
           />
-          <span>calidad {h.calidad}/5</span>
+          <output className="mono" aria-live="polite">
+            calidad {fmtVal(h.calidad, {dec: 0})}/5
+          </output>
         </div>
       </section>
       <Preparacion h={h} />
@@ -131,11 +136,11 @@ export default function Hoy({onEmpezar}) {
       <section>
         <h3>Hidratación</h3>
         <div className="big">
-          {h.agua}
+          {fmtVal(h.agua, {dec: 0})}
           <small> / {meta} ml</small>
         </div>
         <div className="bar">
-          <i style={{width: Math.min(100, (h.agua / meta) * 100) + '%'}} />
+          <i style={{width: Math.min(100, ((+h.agua || 0) / meta) * 100) + '%'}} />
         </div>
         <div className="row">
           {[250, 500].map(n => (
@@ -149,10 +154,10 @@ export default function Hoy({onEmpezar}) {
         </div>
         <div className="row" style={{marginTop: 8}}>
           <input
+            className="fx med"
             type="number"
             inputMode="numeric"
-            placeholder="otra cantidad (ml)"
-            style={{width: 170}}
+            placeholder="Otra cantidad (ml)"
             value={otro}
             onChange={e => setOtro(e.target.value)}
           />

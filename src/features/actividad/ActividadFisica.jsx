@@ -1,6 +1,7 @@
 import {useEffect, useRef, useState} from 'react'
 import {db, hoy} from '../../data/db'
 import {sumaDias} from '../../domain/stats'
+import NavFecha from '../../ui/NavFecha'
 import {
   MAX_PASOS, TIPOS, LARGO_PASO_INICIAL, GPS_CFG,
   parsearPasos, sumarPasos, magnitudAceleracion, detectorNuevo, procesarMuestra,
@@ -285,6 +286,7 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
       <div className="row">
         <input
           id="pasos-hoy"
+          className="fx"
           type="number"
           min="0"
           max={MAX_PASOS}
@@ -321,8 +323,9 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
       <details>
         <summary><small className="mu">Ajustes del conteo</small></summary>
         <label className="lin">
-          <span>
-            <input type="checkbox" checked={usarGps} disabled={activo} onChange={e => cambiarUsarGps(e.target.checked)} /> Usar GPS para medir distancia y corregir pasos
+          <span className="check">
+            <input type="checkbox" checked={usarGps} disabled={activo} onChange={e => cambiarUsarGps(e.target.checked)} />
+            <span>Usar GPS para medir distancia y corregir pasos</span>
           </span>
           <small className="mu">Pide el permiso de ubicación. La posición no se guarda ni sale del teléfono: solo se guarda la distancia.</small>
         </label>
@@ -415,24 +418,28 @@ export default function ActividadFisica() {
   return (
     <section style={{gridColumn: 'span 2'}}>
       <h3>Actividad física</h3>
-      <div className="row" style={{justifyContent: 'space-between', marginBottom: 8}}>
-        <button className="ghost mini" disabled={conteoActivo || cargando} onClick={() => setFecha(f => sumaDias(f, -1))} aria-label="Día anterior">◀</button>
-        <b>{fecha === hoy() ? 'Hoy' : new Date(`${fecha}T12:00:00`).toLocaleDateString('es-AR', {weekday: 'short', day: 'numeric', month: 'short'})}</b>
-        <button className="ghost mini" disabled={conteoActivo || cargando || fecha >= hoy()} onClick={() => setFecha(f => sumaDias(f, 1))} aria-label="Día siguiente">▶</button>
-        {fecha !== hoy() && <button className="ghost mini" disabled={conteoActivo || cargando} onClick={() => setFecha(hoy())}>Hoy</button>}
-      </div>
+      <NavFecha
+        titulo={fecha === hoy() ? 'Hoy' : new Date(`${fecha}T12:00:00`).toLocaleDateString('es-AR', {weekday: 'short', day: 'numeric', month: 'short'})}
+        anteriorLabel="Día anterior"
+        siguienteLabel="Día siguiente"
+        deshabilitado={conteoActivo || cargando}
+        sinSiguiente={fecha >= hoy()}
+        onAnterior={() => setFecha(f => sumaDias(f, -1))}
+        onSiguiente={() => setFecha(f => sumaDias(f, 1))}
+        extra={fecha !== hoy() && <button className="ghost mini" disabled={conteoActivo || cargando} onClick={() => setFecha(hoy())}>Volver a hoy</button>}
+      />
       <ConteoPasos total={total} fecha={fecha} activo={conteoActivo} onActivoChange={setConteoActivo} onGuardar={guardarPasos} onSumar={sumarConteo} onSugerir={sugerir} cargando={cargando} />
       {errorCarga && <small role="alert" className="mu">{errorCarga}</small>}
       <h4>Agregar actividad</h4>
       <div className="row">
-        <select aria-label="Tipo de actividad" value={tipo} disabled={cargando} onChange={e => setTipo(e.target.value)}>
+        <select className="med-sel" aria-label="Tipo de actividad" value={tipo} disabled={cargando} onChange={e => setTipo(e.target.value)}>
           {Object.entries(TIPOS).map(([key, nombre]) => <option key={key} value={key}>{nombre}</option>)}
         </select>
-        <input type="number" min="1" max="1440" step="1" inputMode="numeric" placeholder="Minutos" aria-label="Duración en minutos" value={minutos} disabled={cargando} onChange={e => setMinutos(e.target.value)} />
-        <input type="text" inputMode="decimal" placeholder="Km (opcional)" aria-label="Distancia en kilómetros (opcional)" value={kmTxt} disabled={cargando} onChange={e => setKmTxt(e.target.value)} />
+        <input className="fx" type="number" min="1" max="1440" step="1" inputMode="numeric" placeholder="Min" aria-label="Duración en minutos" value={minutos} disabled={cargando} onChange={e => setMinutos(e.target.value)} />
+        <input className="fx" type="text" inputMode="decimal" placeholder="Km" aria-label="Distancia en kilómetros (opcional)" value={kmTxt} disabled={cargando} onChange={e => setKmTxt(e.target.value)} />
       </div>
       <div className="row">
-        <input type="text" maxLength="100" placeholder="Nota (opcional)" aria-label="Nota de la actividad" value={nota} disabled={cargando} onChange={e => setNota(e.target.value)} />
+        <input className="fx" type="text" maxLength="100" placeholder="Nota (opcional)" aria-label="Nota de la actividad" value={nota} disabled={cargando} onChange={e => setNota(e.target.value)} />
         <button onClick={agregar} disabled={cargando || !minutos || +minutos < 1}>＋ Registrar</button>
       </div>
       {actividades.length ? <>

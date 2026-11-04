@@ -2,6 +2,7 @@ import {useState, useEffect, useMemo, useRef} from 'react'
 import {db, hoy, cfg, sembrar} from '../../data/db'
 import {pedirIA} from '../../services/ia'
 import {chica} from '../../services/img'
+import NavFecha from '../../ui/NavFecha'
 import {sumaDias} from '../../domain/stats'
 import {ultima, proteinaObjetivo, PROT_KG} from '../../domain/cuerpo'
 import {
@@ -438,12 +439,12 @@ function Agregar({base, sug, plant, parecidas, usarComida, agregar, libre, nuevo
       <h3>＋ Agregar</h3>
       <div className="row">
         <input
-          style={{flex: 1}}
+          className="fx"
           type="search"
           inputMode="search"
           enterKeyHint="search"
           aria-label="Buscar alimento"
-          placeholder="Buscar alimento o código…"
+          placeholder="Buscar alimento"
           value={q}
           onChange={e => {
             setQ(e.target.value)
@@ -462,7 +463,16 @@ function Agregar({base, sug, plant, parecidas, usarComida, agregar, libre, nuevo
             setCam(false)
           }}
         >
-          ▮▯▮
+          <svg className="ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+            <g fill="currentColor">
+              <rect x="3" y="5" width="2" height="14" rx=".4" />
+              <rect x="6.5" y="5" width="1" height="14" rx=".3" />
+              <rect x="9" y="5" width="3" height="14" rx=".4" />
+              <rect x="13.5" y="5" width="1" height="14" rx=".3" />
+              <rect x="16" y="5" width="1.5" height="14" rx=".3" />
+              <rect x="19" y="5" width="2" height="14" rx=".4" />
+            </g>
+          </svg>
         </button>
         <button
           className={cam ? '' : 'ghost'}
@@ -597,7 +607,7 @@ function Agregar({base, sug, plant, parecidas, usarComida, agregar, libre, nuevo
               <span>
                 {a.fuente ? '🌐 ' : ''}
                 {a.nombre}
-              </span>{' '}
+              </span>
               <small className="mu">
                 {a.kcal100} kcal/100 g · {a.porcion || 100} g
               </small>
@@ -728,7 +738,7 @@ function FormAlimento({f, setF, guardar, borrar, cancelar}) {
       )}
       {f.fuenteId && !f.fuente && (
         <small className="mu" style={{display: 'block', marginBottom: 6}}>
-          ▮ Código {f.fuenteId}: se guarda con el alimento, así la próxima vez que lo escanees sale
+          Código {f.fuenteId}: se guarda con el alimento, así la próxima vez que lo escanees sale
           de tu base.
         </small>
       )}
@@ -1085,7 +1095,6 @@ export default function Comidas() {
         </button>
       </p>
     ) : null
-  const enWeb = a => (a?.fuente ? '🌐 ' : '')
   const hayWeb = base.some(a => a.fuente)
 
   return (
@@ -1128,28 +1137,15 @@ export default function Comidas() {
       ) : vista === 'diario' ? (
         <>
           <section>
-            <div className="row" style={{justifyContent: 'space-between'}}>
-              <button
-                className="ghost mini"
-                aria-label="Día anterior"
-                onClick={() => setFecha(sumaDias(fecha, -1))}
-              >
-                ◀
-              </button>
-              <div style={{textAlign: 'center'}}>
-                <b>{esHoy ? 'Hoy' : 'Día'}</b>
-                <br />
-                <small className="tag">{fFecha(fecha)}</small>
-              </div>
-              <button
-                className="ghost mini"
-                aria-label="Día siguiente"
-                disabled={esHoy}
-                onClick={() => setFecha(sumaDias(fecha, 1))}
-              >
-                ▶
-              </button>
-            </div>
+            <NavFecha
+              titulo={esHoy ? 'Hoy' : 'Día'}
+              sub={fFecha(fecha)}
+              anteriorLabel="Día anterior"
+              siguienteLabel="Día siguiente"
+              sinSiguiente={esHoy}
+              onAnterior={() => setFecha(sumaDias(fecha, -1))}
+              onSiguiente={() => setFecha(sumaDias(fecha, 1))}
+            />
             <div className="big" style={{marginTop: 8}}>
               {tot.kcal}
               <small> / {meta} kcal</small>
@@ -1249,12 +1245,15 @@ export default function Comidas() {
                 <b className="mono">{c.kcal} kcal</b>
               </div>
               {c.items.map((it, i) => (
-                <div className="lin" key={i}>
-                  <span>
-                    {enWeb(base.find(a => a.id === it.alimentoId))}
-                    {it.nombre} · {fmt(it.g)} g{it.origen === 'ia' ? ' ≈' : ''}
+                <div className="lin alim" key={i}>
+                  <span className="ic">
+                    {base.find(a => a.id === it.alimentoId)?.fuente ? '🌐' : ''}
+                    {it.origen === 'ia' ? '≈' : ''}
                   </span>
-                  <span className="mono">{it.kcal}</span>
+                  <span>
+                    {it.nombre} · {fmt(it.g)} g
+                  </span>
+                  <span className="mono kcal">{it.kcal} kcal</span>
                 </div>
               ))}
               <Macros t={c} />
@@ -1351,7 +1350,7 @@ export default function Comidas() {
           <section>
             {lista.map(a => (
               <div
-                className="lin"
+                className="lin alim"
                 key={a.id}
                 onClick={() => {
                   setForm({...a})
@@ -1359,12 +1358,12 @@ export default function Comidas() {
                 }}
                 style={{cursor: 'pointer'}}
               >
-                <span>
-                  {enWeb(a)}
-                  {a.nombre}
-                  {a.origen === 'ia' || a.origen === 'etiqueta' ? ' ≈' : ''}
+                <span className="ic">
+                  {a.fuente ? '🌐' : ''}
+                  {a.origen === 'ia' || a.origen === 'etiqueta' ? '≈' : ''}
                 </span>
-                <span className="mono">{a.kcal100} kcal</span>
+                <span>{a.nombre}</span>
+                <span className="mono kcal">{a.kcal100} kcal</span>
               </div>
             ))}
             {!lista.length && <p className="mu">No hay alimentos con ese nombre.</p>}

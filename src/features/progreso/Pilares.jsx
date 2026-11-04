@@ -11,6 +11,7 @@ import {
   TEST_DIAS
 } from '../../domain/progreso'
 import {sumaDias} from '../../domain/stats'
+import {fmtVal, fmtSigno, hayDato, nombreEjercicio} from '../../domain/formato'
 
 const TIPO = {movilidad: 'Movilidad', warmup: 'Warm up', emom: 'EMOM', amrap: 'AMRAP', tabata: 'Tabata', forTime: 'For time'}
 const f1 = n => (n === null || n === undefined ? '–' : String(n).replace('.', ','))
@@ -155,13 +156,14 @@ export function VistaPilares() {
       <Pilar nombre="Resistencia" p={Re}>
         <p className="mu">
           Repeticiones de cardio en 28 días: <b className="mono">{Re.repsCardio}</b>
-          {Re.deltaPct !== null && <small className={clase(Re.deltaPct)}> {sg(Re.deltaPct)}%</small>} · {f1(Re.sesionesPorSemana)} sesiones por semana
+          {Re.deltaPct !== null && <small className={clase(Re.deltaPct)}> {sg(Re.deltaPct)}%</small>} · {fmtVal(Re.sesionesPorSemana)} {+Re.sesionesPorSemana === 1 ? 'sesión' : 'sesiones'} por semana
           {Re.testsComparados > 0 && ` · ${Re.testsMejoraron} de ${Re.testsComparados} tests de resistencia mejoraron`}.
         </p>
       </Pilar>
       <Pilar nombre="Composición" p={C}>
         <p className="mu">
-          Peso: <b className="mono">{f1(C.peso.actual)} kg</b> ({sg(C.peso.delta)} kg en 4 semanas)
+          Peso: <b className="mono">{hayDato(C.peso.actual) ? `${fmtVal(C.peso.actual)} kg` : '—'}</b>
+          {hayDato(C.peso.delta) && ` (${fmtSigno(C.peso.delta)} kg en 4 semanas)`}
           {C.grasa.delta !== null && ` · grasa ${sg(C.grasa.delta)} puntos`}
           {C.musculo.delta !== null && ` · músculo ${sg(C.musculo.delta)} kg`}. Si te sirve para tu objetivo lo decidís vos: acá no se juzga si es «bueno» o «malo».
         </p>
@@ -177,7 +179,7 @@ export function VistaPilares() {
         {prog.map(x => (
           <div key={x.clave} className="fila">
             <div>
-              <b>{x.nombre}</b> <small className="tag">{TIPO[x.tipo] || x.tipo}</small>
+              <b>{nombreEjercicio(x.nombre)}</b> <small className="tag">{TIPO[x.tipo] || x.tipo}</small>
             </div>
             <small className="mu">{x.texto}</small>
           </div>

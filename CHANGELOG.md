@@ -1,5 +1,16 @@
 # Historial de versiones de MMV
 
+## v0.23.0 · Entrega 21 · Propuesta 1: bugs visuales y componentes base (04/11/2026)
+- **Navegador de fecha/semana único** (`src/ui/NavFecha.jsx`, grid 44 px / 1fr / 44 px): Comidas, Hoy › Actividad física, Progreso › Semana e Informe. El Informe dice «Esta semana» como Semana.
+- **Inputs:** campos flexibles (`.fx`) y placeholders cortos («Buscar alimento», «Min», «Km»); la casilla de pasos ya no se corta.
+- **Código de barras:** SVG inline en lugar de «▮▯▮».
+- **Valores vacíos (causa raíz):** nuevo `src/domain/formato.js` (sin dato «—», cero «0»). Hidratación y calidad del sueño ya no quedan en blanco cuando el día tiene una fila sin esos campos; el peso oculta «(… kg en 4 semanas)» si no hay tendencia.
+- **Sueño:** la calidad se muestra en vivo.
+- **Alimentos:** ícono 🌐/≈ en columna propia y kcal sin partirse.
+- **Backup:** tres botones a ancho completo. **Ajustes:** «Probar la IA» separado del modelo; casillas con el estilo del tema. **Bienestar:** «Bloquear» a la derecha de las pestañas; ayuda de Registrar debajo del botón.
+- **Texto:** «1 sesión por semana»; fecha dd/mm/aaaa en «Repetir la última sesión»; nombres de ejercicios limpios solo al mostrar (el dato guardado no cambia).
+- Sin cambios en Dexie (v10) ni en el backup. Pruebas: 247 (7 nuevas en `tests/entrega21.test.js`).
+
 ## v0.22.0 · Entrega 20 · GPS en la actividad física y lógica con pruebas (03/11/2026)
 - **Problema que reportaste:** el conteo decía «No se concedió permiso para usar el sensor». Pasa cuando el navegador (en iPhone) ofrece el permiso del sensor de movimiento y la respuesta no es «Permitir»; iOS recuerda la negativa hasta cerrar la app por completo. Ahora, si el sensor no tiene permiso, **MMV sigue contando con el GPS** y te explica cómo darle el permiso (cerrar MMV del todo, abrirlo, tocar ▶ y elegir «Permitir»). Si falla también el GPS, recién ahí avisa que no puede contar.
 - **GPS (pedido):** al tocar ▶ también se mide la distancia con el GPS. Se descartan los puntos con precisión peor que 25 m, el temblor con el teléfono quieto (menos de 3 m o menos de la mitad de la precisión), los saltos de más de 12 m/s y los tramos sin señal de más de 60 s. Se ve «GPS: 1,23 km · señal buena/débil» mientras contás.

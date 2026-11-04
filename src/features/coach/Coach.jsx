@@ -1,6 +1,7 @@
 import {useState, useEffect, useMemo} from 'react'
 import {db, hoy, cfg} from '../../data/db'
 import {pedirIA} from '../../services/ia'
+import NavFecha from '../../ui/NavFecha'
 import {lunes, sumaDias, sg} from '../../domain/stats'
 import {preparacion, NOMBRES} from '../../domain/preparacion'
 import {
@@ -205,28 +206,15 @@ export function Informe({ses, reg, manual}) {
     <>
       <section>
         <h3>Informe semanal</h3>
-        <div className="row" style={{justifyContent: 'space-between'}}>
-          <button
-            className="ghost mini"
-            onClick={() => setW(sumaDias(w, -7))}
-            aria-label="Semana anterior"
-          >
-            ◀
-          </button>
-          <div style={{textAlign: 'center'}}>
-            <b>{actual ? 'Esta semana (en curso)' : 'Semana'}</b>
-            <br />
-            <small className="tag">{rango(w)}</small>
-          </div>
-          <button
-            className="ghost mini"
-            disabled={actual}
-            onClick={() => setW(sumaDias(w, 7))}
-            aria-label="Semana siguiente"
-          >
-            ▶
-          </button>
-        </div>
+        <NavFecha
+          titulo={actual ? 'Esta semana' : 'Semana'}
+          sub={rango(w)}
+          anteriorLabel="Semana anterior"
+          siguienteLabel="Semana siguiente"
+          sinSiguiente={actual}
+          onAnterior={() => setW(sumaDias(w, -7))}
+          onSiguiente={() => setW(sumaDias(w, 7))}
+        />
         {!hayDatos(inf) && <p className="mu">No hay datos en esta semana.</p>}
       </section>
       {hayDatos(inf) && (

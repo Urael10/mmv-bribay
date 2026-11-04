@@ -66,9 +66,11 @@ function Crear({onListo}) {
         </small>
       )}
       <p>
-        <label>
-          <input type="checkbox" checked={ok} onChange={e => setOk(e.target.checked)} /> Entiendo que si olvido la clave
-          <b> no hay forma de recuperar estos datos</b>.
+        <label className="check">
+          <input type="checkbox" checked={ok} onChange={e => setOk(e.target.checked)} />
+          <span>
+            Entiendo que si olvido la clave <b>no hay forma de recuperar estos datos</b>.
+          </span>
         </label>
       </p>
       {err && <small className="warn">{err}</small>}
@@ -231,7 +233,9 @@ function Registro({clave, bloques, recargar}) {
         ))}
       </div>
       <button onClick={hecho}>＋ Registrar ahora</button>
-      <small className="mu"> La hora se puede corregir en el historial.</small>
+      <small className="mu" style={{display: 'block', marginTop: 8}}>
+        La hora se puede corregir en el historial.
+      </small>
       {err && <small className="warn">{err}</small>}
     </section>
   )
@@ -398,7 +402,7 @@ function Abierto({clave, onBloquear, onNueva, onBorrado}) {
   if (!bloques) return <small className="mu">Abriendo…</small>
   return (
     <>
-      <div className="row" style={{marginBottom: 8}}>
+      <div className="row pestanas" style={{marginBottom: 8}}>
         {[
           ['registro', 'Registro'],
           ['historial', 'Historial'],
@@ -408,7 +412,7 @@ function Abierto({clave, onBloquear, onNueva, onBorrado}) {
             {n}
           </button>
         ))}
-        <button className="ghost mini" style={{marginLeft: 'auto'}} onClick={onBloquear}>
+        <button className="ghost mini bloquear" onClick={onBloquear}>
           🔒 Bloquear
         </button>
       </div>

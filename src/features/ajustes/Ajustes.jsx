@@ -120,17 +120,15 @@ function Respaldo() {
           <>Último backup: {d === 0 ? 'hoy' : `hace ${d} ${d === 1 ? 'día' : 'días'}`}.</>
         )}
       </p>
-      <div className="row">
+      <div className="botonera">
         {puedeCompartir() && <button onClick={() => hacer(true)}>Compartir backup</button>}
         <button className={puedeCompartir() ? 'ghost' : ''} onClick={() => hacer(false)}>
           Descargar backup
         </button>
-        <label>
-          <button className="ghost" onClick={e => e.currentTarget.nextSibling.click()}>
-            Importar backup
-          </button>
-          <input hidden type="file" accept="application/json" onChange={imp} />
-        </label>
+        <button className="ghost" onClick={e => e.currentTarget.nextSibling.click()}>
+          Importar backup
+        </button>
+        <input hidden type="file" accept="application/json" onChange={imp} />
       </div>
       {msg && <small className="tag">{msg}</small>}
     </section>
@@ -220,7 +218,7 @@ function ProbarIA({modelo, onModelo}) {
     [ocupado, setOcupado] = useState(false)
   return (
     <>
-      <div className="row">
+      <div className="row" style={{marginTop: 12}}>
         <button
           className="ghost"
           disabled={ocupado}
@@ -323,7 +321,7 @@ export default function Ajustes() {
           }}
         />
         <p>
-          <label>
+          <label className="check">
             <input
               type="checkbox"
               checked={so}
@@ -331,8 +329,8 @@ export default function Ajustes() {
                 setSo(e.target.checked)
                 setCfg('sonido', e.target.checked ? '1' : '0')
               }}
-            />{' '}
-            Sonido del temporizador
+            />
+            <span>Sonido del temporizador</span>
           </label>
         </p>
       </section>

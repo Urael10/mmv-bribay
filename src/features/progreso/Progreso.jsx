@@ -1,6 +1,8 @@
 import {useState, useEffect, useMemo} from 'react'
 import {db, hoy} from '../../data/db'
 import {Informe} from '../coach/Coach'
+import NavFecha from '../../ui/NavFecha'
+import {nombreEjercicio} from '../../domain/formato'
 import {VistaCuerpo} from '../cuerpo/Cuerpo'
 import {VistaPilares, VistaTests} from './Pilares'
 import {
@@ -78,28 +80,15 @@ function Semana({reg, manual, ses}) {
   return (
     <section>
       <h3>Volumen semanal por patrón</h3>
-      <div className="row" style={{justifyContent: 'space-between'}}>
-        <button
-          className="ghost mini"
-          onClick={() => setW(sumaDias(w, -7))}
-          aria-label="Semana anterior"
-        >
-          ◀
-        </button>
-        <div style={{textAlign: 'center'}}>
-          <b>{esActual ? 'Esta semana' : 'Semana'}</b>
-          <br />
-          <small className="tag">{rango(w)}</small>
-        </div>
-        <button
-          className="ghost mini"
-          disabled={esActual}
-          onClick={() => setW(sumaDias(w, 7))}
-          aria-label="Semana siguiente"
-        >
-          ▶
-        </button>
-      </div>
+      <NavFecha
+        titulo={esActual ? 'Esta semana' : 'Semana'}
+        sub={rango(w)}
+        anteriorLabel="Semana anterior"
+        siguienteLabel="Semana siguiente"
+        sinSiguiente={esActual}
+        onAnterior={() => setW(sumaDias(w, -7))}
+        onSiguiente={() => setW(sumaDias(w, 7))}
+      />
       <div className="row" style={{margin: '10px 0'}}>
         <button className={'chip' + (m === 'reps' ? ' on' : '')} onClick={() => setM('reps')}>
           Repeticiones
@@ -215,7 +204,7 @@ function Historial({ses, reg, marcas, recargar}) {
                       if (r) usados.add(r.id)
                       return (
                         <div key={j} className="lin">
-                          <span>{e}</span>
+                          <span>{nombreEjercicio(e)}</span>
                           {r ? (
                             <span className="mono">
                               {kg(r.kg)} kg × {r.uni ? `${r.repsL}/${r.repsR}` : r.reps}
@@ -335,7 +324,7 @@ function Records({reg, ej, recargar}) {
           <section key={k}>
             <details>
               <summary>
-                <b>{n}</b> <small className="tag">{p}</small>{' '}
+                <b>{nombreEjercicio(n)}</b> <small className="tag">{p}</small>{' '}
                 <small className="tag">{T[a[a.length - 1].tipo] || a[a.length - 1].tipo}</small>
                 <br />
                 <small className="mu">

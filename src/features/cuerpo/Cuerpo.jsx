@@ -64,13 +64,13 @@ function FormMedida({inicial, onGuardar, onCancelar}) {
         ))}
       </div>
       <p>
-        <label>
+        <label className="check">
           <input
             type="checkbox"
             checked={f.estandar !== false}
             onChange={e => set('estandar', e.target.checked)}
-          />{' '}
-          Medida en mis condiciones habituales (mañana, en ayunas)
+          />
+          <span>Medida en mis condiciones habituales (mañana, en ayunas)</span>
         </label>
       </p>
       <small className="mu">

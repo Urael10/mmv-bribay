@@ -620,3 +620,146 @@ header {
   align-items: center;
   flex-wrap: wrap;
 }
+
+/* v0.23.0 · Propuesta 1: bugs visuales y componentes base (sin cambios de paleta) */
+/* Navegador de fecha/semana: flecha · título centrado · flecha, siempre en una fila */
+.navfecha {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 8px;
+}
+.navfecha > button {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+.navfecha-t {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  line-height: 1.3;
+  min-width: 0;
+}
+.navfecha-x {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+}
+.navfecha + * {
+  margin-top: 8px;
+}
+/* Inputs flexibles: clase .fx = ocupa el espacio libre de la fila sin desbordar */
+.row > .fx {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+}
+.row > input[type='number'].fx,
+.row > input[type='text'].fx {
+  width: auto;
+}
+.row > .fx.med {
+  flex-basis: 110px;
+}
+/* Filas de alimentos: [ícono] nombre ... kcal (la columna de kcal no se parte) */
+.lin.alim {
+  display: grid;
+  grid-template-columns: minmax(22px, auto) minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 6px;
+}
+.lin.alim .ic {
+  min-height: 1em;
+  text-align: center;
+}
+.lin.alim .kcal {
+  white-space: nowrap;
+  text-align: right;
+}
+.sug small {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.ico {
+  display: block;
+}
+/* Botonera de backup: tres botones a ancho completo */
+.botonera {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.botonera > button {
+  width: 100%;
+}
+/* Casilla con el estilo del tema */
+input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  border: 1.5px solid var(--mu);
+  border-radius: 6px;
+  background: var(--bg);
+  display: inline-grid;
+  place-content: center;
+  vertical-align: middle;
+}
+input[type='checkbox']::before {
+  content: '';
+  width: 12px;
+  height: 7px;
+  border-left: 2.5px solid #041014;
+  border-bottom: 2.5px solid #041014;
+  transform: translateY(-1px) rotate(-45deg) scale(0);
+}
+input[type='checkbox']:checked {
+  background: var(--ac);
+  border-color: var(--ac);
+}
+input[type='checkbox']:checked::before {
+  transform: translateY(-1px) rotate(-45deg) scale(1);
+}
+input[type='checkbox']:disabled {
+  opacity: 0.4;
+}
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 44px;
+  align-items: center;
+}
+/* Bienestar: pestañas en una fila con «Bloquear» a la derecha */
+.pestanas {
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+.pestanas .chip {
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.pestanas .bloquear {
+  margin-left: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+/* Calidad del sueño: valor en vivo */
+output.mono {
+  white-space: nowrap;
+}
+.row > select.med-sel {
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+label.lin[for] {
+  flex-direction: column;
+  gap: 2px;
+}
