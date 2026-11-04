@@ -60,7 +60,46 @@ const RUTAS = {
       <path d="M6 14.5h12" />
     </>
   ),
-  circulo: <circle cx="12" cy="12" r="8" strokeDasharray="3 3" />
+  circulo: <circle cx="12" cy="12" r="8" strokeDasharray="3 3" />,
+  // Barra inferior y cabecera (v0.25.0)
+  hoy: (
+    <>
+      <path d="M4 11l8-7 8 7" />
+      <path d="M6 9.5V20h12V9.5" />
+      <path d="M10 20v-5.5h4V20" />
+    </>
+  ),
+  entreno: (
+    <>
+      <path d="M6.5 6.5v11" />
+      <path d="M17.5 6.5v11" />
+      <path d="M3.5 9.5v5" />
+      <path d="M20.5 9.5v5" />
+      <path d="M6.5 12h11" />
+    </>
+  ),
+  comidas: (
+    <>
+      <path d="M6 3v6a2.5 2.5 0 0 0 5 0V3" />
+      <path d="M8.5 11.5V21" />
+      <path d="M17 21V3c-2.4 1.4-3.6 4-3.6 7 0 2 1.2 3.2 3.6 3.2" />
+    </>
+  ),
+  progreso: (
+    <>
+      <path d="M3 17l6-6 4 4 8-8" />
+      <path d="M15 7h6v6" />
+    </>
+  ),
+  ajustes: (
+    <>
+      <circle cx="12" cy="12" r="3" />
+      <circle cx="12" cy="12" r="7" />
+      <path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" />
+    </>
+  ),
+  cerrar: <path d="M6 6l12 12M18 6L6 18" />,
+  'chevron-abajo': <path d="M6 9l6 6 6-6" />
 }
 
 export default function Icono({n, tam = 20, etiqueta, className = ''}) {

@@ -6,7 +6,7 @@ import {edadDe, proteinaObjetivo, ultima, PROT_KG} from '../../domain/cuerpo'
 import {probarIA} from '../../services/ia'
 import {INFO, fechaBuild, buscarActualizacion, actualizarAhora} from '../../version'
 
-function Version() {
+function Version({onVersion}) {
   const [r, setR] = useState(null),
     [b, setB] = useState(false),
     [pe, setPe] = useState(null)
@@ -24,7 +24,7 @@ function Version() {
   return (
     <section>
       <h3>Versión instalada</h3>
-      <div className="lin">
+      <div className="lin" onClick={onVersion}>
         <span>Versión</span>
         <span className="mono">v{INFO.version}</span>
       </div>
@@ -260,7 +260,7 @@ function ProbarIA({modelo, onModelo}) {
   )
 }
 
-export default function Ajustes() {
+export default function Ajustes({onVersion}) {
   const [k, setK] = useState(cfg('key')),
     [m, setM] = useState(cfg('modelo', 'gemini-3.8-flash')),
     [a, setA] = useState(cfg('meta', 2500)),
@@ -268,7 +268,7 @@ export default function Ajustes() {
     [so, setSo] = useState(cfg('sonido', '1') !== '0')
   return (
     <>
-      <Version />
+      <Version onVersion={onVersion} />
       <Respaldo />
       <Perfil />
       <UsoIA />

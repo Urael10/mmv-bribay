@@ -1,5 +1,16 @@
 # Historial de versiones de MMV
 
+## v0.25.0 · Entrega 23 · Propuesta 3 (parte 1): cabecera, barra inferior, Hoy, Comidas y Pilares (04/11/2026)
+- **Cabecera de 56 px:** solo «MMV» y el engranaje (SVG). La versión salió de la cabecera: está en Ajustes › Versión instalada, y los 5 toques seguidos sobre la línea «Versión» de esa tarjeta siguen abriendo el menú privado.
+- **Barra inferior** con íconos SVG + etiqueta (56 px de alto, ancho ≥ 86 px por botón).
+- **Hoy:** orden Check-in → Preparación → Entrenar → Alimentación → Hidratación → Actividad → Cuerpo. Check-in compacto (cada métrica en una fila, leyenda de extremos en una línea, sueño en una línea). «Alimentación de hoy» pasó a una fila compacta (kcal y proteína) que abre Comidas.
+- **Estados vacíos plegables** (`src/ui/Plegable.jsx`): «Preparación» sin datos y «Progresión por ejercicio» sin datos se ven en una línea y se expanden al tocar.
+- **Comidas:** una sola lista «Recientes y frecuentes» (alimentos sueltos y comidas completas, con kcal y gramos), 3 visibles y «Ver más».
+- **Mis alimentos:** orden por uso reciente, filtros Todos · Frecuentes · Propios · Web, leyenda 🌐/≈ arriba y «Reponer alimentos iniciales» dentro de «Avanzado».
+- **Progreso › Pilares:** los pilares con datos van primero y los demás se agrupan en «Aún sin datos» con lo que falta; la semana en curso del gráfico de carga muestra su valor.
+- Pendiente de tu decisión: tabs de Progreso (tarea 3) y fusión de Semana/Pilares/Informe (tarea 12).
+- Sin cambios en Dexie (v10), cálculos ni backup. Pruebas: 273 (7 nuevas en `tests/entrega23.test.js`).
+
 ## v0.24.0 · Entrega 22 · Propuesta 2: sistema de color, contraste y estados (04/11/2026)
 - **Tokens:** todos los colores pasaron a `src/tokens.css` (documentados en `DESIGN-TOKENS.md`). Sin hex sueltos en CSS ni componentes.
 - **Contraste:** gris secundario `#7d8b9a` → `#a9b7c6` (en el hero era 2,79:1; ahora ≥ 4,5:1), placeholders ≥ 4,5:1 y bordes de controles ≥ 3:1 (antes 1,2:1, por eso botones y chips parecían deshabilitados).

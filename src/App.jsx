@@ -7,15 +7,16 @@ import Progreso from './features/progreso/Progreso'
 import Ajustes from './features/ajustes/Ajustes'
 import Bienestar from './features/bienestar/Bienestar'
 import {registrarToque} from './domain/privado'
-import {etiqueta, buscarActualizacion, actualizarAhora} from './version'
+import {buscarActualizacion, actualizarAhora} from './version'
 import {exportar, hayDatos, ultimoBackup} from './data/backup'
 import {avisoBackup} from './domain/backup'
+import Icono from './ui/Icono'
 
 const TABS = [
-  ['hoy', 'Hoy'],
-  ['entreno', 'Entreno'],
-  ['comidas', 'Comidas'],
-  ['progreso', 'Progreso']
+  ['hoy', 'Hoy', 'hoy'],
+  ['entreno', 'Entreno', 'entreno'],
+  ['comidas', 'Comidas', 'comidas'],
+  ['progreso', 'Progreso', 'progreso']
 ]
 
 export default function App() {
@@ -31,21 +32,16 @@ export default function App() {
     if (t !== 'ajustes' && t !== 'priv') setPrevia(t)
     setTab(t)
   }
-  // Acceso oculto al menú privado: 5 toques seguidos en la versión. Un toque solo sigue abriendo Ajustes.
-  const toques = useRef([]),
-    espera = useRef(0)
+  // Acceso oculto al menú privado: 5 toques seguidos en la línea «Versión» de Ajustes (antes: la versión de la cabecera).
+  const toques = useRef([])
   const tocarVersion = () => {
     if (tab === 'priv') return // ya estás adentro: un toque de más no te saca
     const r = registrarToque(toques.current, Date.now())
     toques.current = r.toques
-    clearTimeout(espera.current)
-    if (r.abre) return setTab('priv')
-    espera.current = setTimeout(() => {
-      if (toques.current.length === 1) {
-        toques.current = [] // el toque que abrió Ajustes no cuenta para el gesto
-        setTab('ajustes')
-      }
-    }, 700)
+    if (r.abre) {
+      toques.current = []
+      setTab('priv')
+    }
   }
   const revisarBackup = async () =>
     setBk(avisoBackup({ultimo: ultimoBackup(), hayDatos: await hayDatos()}))
@@ -55,17 +51,13 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <b>MMV</b>
-        <span>Mi Mejor Versión</span>
-        <small className="ver" onClick={tocarVersion}>
-          {etiqueta}
-        </small>
+        <b className="logo">MMV</b>
         <button
-          className={'gear' + (tab === 'ajustes' ? ' on' : '')}
-          aria-label={tab === 'ajustes' ? 'Cerrar ajustes' : 'Ajustes'}
+          className={'gear' + (tab === 'ajustes' || tab === 'priv' ? ' on' : '')}
+          aria-label={tab === 'ajustes' || tab === 'priv' ? 'Cerrar ajustes' : 'Ajustes'}
           onClick={() => (tab === 'ajustes' || tab === 'priv' ? setTab(previa) : setTab('ajustes'))}
         >
-          ⚙
+          <Icono n={tab === 'ajustes' || tab === 'priv' ? 'cerrar' : 'ajustes'} tam={22} />
         </button>
       </header>
       {nueva && (
@@ -98,18 +90,24 @@ export default function App() {
       {tab !== 'entreno' && <BarraReloj onAbrir={() => ir('entreno')} />}
       <main>
         <div hidden={tab !== 'hoy'}>
-          <Hoy onEmpezar={() => ir('entreno')} />
+          <Hoy onEmpezar={() => ir('entreno')} onComidas={() => ir('comidas')} />
         </div>
         {tab === 'entreno' && <Entreno />}
         {tab === 'comidas' && <Comidas />}
         {tab === 'progreso' && <Progreso />}
-        {tab === 'ajustes' && <Ajustes />}
+        {tab === 'ajustes' && <Ajustes onVersion={tocarVersion} />}
         {tab === 'priv' && <Bienestar onSalir={() => setTab(previa)} />}
       </main>
       <nav>
-        {TABS.map(([k, n]) => (
-          <button key={k} className={tab === k ? 'on' : ''} onClick={() => ir(k)}>
-            {n}
+        {TABS.map(([k, n, ic]) => (
+          <button
+            key={k}
+            className={tab === k ? 'on' : ''}
+            aria-current={tab === k ? 'page' : undefined}
+            onClick={() => ir(k)}
+          >
+            <Icono n={ic} tam={24} />
+            <span>{n}</span>
           </button>
         ))}
       </nav>

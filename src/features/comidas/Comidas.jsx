@@ -29,7 +29,12 @@ import {
   comidasParecidas,
   itemsDeComida,
   itemRapido,
-  faltaProteina
+  faltaProteina,
+  atajosRecientes,
+  usoDeAlimentos,
+  listarAlimentos,
+  FILTROS_ALIMENTOS,
+  MIN_FRECUENTE
 } from '../../domain/registro'
 import {
   MOMENTOS,
@@ -103,9 +108,9 @@ const Macros = ({t, compacto}) => {
   )
 }
 
-// Resumen de calorías y proteína de hoy para la pestaña Hoy.
+// Fila compacta de Hoy: calorías y proteína del día; al tocarla lleva a Comidas (el detalle vive allá).
 // La meta de proteína sale del último peso registrado (g por kg configurable en Ajustes → Perfil y objetivo).
-export function ResumenHoy() {
+export function FilaAlimentacion({onAbrir}) {
   const [t, setT] = useState(null),
     [peso, setPeso] = useState(undefined),
     meta = +cfg('metakcal', 2200) || 2200
@@ -124,40 +129,28 @@ export function ResumenHoy() {
   const factor = +String(cfg('protkg', PROT_KG)).replace(',', '.') || PROT_KG,
     metaP = proteinaObjetivo(peso, factor)
   return (
-    <section className="hero">
-      <h3>Alimentación de hoy</h3>
-      <div className="big">
-        {t.kcal}
-        <small> / {meta} kcal</small>
-      </div>
-      <div className="bar">
+    <button type="button" className="filahoy" onClick={onAbrir} aria-label="Alimentación de hoy: abrir Comidas">
+      <span className="filahoy-t">Alimentación de hoy</span>
+      <span className="filahoy-v">
+        <b className="mono">{t.kcal}</b>
+        <small className="mu"> / {meta} kcal</small>
+      </span>
+      <span className="bar" aria-hidden="true">
         <i style={{width: Math.min(100, (t.kcal / meta) * 100) + '%'}} />
-      </div>
-      <Macros t={t} />
-      {metaP ? (
-        <>
-          <div className="lin" style={{borderColor: 'var(--hero-ln)'}}>
-            <span>Proteína</span>
-            <span className="mono">
-              {fmt(t.p)} / {metaP} g
-            </span>
-          </div>
-          <div className="bar">
-            <i style={{width: Math.min(100, (t.p / metaP) * 100) + '%'}} />
-          </div>
-          <small className="mu">
-            Meta orientativa: {String(factor).replace('.', ',')} g por kg ×{' '}
-            {String(peso).replace('.', ',')} kg.
-          </small>
-        </>
-      ) : (
-        peso === null && (
-          <small className="mu" style={{display: 'block', marginTop: 4}}>
-            Registrá tu peso (tarjeta Cuerpo) y acá aparece tu meta de proteína.
-          </small>
-        )
-      )}
-    </section>
+      </span>
+      <span className="filahoy-p mu">
+        {metaP ? (
+          <>
+            Proteína <b className="mono">{fmt(t.p)}</b> / {metaP} g
+          </>
+        ) : (
+          <>
+            Proteína <b className="mono">{fmt(t.p)}</b> g
+          </>
+        )}
+      </span>
+      <Icono n="chevron-abajo" tam={18} className="filahoy-ch" />
+    </button>
   )
 }
 
@@ -418,13 +411,14 @@ function Escaner({alLeer, cerrar}) {
 }
 
 // Una sola entrada para agregar: buscador (con código de barras), cámara, recientes, comidas guardadas y respaldo web.
-function Agregar({base, sug, plant, parecidas, usarComida, agregar, libre, nuevo, usarPlantilla, usarWeb, foto}) {
+function Agregar({base, atajos, plant, usarComida, agregar, libre, nuevo, usarPlantilla, usarWeb, foto}) {
   const [rap, setRap] = useState({nombre: '', kcal: '', p: ''}),
     [rapErr, setRapErr] = useState(''),
     [q, setQ] = useState(''),
     [cam, setCam] = useState(false),
     [web, setWeb] = useState(null),
-    [esc, setEsc] = useState(false)
+    [esc, setEsc] = useState(false),
+    [verMas, setVerMas] = useState(false)
   const cod = esCodigo(q),
     texto = q.trim()
   const res = useMemo(() => {
@@ -535,26 +529,6 @@ function Agregar({base, sug, plant, parecidas, usarComida, agregar, libre, nuevo
               </div>
             </div>
           )}
-          {parecidas.length > 0 && (
-            <div style={{marginTop: 10}}>
-              <small className="tag">Comí algo parecido a…</small>
-              <div className="row" style={{marginTop: 4}}>
-                {parecidas.map(c => (
-                  <button
-                    key={c.k}
-                    className="chip"
-                    title={`${c.kcal} kcal · proteína ${fmt(c.p)} g · ${c.veces} ${c.veces === 1 ? 'vez' : 'veces'}`}
-                    onClick={() => usarComida(c.comida)}
-                  >
-                    {c.nombre} · {c.kcal} kcal
-                  </button>
-                ))}
-              </div>
-              <small className="mu" style={{display: 'block', marginTop: 4}}>
-                Se carga en tu comida para que ajustes porciones antes de guardar.
-              </small>
-            </div>
-          )}
           <details style={{marginTop: 10}}>
             <summary className="tag">⚡ Estimar rápido (solo calorías y proteína)</summary>
             <div className="row" style={{marginTop: 6}}>
@@ -603,24 +577,36 @@ function Agregar({base, sug, plant, parecidas, usarComida, agregar, libre, nuevo
               Es una estimación, no un dato medido: se guarda como «estimado» y no crea ningún alimento en tu base.
             </small>
           </details>
-          {sug.length > 0 && (
+          {atajos.length > 0 && (
             <div style={{marginTop: 10}}>
               <small className="tag">Recientes y frecuentes</small>
-              <div className="row" style={{marginTop: 4}}>
-                {sug.map(s => (
+              <div className="atajos">
+                {atajos.slice(0, verMas ? atajos.length : 3).map(a => (
                   <button
-                    key={s.k}
-                    className="chip"
-                    title={s.g + ' g'}
-                    onClick={() => agregar(itemDeSugerido(s, base))}
+                    key={a.k}
+                    className="atajo"
+                    onClick={() =>
+                      a.tipo === 'comida' ? usarComida(a.origen.comida) : agregar(itemDeSugerido(a.origen, base))
+                    }
                   >
-                    {s.nombre} · {s.g} g
+                    <span className="atajo-n">
+                      {a.nombre}
+                      {a.tipo === 'comida' && <small className="mu"> · comida de {a.alimentos}</small>}
+                    </span>
+                    <small className="mono atajo-v">
+                      {a.kcal} kcal · {a.g} g
+                    </small>
                   </button>
                 ))}
               </div>
+              {atajos.length > 3 && (
+                <button className="enlace" aria-expanded={verMas} onClick={() => setVerMas(v => !v)}>
+                  {verMas ? 'Ver menos' : `Ver más (${atajos.length - 3})`}
+                </button>
+              )}
             </div>
           )}
-          {!sug.length && !plant.length && !parecidas.length && (
+          {!atajos.length && !plant.length && (
             <p className="mu" style={{marginBottom: 0}}>
               Buscá un alimento, escaneá o escribí un código de barras, o sacá una foto. Lo que más
               cargues va a aparecer acá como atajo.
@@ -858,10 +844,15 @@ export default function Comidas() {
     tot = totales(cs.flatMap(c => c.items || [])),
     esHoy = fecha === hoy()
   const momentoAct = bor?.momento || momentoPorHora(new Date().getHours())
-  const sug = useMemo(() => sugeridos(hist, momentoAct, {hoy: hoy(), n: 8}), [hist, momentoAct])
-  const parecidas = useMemo(
-    () => comidasParecidas(hist, momentoAct, {hoy: hoy(), n: 5}),
-    [hist, momentoAct]
+  const atajos = useMemo(
+    () =>
+      atajosRecientes(
+        sugeridos(hist, momentoAct, {hoy: hoy(), n: 8}),
+        comidasParecidas(hist, momentoAct, {hoy: hoy(), n: 5}),
+        base,
+        {n: 5}
+      ),
+    [hist, momentoAct, base]
   )
   const factorP = +String(cfg('protkg', PROT_KG)).replace(',', '.') || PROT_KG,
     metaP = proteinaObjetivo(peso, factorP),
@@ -1114,7 +1105,12 @@ export default function Comidas() {
     await cargarBase()
     setMsg(n ? `Se repusieron ${n} alimentos iniciales.` : 'No faltaba ningún alimento inicial.')
   }
-  const lista = useMemo(() => (bq.trim() ? buscar(base, bq, 60) : base), [base, bq])
+  const [filtro, setFiltro] = useState('todos')
+  const uso = useMemo(() => usoDeAlimentos(hist), [hist])
+  const lista = useMemo(
+    () => listarAlimentos(bq.trim() ? buscar(base, bq, 60) : base, uso, filtro),
+    [base, bq, uso, filtro]
+  )
   const aviso = () =>
     msg ? <p className={msg.startsWith('No pude') ? 'warn' : 'mu'}>{msg}</p> : null
   const reintento = () =>
@@ -1213,9 +1209,8 @@ export default function Comidas() {
           </section>
           <Agregar
             base={base}
-            sug={sug}
+            atajos={atajos}
             plant={plant}
-            parecidas={parecidas}
             usarComida={usarComida}
             agregar={agregar}
             libre={() =>
@@ -1349,6 +1344,23 @@ export default function Comidas() {
               value={bq}
               onChange={e => setBq(e.target.value)}
             />
+            <div className="row" role="group" aria-label="Filtrar alimentos" style={{marginTop: 10}}>
+              {FILTROS_ALIMENTOS.map(([k, n]) => (
+                <button
+                  key={k}
+                  className={'chip' + (filtro === k ? ' on' : '')}
+                  aria-pressed={filtro === k}
+                  onClick={() => setFiltro(k)}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+            <small className="mu leyenda">
+              <span>🌐 copiado de la web</span>
+              <span>≈ estimado por IA o etiqueta</span>
+              <span>Valores cada 100 g · ordenados por uso reciente</span>
+            </small>
           </section>
           {aviso()}
           {reintento()}
@@ -1399,20 +1411,30 @@ export default function Comidas() {
                 <span className="mono kcal">{a.kcal100} kcal</span>
               </div>
             ))}
-            {!lista.length && <p className="mu">No hay alimentos con ese nombre.</p>}
+            {!lista.length && (
+              <p className="mu">
+                {filtro === 'frecuentes'
+                  ? `Todavía no hay alimentos que hayas usado ${MIN_FRECUENTE} veces o más en los últimos 90 días.`
+                  : 'No hay alimentos con ese nombre o filtro.'}
+              </p>
+            )}
             <small className="mu" style={{display: 'block', marginTop: 8}}>
-              Valores cada 100 g. Los iniciales son referencias aproximadas: corregilos con tus
-              datos. ≈ = cargado desde IA o etiqueta; 🌐 = copiado de la web. Verificalos.
+              Los iniciales son referencias aproximadas: corregilos con tus datos. Frecuentes = usados {MIN_FRECUENTE} veces o
+              más en 90 días.
             </small>
             {hayWeb && (
               <small className="mu" style={{display: 'block', marginTop: 4}}>
                 {ATRIBUCION}
               </small>
             )}
-            <button className="ghost mini" style={{marginTop: 8}} onClick={restaurar}>
-              Reponer alimentos iniciales
-            </button>
           </section>
+          <details className="avanzado">
+            <summary className="tag">Avanzado</summary>
+            <p className="mu" style={{margin: '8px 0'}}>
+              Vuelve a agregar los alimentos iniciales que hayas borrado. No toca los que ya tenés ni tus comidas.
+            </p>
+            <button onClick={restaurar}>Reponer alimentos iniciales</button>
+          </details>
         </>
       )}
     </>

@@ -4,6 +4,7 @@ import {pedirIA} from '../../services/ia'
 import NavFecha from '../../ui/NavFecha'
 import {claseVariacion} from '../../domain/variacion'
 import {lunes, sumaDias, sg} from '../../domain/stats'
+import Plegable from '../../ui/Plegable'
 import {preparacion, NOMBRES} from '../../domain/preparacion'
 import {
   informeSemana,
@@ -58,6 +59,15 @@ export function Preparacion({h}) {
   }, [])
   const r = useMemo(() => d && calcPrep(d, h), [d, h])
   if (!r) return null
+  if (!r.ok)
+    return (
+      <Plegable titulo="Preparación" resumen="Todavía no hay datos suficientes">
+        <p className="mu" style={{margin: 0}}>
+          Para calcularla hacé el check-in de arriba y cargá tu sueño de anoche; con los días se
+          suman tus comidas, el agua y tus sesiones. Falta: {r.faltan.join(', ').toLowerCase()}.
+        </p>
+      </Plegable>
+    )
   return (
     <section>
       <h3>Preparación para entrenar</h3>
