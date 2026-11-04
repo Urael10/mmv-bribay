@@ -1292,3 +1292,58 @@ details.avanzado > summary {
   display: flex;
   align-items: center;
 }
+
+/* Progreso: pestañas en una fila con deslizamiento horizontal (v0.26.0) */
+.tabs-wrap {
+  position: relative;
+  margin: 0 -2px 12px;
+}
+.tabs-lista {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  padding: 2px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.tabs-lista::-webkit-scrollbar {
+  display: none;
+}
+.tabs-lista .chip {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  min-height: 44px;
+  padding: 8px 14px;
+}
+.tabs-wrap::before,
+.tabs-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 28px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 1;
+}
+.tabs-wrap::before {
+  left: 0;
+  background: linear-gradient(to right, var(--bg), transparent);
+}
+.tabs-wrap::after {
+  right: 0;
+  background: linear-gradient(to left, var(--bg), transparent);
+}
+.tabs-wrap.hay-izq::before,
+.tabs-wrap.hay-der::after {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tabs-wrap::before,
+  .tabs-wrap::after {
+    transition: none;
+  }
+}

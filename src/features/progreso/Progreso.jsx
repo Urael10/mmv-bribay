@@ -2,6 +2,7 @@ import {useState, useEffect, useMemo} from 'react'
 import {db, hoy} from '../../data/db'
 import {Informe} from '../coach/Coach'
 import NavFecha from '../../ui/NavFecha'
+import TabsDeslizables from '../../ui/TabsDeslizables'
 import {nombreEjercicio} from '../../domain/formato'
 import {claseVariacion} from '../../domain/variacion'
 import {VistaCuerpo} from '../cuerpo/Cuerpo'
@@ -408,6 +409,16 @@ function Records({reg, ej, recargar}) {
   )
 }
 
+export const PESTANAS = [
+  ['pilares', 'Pilares'],
+  ['semana', 'Semana'],
+  ['historial', 'Historial'],
+  ['records', 'Récords'],
+  ['tests', 'Tests'],
+  ['cuerpo', 'Cuerpo'],
+  ['informe', 'Informe']
+]
+
 export default function Progreso() {
   const [d, setD] = useState(null),
     [sub, setSub] = useState('pilares')
@@ -433,21 +444,12 @@ export default function Progreso() {
     )
   return (
     <>
-      <div className="row" style={{marginBottom: 12}}>
-        {[
-          ['pilares', 'Pilares'],
-          ['semana', 'Semana'],
-          ['historial', 'Historial'],
-          ['records', 'Récords'],
-          ['tests', 'Tests'],
-          ['cuerpo', 'Cuerpo'],
-          ['informe', 'Informe']
-        ].map(([k, n]) => (
-          <button key={k} className={'chip' + (sub === k ? ' on' : '')} onClick={() => setSub(k)}>
-            {n}
-          </button>
-        ))}
-      </div>
+      <TabsDeslizables
+        etiqueta="Secciones de Progreso"
+        items={PESTANAS}
+        valor={sub}
+        onCambio={setSub}
+      />
       {sub === 'pilares' && <VistaPilares />}
       {sub === 'tests' && <VistaTests />}
       {sub === 'semana' && <Semana reg={d.reg} manual={manual} ses={d.ses} />}

@@ -1,5 +1,12 @@
 # Historial de versiones de MMV
 
+## v0.26.0 · Entrega 24 · Propuesta 3 (parte 2): pestañas de Progreso deslizables (04/11/2026)
+- **Progreso:** las 7 pestañas (Pilares, Semana, Historial, Récords, Tests, Cuerpo, Informe) pasaron a **una sola fila con deslizamiento horizontal** (`src/ui/TabsDeslizables.jsx`). Mismo orden y nombres; ya no queda «Informe» solo en una segunda fila.
+- La pestaña activa se centra sola al abrir y al cambiar; un degradé en el borde avisa si hay más pestañas fuera de pantalla. Botones de 44 px de alto, sin barra de scroll visible.
+- Accesibilidad: `role=tablist/tab`, flechas ← → / Inicio / Fin entre pestañas, y sin animación si el sistema pide reducir movimiento.
+- Decisiones aplicadas (las recomendadas del informe de la entrega 23): Progreso con tabs deslizables (A), Pilares/Semana/Informe se mantienen separadas (A, sin cambios), filtro «Frecuentes» sin favoritos con estrella.
+- Sin cambios en Dexie (v10), cálculos ni backup. Pruebas: 278 (5 nuevas en `tests/entrega24.test.js`).
+
 ## v0.25.0 · Entrega 23 · Propuesta 3 (parte 1): cabecera, barra inferior, Hoy, Comidas y Pilares (04/11/2026)
 - **Cabecera de 56 px:** solo «MMV» y el engranaje (SVG). La versión salió de la cabecera: está en Ajustes › Versión instalada, y los 5 toques seguidos sobre la línea «Versión» de esa tarjeta siguen abriendo el menú privado.
 - **Barra inferior** con íconos SVG + etiqueta (56 px de alto, ancho ≥ 86 px por botón).
