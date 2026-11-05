@@ -1347,3 +1347,97 @@ details.avanzado > summary {
     transition: none;
   }
 }
+
+/* ===== v0.27.0 · Entrega 26: rutas GPS (trazo SVG e historial) ===== */
+.trazo {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 240px;
+  background: var(--bg);
+  border-radius: 14px;
+}
+.trazo-linea {
+  fill: none;
+  stroke: var(--ac);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.trazo-ini {
+  fill: var(--bg);
+  stroke: var(--tx);
+  stroke-width: 2.5;
+}
+.trazo-fin {
+  fill: var(--tx);
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+.trazo-vivo {
+  max-height: 160px;
+  margin-top: 8px;
+}
+.ruta-mes {
+  margin-top: 10px;
+}
+.ruta-item {
+  border-top: 1px solid var(--ln);
+}
+button.ruta-fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 64px;
+  padding: 8px 4px;
+  text-align: left;
+  color: var(--tx);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+button.ruta-fila[aria-expanded='true'] {
+  background: var(--ac-soft);
+}
+button.ruta-fila:active:not(:disabled) {
+  background: var(--ac-press);
+}
+.ruta-mini {
+  flex: 0 0 96px;
+}
+.ruta-mini .trazo {
+  border-radius: 10px;
+}
+.ruta-mini .trazo-linea {
+  stroke-width: 2;
+}
+.ruta-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ruta-txt small {
+  color: var(--tx-2);
+  font-weight: 400;
+}
+.ruta-det {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 4px 12px;
+}
+.ruta-datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 14px;
+  color: var(--tx-2);
+}
+.ruta-datos b {
+  color: var(--tx);
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 16px;
+}

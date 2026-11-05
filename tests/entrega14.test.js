@@ -118,10 +118,10 @@ test('restaurar: sin menú aquí se importa; misma clave se importa; otra clave 
   assert.equal(P.planRestaurarPrivado(undefined, [{mes: '2026-11'}]).importar.length, 0, 'sin _meta no se importa')
 })
 
-test('base de datos: v9 agregó la tabla (hoy la base va por la v10) sin tocar lo anterior; se guarda cifrado y se lee; bloque vacío borra la fila', async () => {
+test('base de datos: v9 agregó la tabla (hoy la base va por la v11) sin tocar lo anterior; se guarda cifrado y se lee; bloque vacío borra la fila', async () => {
   const {db} = await import('../src/data/db.js')
   await db.open()
-  assert.equal(db.verno, 10)
+  assert.equal(db.verno, 11)
   await db.habitos.put({fecha: '2026-11-02', agua: 500})
   const D = await import('../src/data/privado.js')
   assert.equal(await D.hayClave(), false)

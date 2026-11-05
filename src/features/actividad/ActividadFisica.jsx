@@ -1,7 +1,13 @@
-import {useEffect, useRef, useState} from 'react'
+import {useCallback, useEffect, useRef, useState} from 'react'
 import {db, hoy} from '../../data/db'
 import {sumaDias} from '../../domain/stats'
 import NavFecha from '../../ui/NavFecha'
+import TrazoSvg from '../../ui/TrazoSvg'
+import Rutas from '../rutas/Rutas'
+import {guardarRuta} from '../../data/rutas'
+import {
+  RUTA_CFG, rutaNueva, agregarPuntoRuta, rutaParaGuardar, rutaDesdeGuardado, armarRuta, totalPuntos
+} from '../../domain/rutas'
 import {
   MAX_PASOS, TIPOS, LARGO_PASO_INICIAL, GPS_CFG,
   parsearPasos, sumarPasos, magnitudAceleracion, detectorNuevo, procesarMuestra,
@@ -14,7 +20,10 @@ const K = {
   sesion: 'mv_pasos_sesion',
   gps: 'mv_pasos_gps',
   usarGps: 'mv_pasos_usar_gps',
-  largo: 'mv_largo_paso'
+  largo: 'mv_largo_paso',
+  ruta: 'mv_ruta_curso',
+  guardarRuta: 'mv_ruta_guardar',
+  ocultar: 'mv_ruta_ocultar'
 }
 const leer = k => { try { return localStorage.getItem(k) } catch { return null } }
 const guardar = (k, v) => { try { localStorage.setItem(k, v) } catch { /* sin almacenamiento */ } }
@@ -23,13 +32,16 @@ const borrar = k => { try { localStorage.removeItem(k) } catch { /* sin almacena
 const activoHoy = () => leer(K.activo) === hoy()
 const sesionDeHoy = () => (activoHoy() ? +(leer(K.sesion) || 0) : 0)
 const gpsDeHoy = () => (activoHoy() ? gpsDesdeGuardado(leer(K.gps)) : gpsNuevo())
+const rutaDeHoy = () => (activoHoy() ? rutaDesdeGuardado(leer(K.ruta)) : rutaNueva())
+const guardarRutaActivo = () => leer(K.guardarRuta) !== '0'
+const ocultarActivo = () => leer(K.ocultar) !== '0'
 const largoGuardado = () => normalizarLargoPaso(leer(K.largo) ?? LARGO_PASO_INICIAL)
 const km = m => (m / 1000).toFixed(2).replace('.', ',')
 
 const MSG_SIN_PERMISO_SENSOR =
   'No se concedió permiso al sensor de movimiento. Para dárselo, cerrá MMV por completo, abrilo de nuevo, tocá ▶ y elegí «Permitir».'
 
-function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, onSugerir, cargando}) {
+function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, onSugerir, onRuta, cargando}) {
   const [sesion, setSesion] = useState(sesionDeHoy),
     [gps, setGps] = useState(() => {
       const g = gpsDeHoy()
@@ -39,6 +51,8 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
     [guardando, setGuardando] = useState(false),
     [usarGps, setUsarGps] = useState(() => leer(K.usarGps) !== '0'),
     [largoTxt, setLargoTxt] = useState(() => String(largoGuardado()).replace('.', ',')),
+    [guardarRutaSt, setGuardarRutaSt] = useState(guardarRutaActivo),
+    [ocultarSt, setOcultarSt] = useState(ocultarActivo),
     [recuperando, setRecuperando] = useState(() => {
       const guardada = leer(K.activo)
       return !!guardada && guardada !== hoy()
@@ -49,8 +63,25 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
     contandoRef = useRef(activoHoy()),
     usarGpsRef = useRef(leer(K.usarGps) !== '0'),
     ultimoDato = useRef(0),
-    ultimoGps = useRef(0)
+    ultimoGps = useRef(0),
+    guardarRutaRef = useRef(guardarRutaActivo()),
+    ocultarRef = useRef(ocultarActivo()),
+    ultimoFlush = useRef(0)
+  // La ruta en curso se lee una sola vez (puede pesar): después vive en la referencia.
+  const rutaRef = useRef(null)
+  if (rutaRef.current === null) rutaRef.current = rutaDeHoy()
+  const [segsVivo, setSegsVivo] = useState(() => rutaRef.current.segs)
 
+  const cambiarGuardarRuta = v => {
+    guardarRutaRef.current = v
+    setGuardarRutaSt(v)
+    guardar(K.guardarRuta, v ? '1' : '0')
+  }
+  const cambiarOcultar = v => {
+    ocultarRef.current = v
+    setOcultarSt(v)
+    guardar(K.ocultar, v ? '1' : '0')
+  }
   const cambiarUsarGps = v => {
     usarGpsRef.current = v
     setUsarGps(v)
@@ -88,6 +119,10 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
       ultimoGps.current = 0
       sesionRef.current = 0
       setSesion(0)
+      rutaRef.current = rutaNueva()
+      ultimoFlush.current = 0
+      setSegsVivo([])
+      borrar(K.ruta)
       setGps({m: 0, seg: 0, senal: hayGps ? 'buscando' : ''})
       guardar(K.activo, hoy())
       guardar(K.sesion, '0')
@@ -108,7 +143,7 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
     if (guardando) return
     setGuardando(true)
     contandoRef.current = false
-    borrar(K.activo); borrar(K.sesion); borrar(K.gps)
+    borrar(K.activo); borrar(K.sesion); borrar(K.gps); borrar(K.ruta)
     try {
       const distM = gpsRef.current.m
       const r = cerrarConteo({
@@ -118,13 +153,32 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
         largo: largoGuardado()
       })
       if (r.pasos > 0) await onSumar(r.pasos)
+      // La ruta se guarda aparte: si falla, los pasos ya sumados no se tocan ni se repiten.
+      let rutaId = null,
+        rutaFallo = false
+      if (usarGpsRef.current && guardarRutaRef.current) {
+        try {
+          const fila = armarRuta({
+            fecha,
+            distM,
+            seg: gpsRef.current.seg,
+            segs: rutaRef.current.segs,
+            ocultarM: ocultarRef.current ? RUTA_CFG.ocultarM : 0
+          })
+          if (fila) rutaId = await onRuta(fila)
+        } catch {
+          rutaFallo = true
+        }
+      }
       if (r.largoNuevo) {
         guardar(K.largo, String(r.largoNuevo))
         setLargoTxt(String(r.largoNuevo).replace('.', ','))
       }
-      if (r.actividad) onSugerir(r.actividad)
+      if (r.actividad) onSugerir(rutaId ? {...r.actividad, rutaId} : r.actividad)
       sesionRef.current = 0
       gpsRef.current = gpsNuevo()
+      rutaRef.current = rutaNueva()
+      setSegsVivo([])
       setSesion(0)
       setGps({m: 0, seg: 0, senal: ''})
       const origen =
@@ -137,6 +191,8 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
         (r.pasos > 0
           ? `${r.pasos.toLocaleString('es-AR')} pasos sumados${origen}.`
           : 'Conteo finalizado; no se detectaron pasos.') +
+          (rutaId ? ' Ruta guardada.' : '') +
+          (rutaFallo ? ' No pude guardar la ruta; los pasos sí quedaron.' : '') +
           (r.actividad ? ' Revisá la actividad sugerida abajo y tocá «Registrar».' : '')
       )
       onActivoChange(false)
@@ -145,6 +201,7 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
       guardar(K.activo, hoy())
       guardar(K.sesion, String(sesionRef.current))
       guardar(K.gps, gpsParaGuardar(gpsRef.current))
+      if (guardarRutaRef.current) guardar(K.ruta, rutaParaGuardar(rutaRef.current))
       contandoRef.current = true
       onActivoChange(true)
       setEstado('No se pudo guardar el conteo. Sigue activo; intentá detenerlo otra vez.')
@@ -175,6 +232,8 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
       }
     }
     const alCambiarVisibilidad = () => {
+      if (contandoRef.current && guardarRutaRef.current && totalPuntos(rutaRef.current.segs) > 0)
+        guardar(K.ruta, rutaParaGuardar(rutaRef.current))
       detector.current = detectorNuevo(detector.current.ultimo)
       setEstado(
         document.visibilityState === 'visible'
@@ -185,19 +244,33 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
     window.addEventListener('devicemotion', registrar)
     document.addEventListener('visibilitychange', alCambiarVisibilidad)
 
-    // GPS: solo suma distancia; la posición no se guarda ni sale del teléfono.
+    // GPS: suma distancia y, si la persona lo permite, arma el recorrido. La posición nunca sale del teléfono.
     let vigilia = null
     if (usarGpsRef.current && 'geolocation' in navigator) {
       vigilia = navigator.geolocation.watchPosition(
         pos => {
           if (!contandoRef.current) return
           const c = pos.coords
-          const r = procesarPuntoGps(gpsRef.current, {
-            lat: c.latitude, lon: c.longitude, precision: c.accuracy, t: pos.timestamp
-          })
+          const p = {
+            lat: c.latitude, lon: c.longitude, precision: c.accuracy, t: pos.timestamp,
+            alt: c.altitude, altPrecision: c.altitudeAccuracy
+          }
+          const r = procesarPuntoGps(gpsRef.current, p)
           ultimoGps.current = Date.now()
           gpsRef.current = r.estado
           guardar(K.gps, gpsParaGuardar(r.estado))
+          if (guardarRutaRef.current) {
+            const antes = rutaRef.current
+            rutaRef.current = agregarPuntoRuta(antes, p, r.motivo)
+            if (rutaRef.current !== antes) {
+              setSegsVivo(rutaRef.current.segs)
+              // Se guarda en el teléfono cada tanto (no en cada punto) para poder retomar si se cierra la app.
+              if (Date.now() - ultimoFlush.current > 10000) {
+                ultimoFlush.current = Date.now()
+                guardar(K.ruta, rutaParaGuardar(rutaRef.current))
+              }
+            }
+          }
           setGps({
             m: r.estado.m,
             seg: r.estado.seg,
@@ -253,6 +326,7 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
     const sensor = +(leer(K.sesion) || 0)
     const g = gpsDesdeGuardado(leer(K.gps))
     const pendientes = cerrarConteo({sensor, distM: g.m, seg: g.seg, largo: largoGuardado()}).pasos
+    const rutaPendiente = rutaDesdeGuardado(leer(K.ruta))
     const guardarPendientes = async () => {
       try {
         if (pendientes > 0) {
@@ -261,10 +335,24 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
             await db.habitos.put({...actual, fecha: fechaPendiente, pasos: sumarPasos(actual?.pasos, pendientes)})
           })
         }
-        borrar(K.activo); borrar(K.sesion); borrar(K.gps)
+        if (guardarRutaActivo()) {
+          try {
+            const fila = armarRuta({
+              fecha: fechaPendiente,
+              distM: g.m,
+              seg: g.seg,
+              segs: rutaPendiente.segs,
+              ocultarM: ocultarActivo() ? RUTA_CFG.ocultarM : 0
+            })
+            if (fila) await onRuta(fila)
+          } catch { /* la ruta es opcional: los pasos ya quedaron guardados */ }
+        }
+        borrar(K.activo); borrar(K.sesion); borrar(K.gps); borrar(K.ruta)
         contandoRef.current = false
         sesionRef.current = 0
         gpsRef.current = gpsNuevo()
+        rutaRef.current = rutaNueva()
+        setSegsVivo([])
         setSesion(0)
         setGps({m: 0, seg: 0, senal: ''})
         setRecuperando(false)
@@ -275,7 +363,7 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
       }
     }
     guardarPendientes()
-  }, [onActivoChange])
+  }, [onActivoChange, onRuta])
 
   return (
     <>
@@ -320,6 +408,9 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
           {gps.senal === 'débil' ? ' (salí a cielo abierto para mejorar la precisión)' : ''}
         </small>
       )}
+      {activo && usarGps && guardarRutaSt && totalPuntos(segsVivo) >= 2 && (
+        <TrazoSvg segs={segsVivo} ancho={320} alto={160} className="trazo-vivo" etiqueta="Trazo del recorrido en curso" />
+      )}
       <details>
         <summary><small className="mu">Ajustes del conteo</small></summary>
         <label className="lin">
@@ -327,7 +418,21 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
             <input type="checkbox" checked={usarGps} disabled={activo} onChange={e => cambiarUsarGps(e.target.checked)} />
             <span>Usar GPS para medir distancia y corregir pasos</span>
           </span>
-          <small className="mu">Pide el permiso de ubicación. La posición no se guarda ni sale del teléfono: solo se guarda la distancia.</small>
+          <small className="mu">Pide el permiso de ubicación. La ubicación en vivo nunca sale del teléfono.</small>
+        </label>
+        <label className="lin">
+          <span className="check">
+            <input type="checkbox" checked={guardarRutaSt} disabled={activo || !usarGps} onChange={e => cambiarGuardarRuta(e.target.checked)} />
+            <span>Guardar la ruta para ver mi historial</span>
+          </span>
+          <small className="mu">El recorrido queda solo en este teléfono (también viaja en tu backup) y no se envía a ningún servidor. Se borra desde «Rutas».</small>
+        </label>
+        <label className="lin">
+          <span className="check">
+            <input type="checkbox" checked={ocultarSt} disabled={activo || !usarGps || !guardarRutaSt} onChange={e => cambiarOcultar(e.target.checked)} />
+            <span>Ocultar los primeros y últimos 150 m del trazo</span>
+          </span>
+          <small className="mu">Así no queda dibujado el lugar de donde salís (por ejemplo, tu casa). La distancia y el ritmo se miden completos.</small>
         </label>
         <div className="row">
           <label htmlFor="largo-paso">Largo de paso (m)</label>
@@ -357,7 +462,9 @@ export default function ActividadFisica() {
     [tipo, setTipo] = useState('bicicleta'),
     [minutos, setMinutos] = useState(''),
     [kmTxt, setKmTxt] = useState(''),
-    [nota, setNota] = useState('')
+    [nota, setNota] = useState(''),
+    [rutaId, setRutaId] = useState(null),
+    [versionRutas, setVersionRutas] = useState(0)
 
   useEffect(() => {
     let vigente = true
@@ -371,7 +478,7 @@ export default function ActividadFisica() {
       setTotal(habito?.pasos == null ? '' : String(habito.pasos))
       setActividades(lista)
       setCargando(false)
-      setMinutos(''); setKmTxt(''); setNota('')
+      setMinutos(''); setKmTxt(''); setNota(''); setRutaId(null)
     }).catch(() => {
       if (!vigente) return
       setErrorCarga('No se pudieron cargar tus actividades. Recargá la app e intentá de nuevo.')
@@ -398,14 +505,22 @@ export default function ActividadFisica() {
   // Lo medido con GPS queda precargado; la persona lo confirma con «Registrar».
   const sugerir = s => {
     setTipo(s.tipo); setMinutos(String(s.minutos)); setKmTxt(String(s.km).replace('.', ',')); setNota('')
+    setRutaId(s.rutaId ?? null)
   }
 
+  // Guarda la ruta y avisa al historial para que se actualice.
+  const guardarRutaFila = useCallback(async fila => {
+    const id = await guardarRuta(fila)
+    setVersionRutas(v => v + 1)
+    return id
+  }, [])
+
   const agregar = async () => {
-    const item = armarActividad({fecha, tipo, minutos, km: kmTxt.replace(',', '.'), nota})
+    const item = armarActividad({fecha, tipo, minutos, km: kmTxt.replace(',', '.'), nota, rutaId})
     if (!item) return
     const id = await db.actividades.add(item)
     setActividades(a => [...a, {...item, id}].sort((x, y) => x.id - y.id))
-    setMinutos(''); setKmTxt(''); setNota('')
+    setMinutos(''); setKmTxt(''); setNota(''); setRutaId(null)
   }
 
   const borrar = async id => {
@@ -416,6 +531,7 @@ export default function ActividadFisica() {
   const resumen = resumenActividades(actividades)
 
   return (
+    <>
     <section style={{gridColumn: 'span 2'}}>
       <h3>Actividad física</h3>
       <NavFecha
@@ -428,7 +544,7 @@ export default function ActividadFisica() {
         onSiguiente={() => setFecha(f => sumaDias(f, 1))}
         extra={fecha !== hoy() && <button className="ghost mini" disabled={conteoActivo || cargando} onClick={() => setFecha(hoy())}>Volver a hoy</button>}
       />
-      <ConteoPasos total={total} fecha={fecha} activo={conteoActivo} onActivoChange={setConteoActivo} onGuardar={guardarPasos} onSumar={sumarConteo} onSugerir={sugerir} cargando={cargando} />
+      <ConteoPasos total={total} fecha={fecha} activo={conteoActivo} onActivoChange={setConteoActivo} onGuardar={guardarPasos} onSumar={sumarConteo} onSugerir={sugerir} onRuta={guardarRutaFila} cargando={cargando} />
       {errorCarga && <small role="alert" className="mu">{errorCarga}</small>}
       <h4>Agregar actividad</h4>
       <div className="row">
@@ -455,5 +571,7 @@ export default function ActividadFisica() {
         ))}
       </> : <small className="mu">Todavía no registraste actividades hoy.</small>}
     </section>
+    <Rutas version={versionRutas} />
+    </>
   )
 }

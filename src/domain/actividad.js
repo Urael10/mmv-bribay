@@ -188,7 +188,8 @@ export function cerrarConteo({sensor = 0, distM = 0, seg = 0, largo = LARGO_PASO
 // ---------- Actividades registradas ----------
 
 // Valida y arma el registro. Devuelve null si algo no es válido.
-export function armarActividad({fecha, tipo, minutos, km, nota}) {
+// `rutaId` (opcional) enlaza la actividad con la ruta GPS de la que salió, para no contar dos veces.
+export function armarActividad({fecha, tipo, minutos, km, nota, rutaId}) {
   const duracion = Math.floor(+minutos || 0),
     distancia = +km || 0
   if (!fecha || duracion < 1 || duracion > 1440 || distancia < 0 || distancia > 1000) return null
@@ -198,7 +199,8 @@ export function armarActividad({fecha, tipo, minutos, km, nota}) {
     tipo: tipo in TIPOS ? tipo : 'otro',
     minutos: duracion,
     ...(distancia > 0 ? {km: +distancia.toFixed(2)} : {}),
-    ...(texto ? {nota: texto} : {})
+    ...(texto ? {nota: texto} : {}),
+    ...(Number.isInteger(+rutaId) && +rutaId > 0 ? {rutaId: +rutaId} : {})
   }
 }
 

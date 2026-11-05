@@ -1,5 +1,17 @@
 # Historial de versiones de MMV
 
+## v0.27.0 · Entrega 26 · Rutas GPS: trazo, historial y parciales (05/11/2026)
+- **Qué cambia:** el GPS ya no guarda solo la distancia. Al contar con el GPS activado, el recorrido queda guardado como **ruta** y se ve en **Hoy › Rutas** («Ver mis rutas»): lista por mes con miniatura del trazo, y al tocar una ruta, el trazo grande, distancia, tiempo, ritmo (min/km), subida aproximada y **parciales por km**. Se puede borrar cada ruta.
+- **Trazo SVG privado (decisión D1):** se dibuja sin mapa ni conexión (`src/ui/TrazoSvg.jsx`, norte arriba, proporción real). Mientras contás se ve el trazo en vivo. El mapa OSM opcional queda para la entrega 27.
+- **Privacidad:** el recorrido vive solo en el teléfono y no se envía a ningún servidor ni a la IA (una prueba vigila que `services/` no toque las rutas). Dos opciones nuevas en «Ajustes del conteo»: **Guardar la ruta** (por defecto sí) y **Ocultar los primeros y últimos 150 m** del trazo guardado (por defecto sí; la distancia y el ritmo se miden completos). Las rutas **viajan en el backup**, así que ese archivo ahora contiene coordenadas.
+- **Lógica nueva, con pruebas:** `src/domain/rutas.js` arma el recorrido (cada hueco sin señal abre un segmento nuevo), lo simplifica (Douglas-Peucker iterativo, tope de 800 puntos guardados), lo guarda compacto (≈1 m de resolución), calcula parciales, desnivel (con histéresis de 4 m) y ritmo, proyecta el trazo, agrupa el historial y arma `resumenRutasParaIA` (solo agregados, listo para la entrega de IA).
+- **Datos:** Dexie **v11** agrega la tabla `rutas` (`++id,fecha,tipo`); no toca nada existente. `rutas` está en `TABLAS` y viaja en el backup. La capa de datos está en `src/data/rutas.js`.
+- **Actividad enlazada:** al registrar la actividad sugerida tras un conteo, se guarda `rutaId` en la actividad para no contar dos veces la misma salida cuando la IA use rutas y actividades.
+- **Robustez:** la ruta en curso se guarda en el teléfono cada ~10 s y al pasar MMV a segundo plano, así se retoma si la app se cierra; una ruta que falla al guardarse no revierte ni repite los pasos; un conteo que quedó abierto de un día anterior también guarda su ruta con esa fecha.
+- **Textos:** se corrigió la promesa anterior («la posición no se guarda»): ahora dice que la ubicación en vivo nunca sale del teléfono y explica qué se guarda.
+- Pruebas: 39 nuevas en `tests/entrega26.test.js` (lógica, trazo, historial, migración v10→v11, backup con rutas y privacidad hacia la IA).
+- **No probado:** celular real (precisión del GPS caminando, altura reportada por el navegador, retomar tras cierre forzado en iOS).
+
 ## v0.26.1 · Entrega 25 · Diagnóstico de arranque (04/11/2026)
 - La pantalla «La app no arrancó» ahora capta también los archivos que no cargan (antes decía «sin mensaje») y muestra el estado y tipo de respuesta del script principal (ej. `200 text/html` = Cloudflare devolvió una página en lugar del archivo).
 - Sin cambios en Dexie (v10), cálculos ni backup. Pruebas: 278.

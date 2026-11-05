@@ -12,6 +12,7 @@ db.version(7).stores({tests: '++id,fecha,clave'}) // 8: tests de referencia (cad
 db.version(8).stores({rutinas: '++id,&clave'}) // 9: plantillas de entreno (estructura de sesión); solo agrega una tabla, no toca tus datos
 db.version(9).stores({privado: 'mes'}) // 14: registro privado cifrado (un bloque por mes + fila _meta); solo agrega una tabla, no toca tus datos
 db.version(10).stores({actividades: '++id,fecha,tipo'}) // 19: actividad física diaria; conserva los datos existentes
+db.version(11).stores({rutas: '++id,fecha,tipo'}) // 26: rutas GPS (trazo compacto, solo en el dispositivo); solo agrega una tabla, no toca tus datos
 export const TABLAS = [
   'sesiones',
   'habitos',
@@ -26,7 +27,8 @@ export const TABLAS = [
   'tests',
   'rutinas',
   'privado',
-  'actividades'
+  'actividades',
+  'rutas'
 ]
 export const hoy = () =>
   new Date(Date.now() - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 10)
