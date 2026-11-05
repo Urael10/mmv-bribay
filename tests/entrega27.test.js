@@ -378,10 +378,7 @@ test('el service worker no guarda teselas (solo atiende su propio origen)', () =
   assert.match(leer('public/sw.js'), /u\.origin!==self\.location\.origin/)
 })
 
-test('versión 0.28.0 / entrega 27 y CSS del mapa sin colores sueltos', () => {
-  const pkg = JSON.parse(leer('package.json'))
-  assert.equal(pkg.version, '0.28.0')
-  assert.equal(pkg.entrega, '27')
+test('el CSS del mapa no tiene colores sueltos (la versión se fija en la prueba de la entrega vigente)', () => {
   const css = leer('src/styles.css')
   const bloque = css.slice(css.indexOf('Entrega 27: mapa OSM'))
   assert.doesNotMatch(bloque, /#[0-9a-fA-F]{3,8}\b|rgba?\(/)

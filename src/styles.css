@@ -1486,3 +1486,15 @@ button.ruta-fila:active:not(:disabled) {
 .mapa-caja a {
   color: var(--ac);
 }
+
+/* Pantallas con carga diferida (Entrega 28): aviso mientras se baja y cuando no se pudo bajar. */
+.pantalla-carga {
+  min-height: 40vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+.pantalla-carga p {
+  margin: 0;
+}

@@ -1,5 +1,6 @@
 // Historial de rutas GPS (Entrega 26): lista por mes con trazo, detalle con parciales y borrado.
-// Solo muestra y guarda; los cálculos viven en domain/rutas.js. Carga las rutas recién al abrirse.
+// Desde la Entrega 28 vive en Progreso › Rutas (se baja y se lee recién al abrir esa pestaña).
+// Solo muestra y guarda; los cálculos viven en domain/rutas.js.
 import {useEffect, useMemo, useState} from 'react'
 import {contarRutas, listarRutas, borrarRuta, importarGpx, todasLasRutas} from '../../data/rutas'
 import {hoy, cfg} from '../../data/db'
@@ -138,9 +139,8 @@ function Detalle({ruta, onBorrar, onAviso}) {
   )
 }
 
-export default function Rutas({version = 0}) {
-  const [abierto, setAbierto] = useState(false),
-    [total, setTotal] = useState(null),
+export default function Rutas() {
+  const [total, setTotal] = useState(null),
     [lista, setLista] = useState([]),
     [limite, setLimite] = useState(PAGINA),
     [cargando, setCargando] = useState(false),
@@ -150,7 +150,7 @@ export default function Rutas({version = 0}) {
     [recarga, setRecarga] = useState(0),
     [trabajando, setTrabajando] = useState(false)
 
-  // Solo el contador mientras está cerrado: no se leen los trazos hasta que se abre.
+  // El contador se lee aparte; los trazos se piden por páginas.
   useEffect(() => {
     let vigente = true
     contarRutas()
@@ -159,10 +159,9 @@ export default function Rutas({version = 0}) {
     return () => {
       vigente = false
     }
-  }, [version, recarga])
+  }, [recarga])
 
   useEffect(() => {
-    if (!abierto) return
     let vigente = true
     setCargando(true)
     setError('')
@@ -182,7 +181,7 @@ export default function Rutas({version = 0}) {
     return () => {
       vigente = false
     }
-  }, [abierto, limite, version, recarga])
+  }, [limite, recarga])
 
   const grupos = useMemo(() => agruparPorMes(lista), [lista])
 
@@ -256,7 +255,7 @@ export default function Rutas({version = 0}) {
     </>
   )
 
-  if (total === 0 && !abierto)
+  if (total === 0)
     return (
       <section style={{gridColumn: 'span 2'}}>
         <h3>Rutas</h3>
@@ -276,9 +275,11 @@ export default function Rutas({version = 0}) {
   return (
     <section style={{gridColumn: 'span 2'}}>
       <h3>Rutas</h3>
-      <button className="ghost" aria-expanded={abierto} onClick={() => setAbierto(a => !a)}>
-        {abierto ? 'Ocultar mis rutas' : `Ver mis rutas${total ? ` (${total})` : ''}`}
-      </button>
+      {total > 0 && (
+        <small className="mu">
+          {total} {total === 1 ? 'ruta guardada' : 'rutas guardadas'} en este teléfono.
+        </small>
+      )}
       <div className="botonera">
         {botonImportar}
         {total > 0 && (
@@ -292,65 +293,61 @@ export default function Rutas({version = 0}) {
           {aviso}
         </small>
       )}
-      {abierto && (
-        <>
-          {error && (
-            <small role="alert" className="mu">
-              {error}
+      {error && (
+        <small role="alert" className="mu">
+          {error}
+        </small>
+      )}
+      {cargando && !lista.length && <small className="mu">Cargando…</small>}
+      {grupos.map(g => (
+        <div key={g.mes} className="ruta-mes">
+          <div className="lin">
+            <b>{nombreMes(g.mes)}</b>
+            <small className="mu">
+              {g.cantidad} {g.cantidad === 1 ? 'ruta' : 'rutas'} · {kmTxt(g.km * 1000)} km ·{' '}
+              {formatoDuracion(g.seg)}
             </small>
-          )}
-          {cargando && !lista.length && <small className="mu">Cargando…</small>}
-          {grupos.map(g => (
-            <div key={g.mes} className="ruta-mes">
-              <div className="lin">
-                <b>{nombreMes(g.mes)}</b>
-                <small className="mu">
-                  {g.cantidad} {g.cantidad === 1 ? 'ruta' : 'rutas'} · {kmTxt(g.km * 1000)} km ·{' '}
-                  {formatoDuracion(g.seg)}
-                </small>
-              </div>
-              {g.rutas.map(r => (
-                <div key={r.id} className="ruta-item">
-                  <button
-                    className="ruta-fila"
-                    aria-expanded={sel === r.id}
-                    onClick={() => setSel(s => (s === r.id ? null : r.id))}
-                  >
-                    <span className="ruta-mini">
-                      <TrazoSvg
-                        segs={segsDeRuta(r)}
-                        ancho={96}
-                        alto={64}
-                        extremos={false}
-                        etiqueta=""
-                      />
-                    </span>
-                    <span className="ruta-txt">
-                      <b>{TIPOS[r.tipo] || 'Actividad'}</b>
-                      <small>
-                        {fechaCorta(r.fecha)} · {kmTxt(r.distM)} km · {formatoDuracion(r.seg)} ·{' '}
-                        {formatoRitmo(r.ritmo)} min/km
-                      </small>
-                    </span>
-                  </button>
-                  {sel === r.id && <Detalle ruta={r} onBorrar={borrar} onAviso={setAviso} />}
-                </div>
-              ))}
+          </div>
+          {g.rutas.map(r => (
+            <div key={r.id} className="ruta-item">
+              <button
+                className="ruta-fila"
+                aria-expanded={sel === r.id}
+                onClick={() => setSel(s => (s === r.id ? null : r.id))}
+              >
+                <span className="ruta-mini">
+                  <TrazoSvg
+                    segs={segsDeRuta(r)}
+                    ancho={96}
+                    alto={64}
+                    extremos={false}
+                    etiqueta=""
+                  />
+                </span>
+                <span className="ruta-txt">
+                  <b>{TIPOS[r.tipo] || 'Actividad'}</b>
+                  <small>
+                    {fechaCorta(r.fecha)} · {kmTxt(r.distM)} km · {formatoDuracion(r.seg)} ·{' '}
+                    {formatoRitmo(r.ritmo)} min/km
+                  </small>
+                </span>
+              </button>
+              {sel === r.id && <Detalle ruta={r} onBorrar={borrar} onAviso={setAviso} />}
             </div>
           ))}
-          {!cargando && !lista.length && !error && (
-            <small className="mu">Todavía no hay rutas guardadas.</small>
-          )}
-          {total != null && lista.length < total && (
-            <button
-              className="ghost"
-              disabled={cargando}
-              onClick={() => setLimite(l => l + PAGINA)}
-            >
-              Ver más
-            </button>
-          )}
-        </>
+        </div>
+      ))}
+      {!cargando && !lista.length && !error && (
+        <small className="mu">Todavía no hay rutas guardadas.</small>
+      )}
+      {total != null && lista.length < total && (
+        <button
+          className="ghost"
+          disabled={cargando}
+          onClick={() => setLimite(l => l + PAGINA)}
+        >
+          Ver más
+        </button>
       )}
     </section>
   )

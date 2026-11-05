@@ -202,7 +202,9 @@ test('nada se filtra: solo el menú privado, la base y el backup conocen esta ta
     'src/data/db.js',
     'src/data/backup.js',
     'src/features/bienestar/Bienestar.jsx',
-    'src/App.jsx'
+    'src/App.jsx',
+    // Entrega 28: el registro de carga diferida debe nombrar el archivo de esa pantalla para poder bajarlo
+    'src/ui/pantallas.js'
   ])
   const todos = []
   const rec = d => {

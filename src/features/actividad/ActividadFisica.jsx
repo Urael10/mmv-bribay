@@ -3,7 +3,6 @@ import {db, hoy} from '../../data/db'
 import {sumaDias} from '../../domain/stats'
 import NavFecha from '../../ui/NavFecha'
 import TrazoSvg from '../../ui/TrazoSvg'
-import Rutas from '../rutas/Rutas'
 import {guardarRuta} from '../../data/rutas'
 import {
   RUTA_CFG, rutaNueva, agregarPuntoRuta, rutaParaGuardar, rutaDesdeGuardado, armarRuta, totalPuntos
@@ -425,7 +424,7 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
             <input type="checkbox" checked={guardarRutaSt} disabled={activo || !usarGps} onChange={e => cambiarGuardarRuta(e.target.checked)} />
             <span>Guardar la ruta para ver mi historial</span>
           </span>
-          <small className="mu">El recorrido queda solo en este teléfono (también viaja en tu backup) y no se envía a ningún servidor. Se borra desde «Rutas».</small>
+          <small className="mu">El recorrido queda solo en este teléfono (también viaja en tu backup) y no se envía a ningún servidor. Se ve y se borra desde Progreso › Rutas.</small>
         </label>
         <label className="lin">
           <span className="check">
@@ -452,7 +451,7 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
   )
 }
 
-export default function ActividadFisica() {
+export default function ActividadFisica({onVerRutas}) {
   const [fecha, setFecha] = useState(hoy()),
     [conteoActivo, setConteoActivo] = useState(activoHoy),
     [total, setTotal] = useState(''),
@@ -463,8 +462,7 @@ export default function ActividadFisica() {
     [minutos, setMinutos] = useState(''),
     [kmTxt, setKmTxt] = useState(''),
     [nota, setNota] = useState(''),
-    [rutaId, setRutaId] = useState(null),
-    [versionRutas, setVersionRutas] = useState(0)
+    [rutaId, setRutaId] = useState(null)
 
   useEffect(() => {
     let vigente = true
@@ -508,12 +506,8 @@ export default function ActividadFisica() {
     setRutaId(s.rutaId ?? null)
   }
 
-  // Guarda la ruta y avisa al historial para que se actualice.
-  const guardarRutaFila = useCallback(async fila => {
-    const id = await guardarRuta(fila)
-    setVersionRutas(v => v + 1)
-    return id
-  }, [])
+  // Guarda la ruta. El historial vive en Progreso › Rutas y se lee al abrirlo.
+  const guardarRutaFila = useCallback(fila => guardarRuta(fila), [])
 
   const agregar = async () => {
     const item = armarActividad({fecha, tipo, minutos, km: kmTxt.replace(',', '.'), nota, rutaId})
@@ -570,8 +564,12 @@ export default function ActividadFisica() {
           </div>
         ))}
       </> : <small className="mu">Todavía no registraste actividades hoy.</small>}
+      {onVerRutas && (
+        <div className="botonera">
+          <button className="ghost" onClick={onVerRutas}>Ver mis rutas</button>
+        </div>
+      )}
     </section>
-    <Rutas version={versionRutas} />
     </>
   )
 }

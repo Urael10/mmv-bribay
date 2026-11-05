@@ -1,10 +1,10 @@
 import {useState, useEffect} from 'react'
 import {db, hoy, cfg} from '../../data/db'
-import {FilaAlimentacion} from '../comidas/Comidas'
-import {Preparacion} from '../coach/Coach'
+import FilaAlimentacion from '../comidas/FilaAlimentacion'
+import Preparacion from '../coach/Preparacion'
 import {TarjetaCuerpo} from '../cuerpo/Cuerpo'
 import {CHECKIN} from '../../domain/checkin'
-import {AvisoDescarga} from '../progreso/Pilares'
+import {AvisoDescarga} from '../progreso/AvisoDescarga'
 import {videosPendientes, haySesionEnCurso} from '../../domain/entreno'
 import {sumaDias} from '../../domain/stats'
 import {fmtVal, hayDato} from '../../domain/formato'
@@ -12,7 +12,7 @@ import {dejarFoto} from '../../services/pendiente'
 import ActividadFisica from '../actividad/ActividadFisica'
 import Icono from '../../ui/Icono'
 
-export default function Hoy({onEmpezar, onComidas}) {
+export default function Hoy({onEmpezar, onComidas, onRutas}) {
   const [h, setH] = useState({fecha: hoy(), agua: 0, sueno: '', calidad: 3}),
     [otro, setOtro] = useState(''),
     [videos, setVideos] = useState([]),
@@ -188,7 +188,7 @@ export default function Hoy({onEmpezar, onComidas}) {
           </button>
         </div>
       </section>
-      <ActividadFisica />
+      <ActividadFisica onVerRutas={onRutas} />
       <TarjetaCuerpo />
     </div>
   )

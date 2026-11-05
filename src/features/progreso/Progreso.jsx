@@ -3,6 +3,7 @@ import {db, hoy} from '../../data/db'
 import {Informe} from '../coach/Coach'
 import NavFecha from '../../ui/NavFecha'
 import TabsDeslizables from '../../ui/TabsDeslizables'
+import Pantalla from '../../ui/Pantalla'
 import {nombreEjercicio} from '../../domain/formato'
 import {claseVariacion} from '../../domain/variacion'
 import {VistaCuerpo} from '../cuerpo/Cuerpo'
@@ -413,15 +414,16 @@ export const PESTANAS = [
   ['pilares', 'Pilares'],
   ['semana', 'Semana'],
   ['historial', 'Historial'],
+  ['rutas', 'Rutas'],
   ['records', 'Récords'],
   ['tests', 'Tests'],
   ['cuerpo', 'Cuerpo'],
   ['informe', 'Informe']
 ]
 
-export default function Progreso() {
+export default function Progreso({subInicial}) {
   const [d, setD] = useState(null),
-    [sub, setSub] = useState('pilares')
+    [sub, setSub] = useState(PESTANAS.some(([k]) => k === subInicial) ? subInicial : 'pilares')
   const cargar = async () =>
     setD({
       ses: await db.sesiones.orderBy('fecha').toArray(),
@@ -456,6 +458,7 @@ export default function Progreso() {
       {sub === 'historial' && (
         <Historial ses={d.ses} reg={d.reg} marcas={marcas} recargar={cargar} />
       )}
+      {sub === 'rutas' && <Pantalla clave="rutas" nombre="tus rutas" />}
       {sub === 'records' && <Records reg={d.reg} ej={d.ej} recargar={cargar} />}
       {sub === 'cuerpo' && <VistaCuerpo />}
       {sub === 'informe' && <Informe ses={d.ses} reg={d.reg} manual={manual} />}
