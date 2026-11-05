@@ -1,5 +1,13 @@
 # Historial de versiones de MMV
 
+## v0.28.0 · Entrega 27 · Mapa OSM opcional y GPX (05/11/2026)
+- **Mapa opcional (D1 completada):** Ajustes › «Mapa de las rutas» (apagado por defecto, aviso explícito). Con el permiso, el detalle de cada ruta muestra «Ver sobre el mapa»; recién al tocarlo se piden las teselas a OpenStreetMap (zona visible + IP). Trazo con borde sobre las teselas, atribución «© OpenStreetMap» y aviso si no hay conexión. Sin librerías nuevas: `src/domain/mapa.js` (Web Mercator, elección de zoom, teselas, trazo en px; con pruebas) y `src/ui/MapaOsm.jsx`.
+- **Exportar GPX:** por ruta (detalle) o todas (Hoy › Rutas). GPX 1.1 con `ele` y `time`, y una extensión `mmv:ruta` con las estadísticas completas. Usa la hoja de compartir del celular si existe; si no, descarga. Se exporta el trazo guardado (con el recorte de 150 m si estaba activo).
+- **Importar GPX:** lee `trk`/`rte` de otras apps (atributos en cualquier orden, CDATA, comentarios; descarta puntos inválidos). Calcula distancia, tiempo (primer a último horario), ritmo, parciales y subida; aplica la opción «Ocultar 150 m». Sin horarios se guarda con la fecha de hoy, sin ritmo (`sinTiempo`). Detecta repetidas (mismo inicio y distancia) y no duplica. Un GPX exportado por MMV conserva sus estadísticas y no se vuelve a recortar. Las rutas importadas llevan `origen: 'gpx'`.
+- **Datos:** sin cambios en Dexie (v11). La preferencia `mapa_osm` es local del dispositivo y no viaja en el backup. `armarRuta` acepta `exigirTiempo: false`.
+- **Privacidad:** una prueba fija que la dirección del servidor de teselas vive solo en `domain/mapa.js`, que el mapa solo se monta tras el permiso y el toque, y que ningún servicio toca mapa ni GPX. El service worker no guarda teselas.
+- Pruebas: 25 nuevas en `tests/entrega27.test.js` (total 342). **No probado:** celular real (compartir archivo en iOS/Android, carga de teselas, GPX de Strava/Garmin/Komoot reales).
+
 ## v0.27.0 · Entrega 26 · Rutas GPS: trazo, historial y parciales (05/11/2026)
 - **Qué cambia:** el GPS ya no guarda solo la distancia. Al contar con el GPS activado, el recorrido queda guardado como **ruta** y se ve en **Hoy › Rutas** («Ver mis rutas»): lista por mes con miniatura del trazo, y al tocar una ruta, el trazo grande, distancia, tiempo, ritmo (min/km), subida aproximada y **parciales por km**. Se puede borrar cada ruta.
 - **Trazo SVG privado (decisión D1):** se dibuja sin mapa ni conexión (`src/ui/TrazoSvg.jsx`, norte arriba, proporción real). Mientras contás se ve el trazo en vivo. El mapa OSM opcional queda para la entrega 27.

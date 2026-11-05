@@ -1,10 +1,21 @@
 // Historial de rutas GPS (Entrega 26): lista por mes con trazo, detalle con parciales y borrado.
 // Solo muestra y guarda; los cálculos viven en domain/rutas.js. Carga las rutas recién al abrirse.
 import {useEffect, useMemo, useState} from 'react'
-import {contarRutas, listarRutas, borrarRuta} from '../../data/rutas'
+import {contarRutas, listarRutas, borrarRuta, importarGpx, todasLasRutas} from '../../data/rutas'
+import {hoy, cfg} from '../../data/db'
 import {TIPOS} from '../../domain/actividad'
-import {agruparPorMes, segsDeRuta, formatoDuracion, formatoRitmo} from '../../domain/rutas'
+import {
+  RUTA_CFG,
+  agruparPorMes,
+  segsDeRuta,
+  formatoDuracion,
+  formatoRitmo
+} from '../../domain/rutas'
+import {GPX_CFG, rutasAGpx, nombreArchivoGpx} from '../../domain/gpx'
+import {CLAVE_MAPA} from '../../domain/mapa'
 import TrazoSvg from '../../ui/TrazoSvg'
+import MapaOsm from '../../ui/MapaOsm'
+import {entregarArchivo} from '../../ui/entregarArchivo'
 
 const PAGINA = 15
 const kmTxt = m => (m / 1000).toFixed(2).replace('.', ',')
@@ -17,9 +28,29 @@ const fechaCorta = f =>
     month: 'short'
   })
 
-function Detalle({ruta, onBorrar}) {
+const mapaPermitido = () => cfg(CLAVE_MAPA) === '1'
+const ocultarActivo = () => {
+  try {
+    return localStorage.getItem('mv_ruta_ocultar') !== '0'
+  } catch {
+    return true
+  }
+}
+
+function Detalle({ruta, onBorrar, onAviso}) {
   const segs = useMemo(() => segsDeRuta(ruta), [ruta])
-  const [confirmar, setConfirmar] = useState(false)
+  const [confirmar, setConfirmar] = useState(false),
+    [verMapa, setVerMapa] = useState(false)
+  const exportar = async () => {
+    const r = await entregarArchivo(nombreArchivoGpx([ruta], hoy()), rutasAGpx([ruta]))
+    onAviso(
+      r === 'cancelado'
+        ? ''
+        : r === 'compartido'
+          ? '✔ GPX compartido.'
+          : '✔ GPX descargado (revisá Descargas).'
+    )
+  }
   return (
     <div className="ruta-det">
       <TrazoSvg
@@ -28,6 +59,30 @@ function Detalle({ruta, onBorrar}) {
         alto={220}
         etiqueta={`Trazo de la ruta del ${fechaCorta(ruta.fecha)}`}
       />
+      {mapaPermitido() ? (
+        verMapa ? (
+          <MapaOsm
+            segs={segs}
+            ancho={320}
+            alto={220}
+            etiqueta="Trazo sobre el mapa de OpenStreetMap"
+          />
+        ) : (
+          <>
+            <button className="ghost mini" onClick={() => setVerMapa(true)}>
+              Ver sobre el mapa
+            </button>
+            <small className="mu">
+              Al abrirlo, OpenStreetMap recibe la zona que se ve en pantalla (no tu nombre ni tus
+              datos).
+            </small>
+          </>
+        )
+      ) : (
+        <small className="mu">
+          El mapa es opcional: podés activarlo en Ajustes › Mapa de las rutas.
+        </small>
+      )}
       <div className="ruta-datos">
         <span>
           <b>{kmTxt(ruta.distM)}</b> km
@@ -61,6 +116,9 @@ function Detalle({ruta, onBorrar}) {
           los del recorrido completo.
         </small>
       )}
+      <button className="ghost mini" onClick={exportar}>
+        Exportar GPX
+      </button>
       {confirmar ? (
         <div className="row">
           <small className="mu">¿Borrar esta ruta? La actividad registrada no se borra.</small>
@@ -87,7 +145,10 @@ export default function Rutas({version = 0}) {
     [limite, setLimite] = useState(PAGINA),
     [cargando, setCargando] = useState(false),
     [error, setError] = useState(''),
-    [sel, setSel] = useState(null)
+    [sel, setSel] = useState(null),
+    [aviso, setAviso] = useState(''),
+    [recarga, setRecarga] = useState(0),
+    [trabajando, setTrabajando] = useState(false)
 
   // Solo el contador mientras está cerrado: no se leen los trazos hasta que se abre.
   useEffect(() => {
@@ -98,7 +159,7 @@ export default function Rutas({version = 0}) {
     return () => {
       vigente = false
     }
-  }, [version])
+  }, [version, recarga])
 
   useEffect(() => {
     if (!abierto) return
@@ -121,7 +182,7 @@ export default function Rutas({version = 0}) {
     return () => {
       vigente = false
     }
-  }, [abierto, limite, version])
+  }, [abierto, limite, version, recarga])
 
   const grupos = useMemo(() => agruparPorMes(lista), [lista])
 
@@ -136,14 +197,79 @@ export default function Rutas({version = 0}) {
     }
   }
 
+  const importar = async e => {
+    const f = e.target.files?.[0]
+    e.target.value = ''
+    if (!f) return
+    if (f.size > GPX_CFG.bytesMax) {
+      setAviso('Ese archivo es muy grande (máximo 10 MB).')
+      return
+    }
+    setTrabajando(true)
+    try {
+      const r = await importarGpx(await f.text(), ocultarActivo() ? RUTA_CFG.ocultarM : 0)
+      if (r.error) setAviso(r.error)
+      else {
+        setAviso(
+          `✔ Se importaron ${r.agregadas} ${r.agregadas === 1 ? 'ruta' : 'rutas'}` +
+            (r.repetidas ? ` (${r.repetidas} ya estaban)` : '') +
+            (r.invalidas ? ` (${r.invalidas} sin recorrido válido)` : '') +
+            '.'
+        )
+        setRecarga(n => n + 1)
+      }
+    } catch {
+      setAviso('No pude leer ese archivo. Probá con otro GPX.')
+    }
+    setTrabajando(false)
+  }
+  const exportarTodas = async () => {
+    try {
+      const todas = await todasLasRutas()
+      const r = await entregarArchivo(nombreArchivoGpx(todas, hoy()), rutasAGpx(todas))
+      setAviso(
+        r === 'cancelado'
+          ? ''
+          : r === 'compartido'
+            ? '✔ GPX compartido.'
+            : '✔ GPX descargado (revisá Descargas).'
+      )
+    } catch {
+      setAviso('No se pudo exportar. Intentá de nuevo.')
+    }
+  }
+  const botonImportar = (
+    <>
+      <button
+        className="ghost"
+        disabled={trabajando}
+        onClick={e => e.currentTarget.nextSibling.click()}
+      >
+        Importar GPX
+      </button>
+      <input
+        hidden
+        type="file"
+        accept=".gpx,application/gpx+xml,text/xml,application/xml"
+        onChange={importar}
+      />
+    </>
+  )
+
   if (total === 0 && !abierto)
     return (
       <section style={{gridColumn: 'span 2'}}>
         <h3>Rutas</h3>
         <small className="mu">
           Cuando cuentes pasos con el GPS activado, el recorrido queda guardado acá (solo en tu
-          teléfono).
+          teléfono). También podés importar un archivo GPX.
         </small>
+        <div className="botonera">{botonImportar}</div>
+        {aviso && (
+          <small role="status" className="tag">
+            {aviso}
+          </small>
+        )}
       </section>
     )
 
@@ -153,6 +279,19 @@ export default function Rutas({version = 0}) {
       <button className="ghost" aria-expanded={abierto} onClick={() => setAbierto(a => !a)}>
         {abierto ? 'Ocultar mis rutas' : `Ver mis rutas${total ? ` (${total})` : ''}`}
       </button>
+      <div className="botonera">
+        {botonImportar}
+        {total > 0 && (
+          <button className="ghost" onClick={exportarTodas}>
+            Exportar GPX
+          </button>
+        )}
+      </div>
+      {aviso && (
+        <small role="status" className="tag">
+          {aviso}
+        </small>
+      )}
       {abierto && (
         <>
           {error && (
@@ -194,7 +333,7 @@ export default function Rutas({version = 0}) {
                       </small>
                     </span>
                   </button>
-                  {sel === r.id && <Detalle ruta={r} onBorrar={borrar} />}
+                  {sel === r.id && <Detalle ruta={r} onBorrar={borrar} onAviso={setAviso} />}
                 </div>
               ))}
             </div>

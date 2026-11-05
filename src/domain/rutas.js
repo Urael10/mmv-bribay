@@ -260,10 +260,17 @@ export function rutaDesdeGuardado(texto) {
 
 // Arma la fila que se guarda en la tabla `rutas`, o null si el recorrido es muy corto.
 // Las estadísticas salen del recorrido completo; el trazo guardado se recorta (privacidad) y se simplifica.
-export function armarRuta({fecha, distM = 0, seg = 0, segs = [], ocultarM = RUTA_CFG.ocultarM}) {
+export function armarRuta({
+  fecha,
+  distM = 0,
+  seg = 0,
+  segs = [],
+  ocultarM = RUTA_CFG.ocultarM,
+  exigirTiempo = true // un GPX importado puede venir sin horarios
+}) {
   const limpios = segs.filter(g => g.length)
   if (!fecha || totalPuntos(limpios) < 2) return null
-  if (!(distM >= RUTA_CFG.distMin) || !(seg >= RUTA_CFG.segMin)) return null
+  if (!(distM >= RUTA_CFG.distMin) || (exigirTiempo && !(seg >= RUTA_CFG.segMin))) return null
   const inicio = limpios[0][0].t
   const sug = sugerirActividad({distM, seg})
   const desn = desnivel(limpios)
