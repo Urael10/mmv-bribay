@@ -1775,3 +1775,129 @@ button.ruta-fila:active:not(:disabled) {
 .plano .tesela .tesela-v {
   grid-column: 3;
 }
+
+/* ===== v0.34.0 · Entrega 33: anillo del contador de pasos y modo sueño con alarma ===== */
+.pasos-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  margin: var(--sp-3) 0 var(--sp-4);
+}
+.pasos-n {
+  font-size: 28px;
+  line-height: 1;
+}
+.pasos-cuerpo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.pasos-est {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: 13px;
+  color: var(--tx);
+  background: var(--sf-2);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-ctl);
+}
+.pasos-est.contando .ico {
+  color: var(--pos);
+  animation: pasos-latido 1.4s ease-in-out infinite;
+}
+.pasos-est.buscando .ico,
+.pasos-est.pausa .ico {
+  color: var(--warn);
+}
+@keyframes pasos-latido {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pasos-est.contando .ico {
+    animation: none;
+  }
+}
+
+/* Dormir con alarma: la pantalla completa es casi negra (fondo del tema, textos y anillo atenuados) */
+.sueno {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.sueno-ov {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--bg);
+  color: var(--tx-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-5);
+  padding: var(--sp-5);
+  text-align: center;
+  overflow-y: auto;
+}
+.sueno-ov .anillo {
+  opacity: 0.6;
+}
+.sueno-ov .anillo.ok {
+  opacity: 1;
+}
+.sueno-hora {
+  font-size: 44px;
+  color: var(--tx-2);
+}
+.sueno-est {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  color: var(--tx-2);
+}
+.sueno-falta {
+  margin: 0;
+  font-size: 18px;
+  color: var(--tx-2);
+}
+.sueno-nota {
+  max-width: 320px;
+}
+.sueno-bot {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.sueno-apagar {
+  min-width: 240px;
+  min-height: 64px;
+  font-size: 20px;
+}
+.sueno-res {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  text-align: left;
+}
+.sueno-res h3 {
+  margin: 0;
+}
+.sueno-linea {
+  margin: 0;
+  color: var(--tx);
+}
+
+/* Anillos grandes (pasos y noche): trazo más fino que el de los anillos chicos */
+.pasos-hero .anillo-pista,
+.pasos-hero .anillo-arco,
+.sueno-ov .anillo-pista,
+.sueno-ov .anillo-arco {
+  stroke-width: 2.2;
+}

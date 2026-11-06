@@ -1,4 +1,4 @@
-# Tokens de diseño de MMV (v0.32.0)
+# Tokens de diseño de MMV (v0.34.0)
 
 Todos los colores viven en `src/tokens.css`. Ni `styles.css` ni los componentes llevan hex/rgb (una prueba lo vigila). Única excepción: `theme-color` en `index.html` y `manifest.webmanifest` repite `--bg` (otra prueba comprueba que coincidan).
 
@@ -50,3 +50,6 @@ Las tarjetas ya no llevan borde: se separan del fondo con `--sf` y `--sombra-1`.
 
 ## Lista limpia (v0.32.0)
 Sin tokens nuevos. En Hoy, Entreno y Progreso (clase `plano` en `<main>`) las secciones pierden fondo, sombra, radio y relleno; el ritmo lo dan `--sp-5` entre filas y `--sp-6` entre bloques. Siguen con caja las de aviso (`.warn`) y con borde `--bd` todos los controles tocables. El lima sigue siendo uno por pantalla (botón de entrenar).
+
+## Anillo de pasos y modo sueño (v0.34.0)
+Sin tokens nuevos. El anillo de pasos usa `Anillo` (`--info`, `--pos` al llegar a la meta, `--sf-2` de pista); el estado del conteo va siempre con ícono + texto (`--pos` contando, `--warn` buscando o en pausa). La pantalla de dormir usa `--bg` y `--tx-2`, con el anillo a opacidad 0,6 para no encandilar. Cian = tocable y lima = destacado no se usan en los bloques nuevos (los botones heredan el estilo base).

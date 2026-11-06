@@ -61,13 +61,10 @@ test('carga diferida intacta: Hoy no importa Comidas, Coach ni Pilares', () => {
     /from '\.\.\/(comidas\/Comidas|coach\/Coach|progreso\/Pilares)'/
   )
 })
-test('versión 0.33.0 / entrega 32', () => {
+test('versión: la 0.33.0 / entrega 32 o una posterior (la exacta la fija la prueba de la última entrega)', () => {
   const pkg = JSON.parse(leer('package.json'))
-  assert.equal(pkg.version, '0.33.0')
-  assert.equal(pkg.entrega, '32')
-  assert.match(leer('package-lock.json'), /"version": "0\.33\.0"/)
-  assert.match(
-    leer('CHANGELOG.md'),
-    /^# Historial de versiones de MMV\n\n## v0\.33\.0 · Entrega 32/
-  )
+  const [ma, mi] = pkg.version.split('.').map(Number)
+  assert.ok(ma > 0 || mi >= 33, pkg.version)
+  assert.ok(+pkg.entrega >= 32, pkg.entrega)
+  assert.match(leer('CHANGELOG.md'), /## v0\.33\.0 · Entrega 32/)
 })

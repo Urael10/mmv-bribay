@@ -1,10 +1,10 @@
-# Mi Mejor Versión (MMV) · Entrega 31 (v0.32.0)
+# Mi Mejor Versión (MMV) · Entrega 33 (v0.34.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 
 ## Estructura
 ```
-src/domain/    lógica pura con pruebas: actividad (pasos, GPS, actividades), rutas (recorrido, trazo, parciales), mapa (teselas OSM), gpx (exportar/importar), alimentos, backup, biblioteca, checkin, cuerpo, entreno, informe, movimiento (pasos, actividades y rutas sin doble conteo), preparacion, privado (cifrado), progreso, registro, stats, temporizador
+src/domain/    lógica pura con pruebas: actividad (pasos, GPS, actividades), metaPasos (meta, promedio y estado del conteo), sueno (alarma y horas de sueño), rutas (recorrido, trazo, parciales), mapa (teselas OSM), gpx (exportar/importar), alimentos, backup, biblioteca, checkin, cuerpo, entreno, informe, movimiento (pasos, actividades y rutas sin doble conteo), preparacion, privado (cifrado), progreso, registro, stats, temporizador
 src/data/      base de datos (Dexie v11), backup, biblioteca, menú privado, semilla de alimentos
 src/services/  IA (Gemini), Open Food Facts, escáner de código de barras, imágenes, reloj del entrenamiento, pendientes
 src/features/  pantallas: hoy, actividad (pasos y actividades), rutas (historial GPS, dentro de Progreso), entreno, comidas, progreso, cuerpo, coach, ajustes, bienestar (menú privado), biblioteca (ejercicios)
@@ -40,6 +40,11 @@ Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.z
 - Hoy va en el paquete principal; Entreno, Comidas, Progreso (con Rutas), Ajustes y el menú oculto se bajan aparte al abrirlos (`React.lazy` + `Suspense`). Mientras bajan se ve «Cargando…».
 - Unos segundos después de abrir, la app baja las demás pantallas en segundo plano (no lo hace sin conexión, con «ahorro de datos» ni con red 2G) y `public/sw.js` las guarda, así andan sin conexión. Si una pantalla no se puede bajar aparece «No se pudo abrir…» con **Reintentar** y **Actualizar la app**; tus datos no se tocan.
 - Regla para el código: nadie fuera de `src/ui/pantallas.js` importa esas pantallas de forma estática (una prueba lo vigila); una pantalla nueva se agrega ahí y a `ORDEN_PRECARGA`.
+
+## Pasos con anillo y dormir con alarma (v0.34.0)
+- El contador de pasos muestra un anillo con los pasos de hoy en vivo contra tu meta (o tu promedio de 28 días si no definiste una). Meta: «Ajustes del conteo».
+- «Dormir con alarma» (Hoy): pantalla casi negra y encendida, alarma a la hora elegida y horas de sueño propuestas para el check-in. Una web no puede sonar con la pantalla bloqueada: dejá el teléfono cargando y poné una alarma de respaldo.
+- Sin cambios de datos: la noche en curso y la meta viven en `localStorage`.
 
 ## Lista limpia (v0.32.0)
 Hoy, Entreno y Progreso/Informe usan el lenguaje «lista limpia»: sin cajas ni líneas, separados por espacio vertical. Lo activa la clase `plano` en `<main>` y vive en el último bloque de `src/styles.css` (solo tokens). Comidas y Ajustes siguen con tarjetas. Para volver a las tarjetas en una pantalla, quitá su clave de la condición de `<main>` en `App.jsx`.

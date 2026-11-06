@@ -1,8 +1,15 @@
 import {useCallback, useEffect, useRef, useState} from 'react'
-import {db, hoy} from '../../data/db'
+import {db, hoy, cfg, setCfg} from '../../data/db'
 import {sumaDias} from '../../domain/stats'
 import NavFecha from '../../ui/NavFecha'
 import TrazoSvg from '../../ui/TrazoSvg'
+import Anillo from '../../ui/Anillo'
+import Icono from '../../ui/Icono'
+import {claseAnillo, textoAnillo} from '../../domain/anillo'
+import {
+  PROMEDIO_DIAS, parsearMeta, promedioPasos, metaEfectiva, textoMetaPasos, pasosEnVivo, estadoConteo,
+  textoPausa, META_MIN, META_MAX
+} from '../../domain/metaPasos'
 import {guardarRuta} from '../../data/rutas'
 import {
   RUTA_CFG, rutaNueva, agregarPuntoRuta, rutaParaGuardar, rutaDesdeGuardado, armarRuta, totalPuntos
@@ -40,7 +47,7 @@ const km = m => (m / 1000).toFixed(2).replace('.', ',')
 const MSG_SIN_PERMISO_SENSOR =
   'No se concedió permiso al sensor de movimiento. Para dárselo, cerrá MMV por completo, abrilo de nuevo, tocá ▶ y elegí «Permitir».'
 
-function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, onSugerir, onRuta, cargando}) {
+function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar, onSumar, onSugerir, onRuta, cargando}) {
   const [sesion, setSesion] = useState(sesionDeHoy),
     [gps, setGps] = useState(() => {
       const g = gpsDeHoy()
@@ -52,6 +59,10 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
     [largoTxt, setLargoTxt] = useState(() => String(largoGuardado()).replace('.', ',')),
     [guardarRutaSt, setGuardarRutaSt] = useState(guardarRutaActivo),
     [ocultarSt, setOcultarSt] = useState(ocultarActivo),
+    [metaTxt, setMetaTxt] = useState(() => cfg('metapasos', '')),
+    [visible, setVisible] = useState(() => document.visibilityState !== 'hidden'),
+    [pausaSeg, setPausaSeg] = useState(0),
+    [enLinea, setEnLinea] = useState(() => navigator.onLine !== false),
     [recuperando, setRecuperando] = useState(() => {
       const guardada = leer(K.activo)
       return !!guardada && guardada !== hoy()
@@ -65,7 +76,8 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
     ultimoGps = useRef(0),
     guardarRutaRef = useRef(guardarRutaActivo()),
     ocultarRef = useRef(ocultarActivo()),
-    ultimoFlush = useRef(0)
+    ultimoFlush = useRef(0),
+    pausaDesde = useRef(0)
   // La ruta en curso se lee una sola vez (puede pesar): después vive en la referencia.
   const rutaRef = useRef(null)
   if (rutaRef.current === null) rutaRef.current = rutaDeHoy()
@@ -85,6 +97,13 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
     usarGpsRef.current = v
     setUsarGps(v)
     guardar(K.usarGps, v ? '1' : '0')
+  }
+  // La meta se guarda solo si es válida; vacía es válida (el anillo usa entonces tu promedio de 28 días).
+  const confirmarMeta = () => {
+    const r = parsearMeta(metaTxt)
+    if (!r.ok) return setMetaTxt(cfg('metapasos', ''))
+    setCfg('metapasos', r.meta ? String(r.meta) : '')
+    setMetaTxt(r.meta ? String(r.meta) : '')
   }
   const confirmarLargo = () => {
     const n = normalizarLargoPaso(largoTxt.replace(',', '.'))
@@ -118,6 +137,8 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
       ultimoGps.current = 0
       sesionRef.current = 0
       setSesion(0)
+      setPausaSeg(0)
+      pausaDesde.current = 0
       rutaRef.current = rutaNueva()
       ultimoFlush.current = 0
       setSegsVivo([])
@@ -179,6 +200,8 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
       rutaRef.current = rutaNueva()
       setSegsVivo([])
       setSesion(0)
+      setPausaSeg(0)
+      pausaDesde.current = 0
       setGps({m: 0, seg: 0, senal: ''})
       const origen =
         r.fuente === 'gps'
@@ -234,6 +257,18 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
       if (contandoRef.current && guardarRutaRef.current && totalPuntos(rutaRef.current.segs) > 0)
         guardar(K.ruta, rutaParaGuardar(rutaRef.current))
       detector.current = detectorNuevo(detector.current.ultimo)
+      // Tiempo que MMV estuvo oculto: el sensor web no cuenta en segundo plano, y se muestra el hueco.
+      if (document.visibilityState === 'visible') {
+        setVisible(true)
+        if (pausaDesde.current) {
+          const seg = Math.round((Date.now() - pausaDesde.current) / 1000)
+          pausaDesde.current = 0
+          if (seg > 0) setPausaSeg(p => p + seg)
+        }
+      } else {
+        setVisible(false)
+        if (contandoRef.current) pausaDesde.current = Date.now()
+      }
       setEstado(
         document.visibilityState === 'visible'
           ? 'Conteo reanudado. El sensor vuelve a estimar desde este momento.'
@@ -318,6 +353,18 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
     }
   }, [activo])
 
+  // Aviso de conexión: el conteo no la necesita (sensor y GPS son del teléfono); solo el mapa opcional.
+  useEffect(() => {
+    const on = () => setEnLinea(true),
+      off = () => setEnLinea(false)
+    window.addEventListener('online', on)
+    window.addEventListener('offline', off)
+    return () => {
+      window.removeEventListener('online', on)
+      window.removeEventListener('offline', off)
+    }
+  }, [])
+
   // Conteo que quedó abierto en un día anterior: se suma a ese día.
   useEffect(() => {
     const fechaPendiente = leer(K.activo)
@@ -364,8 +411,41 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
     guardarPendientes()
   }, [onActivoChange, onRuta])
 
+  const esHoy = fecha === hoy(),
+    pasosHoy = pasosEnVivo({total, sesion, activo, esHoy}),
+    ef = metaEfectiva({meta: parsearMeta(metaTxt).meta, promedio}),
+    est = estadoConteo({activo, visible, usarGps, senal: gps.senal, sesion})
   return (
     <>
+      <div
+        className="pasos-hero"
+        role="group"
+        aria-label={ef.valor ? textoAnillo('Pasos', pasosHoy, ef.valor) : `Pasos: ${pasosHoy}`}
+      >
+        <Anillo valor={pasosHoy} meta={ef.valor} tam={148} clase={claseAnillo(pasosHoy, ef.valor)}>
+          <span className="pasos-n mono">{pasosHoy.toLocaleString('es-AR')}</span>
+        </Anillo>
+        <div className="pasos-cuerpo">
+          <b>{esHoy ? 'Pasos de hoy' : 'Pasos del día'}</b>
+          <small className="mu">{textoMetaPasos(ef)}</small>
+          {est && (
+            <span className={'pasos-est ' + est.id}>
+              <Icono n={est.icono} tam={16} /> {est.texto}
+            </span>
+          )}
+          {activo && sesion > 0 && (
+            <small className="mu">+{sesion.toLocaleString('es-AR')} esta caminata · se suman al terminar</small>
+          )}
+          {activo && pausaSeg > 0 && (
+            <small className="mu">Pausas con MMV oculto: {textoPausa(pausaSeg)}</small>
+          )}
+          {!enLinea && (
+            <span className="pasos-est">
+              <Icono n="info" tam={16} /> Sin conexión · el conteo sigue igual
+            </span>
+          )}
+        </div>
+      </div>
       <label className="lin" htmlFor="pasos-hoy">
         <b>Pasos del día</b>
         <small className="mu">Ingresá el total de tu teléfono/reloj o sumá caminatas aquí; evitá contar dos veces la misma actividad.</small>
@@ -398,9 +478,6 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
       </div>
       {fecha !== hoy() && <small className="mu">Para otros días podés consultar y corregir los pasos; el sensor solo cuenta hoy.</small>}
       {estado && <small role="status" className="mu">{estado}</small>}
-      {sesion > 0 && activo && (
-        <small className="mu">Conteo actual: {sesion.toLocaleString('es-AR')} pasos. Se suman al total al terminar.</small>
-      )}
       {activo && usarGps && (
         <small className="mu">
           GPS: {km(gps.m)} km{gps.senal ? ` · señal ${gps.senal}` : ''}
@@ -434,6 +511,21 @@ function ConteoPasos({total, fecha, activo, onActivoChange, onGuardar, onSumar, 
           <small className="mu">Así no queda dibujado el lugar de donde salís (por ejemplo, tu casa). La distancia y el ritmo se miden completos.</small>
         </label>
         <div className="row">
+          <label htmlFor="meta-pasos">Meta diaria de pasos</label>
+          <input
+            id="meta-pasos"
+            type="text"
+            inputMode="numeric"
+            placeholder={promedio ? `Mi promedio: ${promedio.toLocaleString('es-AR')}` : 'Sin meta'}
+            value={metaTxt}
+            onChange={e => setMetaTxt(e.target.value)}
+            onBlur={confirmarMeta}
+          />
+        </div>
+        <small className="mu">
+          Opcional, entre {META_MIN.toLocaleString('es-AR')} y {META_MAX.toLocaleString('es-AR')}. Si la dejás vacía, el anillo se compara con tu promedio de {PROMEDIO_DIAS} días.
+        </small>
+        <div className="row">
           <label htmlFor="largo-paso">Largo de paso (m)</label>
           <input
             id="largo-paso"
@@ -462,7 +554,19 @@ export default function ActividadFisica({onVerRutas}) {
     [minutos, setMinutos] = useState(''),
     [kmTxt, setKmTxt] = useState(''),
     [nota, setNota] = useState(''),
-    [rutaId, setRutaId] = useState(null)
+    [rutaId, setRutaId] = useState(null),
+    [promedio, setPromedio] = useState(null)
+
+  useEffect(() => {
+    let vigente = true
+    db.habitos
+      .where('fecha')
+      .between(sumaDias(fecha, -PROMEDIO_DIAS), fecha, true, false)
+      .toArray()
+      .then(hs => vigente && setPromedio(promedioPasos(hs, fecha)))
+      .catch(() => vigente && setPromedio(null))
+    return () => { vigente = false }
+  }, [fecha])
 
   useEffect(() => {
     let vigente = true
@@ -538,7 +642,7 @@ export default function ActividadFisica({onVerRutas}) {
         onSiguiente={() => setFecha(f => sumaDias(f, 1))}
         extra={fecha !== hoy() && <button className="ghost mini" disabled={conteoActivo || cargando} onClick={() => setFecha(hoy())}>Volver a hoy</button>}
       />
-      <ConteoPasos total={total} fecha={fecha} activo={conteoActivo} onActivoChange={setConteoActivo} onGuardar={guardarPasos} onSumar={sumarConteo} onSugerir={sugerir} onRuta={guardarRutaFila} cargando={cargando} />
+      <ConteoPasos total={total} fecha={fecha} activo={conteoActivo} promedio={promedio} onActivoChange={setConteoActivo} onGuardar={guardarPasos} onSumar={sumarConteo} onSugerir={sugerir} onRuta={guardarRutaFila} cargando={cargando} />
       {errorCarga && <small role="alert" className="mu">{errorCarga}</small>}
       <h4>Agregar actividad</h4>
       <div className="row">

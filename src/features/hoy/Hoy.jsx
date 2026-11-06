@@ -13,7 +13,9 @@ import {ultima} from '../../domain/cuerpo'
 import {fmtVal, hayDato} from '../../domain/formato'
 import {dejarFoto} from '../../services/pendiente'
 import ActividadFisica from '../actividad/ActividadFisica'
+import ModoSueno from '../sueno/ModoSueno'
 import Icono from '../../ui/Icono'
+import {parsearMeta, promedioPasos, metaEfectiva, textoMetaPasos, PROMEDIO_DIAS} from '../../domain/metaPasos'
 
 // Fila plegable de Hoy (Entrega 30). El contenido queda montado aunque esté cerrado (solo se oculta),
 // así una ruta o un formulario a medias no se pierden al plegar.
@@ -35,6 +37,44 @@ function Pleg({id, titulo, resumen, abierto, onCambio, children}) {
         {children}
       </div>
     </div>
+  )
+}
+
+// Pasos: anillo contra tu meta (o tu promedio de 28 días). Al tocarla se abre «Actividad y cuerpo», donde está el conteo.
+// Lee los pasos de la base cada vez que se abre o se cierra ese plegable, así se pone al día después de contar.
+function TeselaPasos({abierto, onAbrir}) {
+  const [d, setD] = useState(null)
+  useEffect(() => {
+    let vigente = true
+    const f = hoy()
+    db.habitos
+      .where('fecha')
+      .aboveOrEqual(sumaDias(f, -PROMEDIO_DIAS))
+      .toArray()
+      .then(hs => {
+        if (!vigente) return
+        const fila = hs.find(x => x.fecha === f)
+        setD({pasos: +fila?.pasos > 0 ? +fila.pasos : 0, promedio: promedioPasos(hs, f)})
+      })
+      .catch(() => vigente && setD({pasos: 0, promedio: null}))
+    return () => {
+      vigente = false
+    }
+  }, [abierto])
+  if (!d) return null
+  const ef = metaEfectiva({meta: parsearMeta(cfg('metapasos', '')).meta, promedio: d.promedio})
+  return (
+    <button
+      type="button"
+      className="tesela"
+      onClick={onAbrir}
+      aria-label={ef.valor ? textoAnillo('Pasos', d.pasos, ef.valor) + ': abrir conteo' : `Pasos: ${d.pasos}. Abrir conteo`}
+    >
+      <Anillo valor={d.pasos} meta={ef.valor} clase={claseAnillo(d.pasos, ef.valor)} />
+      <span className="eti">Pasos</span>
+      <b className="mono tesela-v">{d.pasos ? d.pasos.toLocaleString('es-AR') : '—'}</b>
+      <small className="mu">{d.pasos || ef.valor ? textoMetaPasos(ef) : 'tocá para contar'}</small>
+    </button>
   )
 }
 
@@ -64,6 +104,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
     [videos, setVideos] = useState([]),
     [ckAb, setCkAb] = useState(false),
     [aguaAb, setAguaAb] = useState(false),
+    [suAb, setSuAb] = useState(false),
     [masAb, setMasAb] = useState(false),
     meta = +cfg('meta', 2500),
     enCurso = haySesionEnCurso(localStorage.getItem('mv_sesion'))
@@ -78,10 +119,15 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
       .toArray()
       .then(a => setVideos(videosPendientes(a, hoy())))
   }, [])
+  // Se guarda sobre la fila que hay en la base (no sobre la copia de esta pantalla): los pasos los escribe
+  // «Actividad y cuerpo» por su lado y una copia vieja los pisaría. La transacción ordena los toques seguidos.
   const g = p => {
-    const n = {...h, ...p}
-    setH(n)
-    db.habitos.put(n)
+    setH(prev => ({...prev, ...p}))
+    const f = h.fecha
+    db.transaction('rw', db.habitos, async () => {
+      const actual = await db.habitos.get(f)
+      await db.habitos.put({...(actual || h), ...p, fecha: f})
+    })
   }
   const log = h.aguaLog || []
   const sumar = ml => {
@@ -148,6 +194,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
           <b className="mono tesela-v">{fmtVal(h.agua, {dec: 0})}</b>
           <small className="mu">de {meta} ml</small>
         </button>
+        <TeselaPasos abierto={masAb} onAbrir={() => setMasAb(true)} />
         <TeselaPeso onAbrir={() => setMasAb(true)} />
       </div>
       {aguaAb && (
@@ -248,6 +295,17 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
               {fmtVal(h.calidad, {dec: 0})}/5
             </output>
           </div>
+        </section>
+      </Pleg>
+      <Pleg
+        id="hoy-sueno"
+        titulo="Dormir con alarma"
+        resumen={+h.sueno > 0 ? `${String(h.sueno).replace('.', ',')} h hoy` : 'Calcula tus horas'}
+        abierto={suAb}
+        onCambio={setSuAb}
+      >
+        <section>
+          <ModoSueno onGuardar={horas => g({sueno: horas})} />
         </section>
       </Pleg>
       <Pleg id="hoy-mas" titulo="Actividad y cuerpo" resumen="Pasos, rutas, medidas" abierto={masAb} onCambio={setMasAb}>
