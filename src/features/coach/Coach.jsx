@@ -5,6 +5,8 @@ import NavFecha from '../../ui/NavFecha'
 import {claseVariacion} from '../../domain/variacion'
 import {lunes, sumaDias, sg} from '../../domain/stats'
 import {calcPrep, cargarPrep, metas} from './prep'
+import {leerMovimiento} from '../../data/movimiento'
+import {hayMovimiento} from '../../domain/movimiento'
 import {
   informeSemana,
   hayDatos,
@@ -18,6 +20,8 @@ const fFecha = f => {
   return `${d}/${m}/${y}`
 }
 const rango = w => `${fFecha(w).slice(0, 5)} – ${fFecha(sumaDias(w, 6)).slice(0, 5)}`
+const miles = n => Math.round(n).toLocaleString('es-UY')
+const km1 = n => (Math.round(n * 10) / 10).toString().replace('.', ',')
 const c1 = n => (n === null || n === undefined ? '–' : String(n).replace('.', ','))
 // Variación contra la semana anterior: en gris (▲/▼ sin color) mientras la semana sigue en curso.
 const Delta = ({d, neutra}) =>
@@ -39,13 +43,16 @@ export function Informe({ses, reg, manual}) {
       d1 = sumaDias(w, 6)
     setCoach(null)
     setMsg('')
+    // Hábitos, actividades y rutas incluyen la semana anterior para comparar pasos.
+    const dAnt = sumaDias(w, -7)
     Promise.all([
-      db.habitos.where('fecha').between(d0, d1, true, true).toArray(),
+      db.habitos.where('fecha').between(dAnt, d1, true, true).toArray(),
       db.comidas.where('fecha').between(d0, d1, true, true).toArray(),
-      db.coach.get(w)
-    ]).then(([habitos, comidas, c]) => {
+      db.coach.get(w),
+      leerMovimiento(dAnt, d1)
+    ]).then(([habitos, comidas, c, mov]) => {
       if (vivo) {
-        setEx({habitos, comidas})
+        setEx({habitos, comidas, ...mov})
         setCoach(c || null)
       }
     })
@@ -63,6 +70,8 @@ export function Informe({ses, reg, manual}) {
         manual,
         habitos: ex.habitos,
         comidas: ex.comidas,
+        actividades: ex.actividades,
+        rutas: ex.rutas,
         ...metas()
       }),
     [ex, ses, reg, manual, w]
@@ -186,6 +195,40 @@ export function Informe({ses, reg, manual}) {
               .
             </small>
           </section>
+          {hayMovimiento(inf.actividad) && (
+            <section>
+              <h3>Actividad</h3>
+              <div className="lin">
+                <span>Pasos</span>
+                <span className="mono">
+                  {inf.actividad.pasos.diasConDato
+                    ? `${miles(inf.actividad.pasos.medios)} de media · ${inf.actividad.pasos.diasConDato} d`
+                    : 'sin datos'}
+                  <Delta d={inf.actividad.pasos.vsAnterior} neutra={actual} />
+                </span>
+              </div>
+              <div className="lin">
+                <span>Actividades</span>
+                <span className="mono">
+                  {inf.actividad.actividades.cantidad
+                    ? `${inf.actividad.actividades.cantidad} · ${inf.actividad.actividades.minutos} min${inf.actividad.actividades.km > 0 ? ` · ${km1(inf.actividad.actividades.km)} km` : ''}`
+                    : 'sin datos'}
+                </span>
+              </div>
+              {inf.actividad.rutasAparte.rutas > 0 && (
+                <div className="lin">
+                  <span>Rutas con GPS aparte</span>
+                  <span className="mono">
+                    {inf.actividad.rutasAparte.rutas} · {km1(inf.actividad.rutasAparte.km)} km
+                  </span>
+                </div>
+              )}
+              <small className="mu">
+                Una ruta que ya es una de tus actividades cuenta una sola vez. Los pasos son una
+                estimación del celular.
+              </small>
+            </section>
+          )}
           <section>
             <h3>Hábitos</h3>
             <div className="lin">
@@ -252,13 +295,13 @@ export function Informe({ses, reg, manual}) {
                     hour12: false
                   })}
                   {actual ? ' con la semana en curso: pedilo de nuevo al terminarla.' : '.'} La IA
-                  solo ve estos números; son orientaciones generales, no consejo médico.
+                  solo ve estos totales; son orientaciones generales, no consejo médico.
                 </small>
               </div>
             ) : (
               <p className="mu" style={{marginTop: 0}}>
                 Pedile al coach una lectura de la semana: qué salió bien, qué mejorar y un plan
-                chico. Solo se le envían los números de arriba (sin fotos ni nombres de ejercicios).
+                chico. Solo se le envían los números de arriba (sin fotos, recorridos ni nombres de ejercicios).
               </p>
             )}
             <div className="row" style={{marginTop: 8}}>

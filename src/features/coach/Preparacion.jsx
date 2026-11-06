@@ -56,8 +56,21 @@ export default function Preparacion({h}) {
                 <span className="mono">{v.p === null ? '–' : v.p}</span>
               </div>
             ))}
+            {r.pasos && (
+              <div className="lin">
+                <span>
+                  Pasos de ayer <small className="mu">· no suman al puntaje</small>
+                </span>
+                <span className="mono">
+                  {r.pasos.ayer.toLocaleString('es-UY')}
+                  {r.pasos.habitual !== null &&
+                    ` (tu promedio ${r.pasos.habitual.toLocaleString('es-UY')})`}
+                </span>
+              </div>
+            )}
             <small className="mu" style={{display: 'block', marginTop: 6}}>
-              Cómo te sentís 40 %, sueño contra tu propio promedio 30 %, carga reciente 20 %,
+              Cómo te sentís 40 %, sueño contra tu propio promedio 30 %, carga reciente (entrenos,
+              actividades y rutas, sin contar dos veces la misma salida) 20 %,
               hábitos de ayer (comida y agua) 10 %. Los pesos son una propuesta de diseño, no salen
               de un estudio: es una orientación basada en tus propios datos, no una medición médica.
               Un dolor agudo o en una articulación no es dolor muscular: parar y consultar.

@@ -363,9 +363,10 @@ test('privacidad: los servicios siguen sin tocar rutas, mapa ni GPX tras mover l
     assert.doesNotMatch(readFileSync(f, 'utf8'), /data\/rutas|domain\/rutas|domain\/gpx|domain\/mapa|db\.rutas/, f)
 })
 
-test('versión 0.29.0 / entrega 28', () => {
+test('versión: la 0.29.0 / entrega 28 o una posterior (la exacta la fija la prueba de la última entrega)', () => {
   const pkg = JSON.parse(leer('package.json'))
-  assert.equal(pkg.version, '0.29.0')
-  assert.equal(pkg.entrega, '28')
-  assert.match(leer('package-lock.json'), /"version": "0\.29\.0"/)
+  const [ma, mi] = pkg.version.split('.').map(Number)
+  assert.ok(ma > 0 || mi >= 29, pkg.version)
+  assert.ok(+pkg.entrega >= 28, pkg.entrega)
+  assert.match(leer('package-lock.json'), /"version": "0\.\d+\.\d+"/)
 })

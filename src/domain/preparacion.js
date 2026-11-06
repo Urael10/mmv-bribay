@@ -4,6 +4,7 @@
 // (percepción subjetiva 40 %, sueño contra tu propio promedio 30 %, carga 20 %, hábitos de ayer 10 %),
 // no salen de un estudio.
 import {sumaDias} from './stats.js'
+import {cargasExternas, pasosContexto} from './movimiento.js'
 
 const clamp = (x, a = 0, b = 100) => Math.max(a, Math.min(b, x))
 const num = x => {
@@ -81,12 +82,18 @@ export function puntajeSueno(h, ctx = {}) {
 
 // Carga: razón aguda/crónica. Aguda = últimos 7 días; crónica = promedio semanal de los últimos 28.
 // 0,8–1,3 = zona estable (100); sube o baja linealmente hasta 0 en ≤0,3 o ≥2,0.
-export function puntajeCarga(sesiones, fecha) {
-  if (!sesiones.length) return null
-  const primera = sesiones.reduce((m, s) => (s.fecha < m ? s.fecha : m), sesiones[0].fecha)
+// `externas` (Entrega 29): esfuerzo de actividades y rutas GPS fuera del entreno, [{fecha, carga}]
+// (ver cargasExternas, que ya evita contar dos veces la misma salida). Sin externas, igual que antes.
+export function puntajeCarga(sesiones, fecha, externas = []) {
+  const eventos = [
+    ...sesiones.map(s => ({fecha: s.fecha, carga: cargaSesion(s)})),
+    ...externas.map(x => ({fecha: x.fecha, carga: +x.carga || 0}))
+  ]
+  if (!eventos.length) return null
+  const primera = eventos.reduce((m, s) => (s.fecha < m ? s.fecha : m), eventos[0].fecha)
   if (primera > sumaDias(fecha, -(HISTORIAL_MIN_DIAS - 1))) return null
   const suma = (d0, d1) =>
-    sesiones.filter(s => s.fecha >= d0 && s.fecha <= d1).reduce((a, s) => a + cargaSesion(s), 0)
+    eventos.filter(s => s.fecha >= d0 && s.fecha <= d1).reduce((a, s) => a + s.carga, 0)
   const aguda = suma(sumaDias(fecha, -6), fecha),
     cronica = suma(sumaDias(fecha, -27), fecha) / 4
   if (!(cronica > 0)) return null
@@ -156,12 +163,20 @@ export function preparacion({
   habitos = [],
   sesiones = [],
   comidas = [],
+  actividades = [],
+  rutas = [],
   metaKcal = 2200,
   metaAgua = 2500
 }) {
   const hoyH = habitos.find(h => h.fecha === fecha)
+  const externas = cargasExternas(actividades, rutas),
+    minExt7 = Math.round(
+      externas
+        .filter(x => x.fecha >= sumaDias(fecha, -6) && x.fecha <= fecha)
+        .reduce((a, x) => a + x.minutos, 0)
+    )
   const sub = puntajeSubjetivo(hoyH),
-    c = puntajeCarga(sesiones, fecha),
+    c = puntajeCarga(sesiones, fecha, externas),
     hab = puntajeHabitos(comidas, habitos, fecha, {metaKcal, metaAgua}),
     hs = num(hoyH?.sueno) > 0 ? num(hoyH.sueno) : null,
     habit = suenoHabitual(habitos, fecha)
@@ -195,7 +210,10 @@ export function preparacion({
     },
     carga: {
       p: c?.p ?? null,
-      detalle: c ? `razón 7/28 días: ${String(c.razon).replace('.', ',')}` : ''
+      detalle: c
+        ? `razón 7/28 días: ${String(c.razon).replace('.', ',')}` +
+          (minExt7 > 0 ? ` · con ${minExt7} min de actividad (7 días)` : '')
+        : ''
     },
     habitos: {p: hab?.p ?? null, detalle: detalleHab}
   }
@@ -215,6 +233,7 @@ export function preparacion({
     recomendacion: recomendacion(puntaje, {dolor: sub?.dolor ?? null}),
     confianza: Math.round(pesoTot * 100),
     partes,
+    pasos: pasosContexto(habitos, fecha), // solo informativo: no entra en el puntaje
     faltan: Object.keys(partes)
       .filter(k => partes[k].p === null)
       .map(k => NOMBRES[k])

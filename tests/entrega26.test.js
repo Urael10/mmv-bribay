@@ -451,7 +451,7 @@ const archivos = d =>
     return statSync(join(raiz, r)).isDirectory() ? archivos(r) : [r]
   })
 
-test('ningún servicio (IA, Open Food Facts, escáner) toca todavía las rutas ni sus coordenadas', () => {
+test('ningún servicio (IA, Open Food Facts, escáner) toca las rutas ni sus coordenadas (desde la entrega 29 la IA recibe totales armados en domain/, ver entrega29.test.js)', () => {
   for (const f of archivos('src/services')) {
     const txt = readFileSync(join(raiz, f), 'utf8')
     assert.doesNotMatch(txt, /data\/rutas|domain\/rutas|db\.rutas|\.puntos\b/, f)

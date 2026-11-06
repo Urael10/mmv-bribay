@@ -284,7 +284,7 @@ function MapaRutas() {
       <small className="mu">
         Al abrir el mapa, el teléfono le pide a los servidores de OpenStreetMap las imágenes de la zona
         visible: ellos reciben esa zona y tu dirección de internet. No reciben tu nombre ni el resto de tus
-        datos, y la IA nunca recibe coordenadas. Con el mapa apagado no se contacta a nadie.
+        datos, y la IA nunca recibe coordenadas ni trazos (solo totales como km y minutos). Con el mapa apagado no se contacta a nadie.
       </small>
     </section>
   )
