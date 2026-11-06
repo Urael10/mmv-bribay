@@ -1,4 +1,4 @@
-# Mi Mejor Versión (MMV) · Entrega 33 (v0.34.0)
+# Mi Mejor Versión (MMV) · Entrega 35 (v0.36.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 
@@ -40,6 +40,12 @@ Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.z
 - Hoy va en el paquete principal; Entreno, Comidas, Progreso (con Rutas), Ajustes y el menú oculto se bajan aparte al abrirlos (`React.lazy` + `Suspense`). Mientras bajan se ve «Cargando…».
 - Unos segundos después de abrir, la app baja las demás pantallas en segundo plano (no lo hace sin conexión, con «ahorro de datos» ni con red 2G) y `public/sw.js` las guarda, así andan sin conexión. Si una pantalla no se puede bajar aparece «No se pudo abrir…» con **Reintentar** y **Actualizar la app**; tus datos no se tocan.
 - Regla para el código: nadie fuera de `src/ui/pantallas.js` importa esas pantallas de forma estática (una prueba lo vigila); una pantalla nueva se agrega ahí y a `ORDEN_PRECARGA`.
+
+## Modo bolsillo (v0.35.0 y v0.36.0)
+- Con el conteo en marcha, «Modo bolsillo» deja la pantalla casi negra y encendida: total del día en un anillo, pasos de la caminata, km, tiempo, ritmo «ahora» y señal de GPS (barras + texto). Una onda fina marca cada paso.
+- «Pausar» y «Reanudar» (en la pantalla normal con un toque; en el bolsillo manteniendo 0,6 s) frenan sensor, GPS y reloj. «Salir» se mantiene 1 s. Vibra al pausar, reanudar y salir (Android; se apaga en «Ajustes del conteo»).
+- Una web no cuenta con la pantalla bloqueada ni con MMV en segundo plano: el sensor se pausa y el tiempo oculto cuenta como pausa.
+- Lógica pura en `src/domain/bolsillo.js`; pantalla en `src/features/actividad/VistaBolsillo.jsx`. Sin cambios de datos (`localStorage`: `mv_pasos_reloj`, `mv_bolsillo_vibrar`).
 
 ## Pasos con anillo y dormir con alarma (v0.34.0)
 - El contador de pasos muestra un anillo con los pasos de hoy en vivo contra tu meta (o tu promedio de 28 días si no definiste una). Meta: «Ajustes del conteo».

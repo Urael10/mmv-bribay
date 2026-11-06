@@ -8,9 +8,15 @@ import Anillo from '../../ui/Anillo'
 import Icono from '../../ui/Icono'
 import {claseAnillo, textoAnillo} from '../../domain/anillo'
 import {
-  PROMEDIO_DIAS, parsearMeta, promedioPasos, metaEfectiva, textoMetaPasos, pasosEnVivo, estadoConteo,
+  PROMEDIO_DIAS, parsearMeta, promedioPasos, metaEfectiva, textoMetaPasos, pasosEnVivo,
   textoPausa, META_MIN, META_MAX
 } from '../../domain/metaPasos'
+import {
+  BOLSILLO_CFG, VIBRA, nivelSenal, agregarMuestra, ritmoAhoraSegKm, formatoRitmoMin, formatoReloj, formatoKm,
+  pausaNueva, estaPausado, cambiarPausa, segPausaActual, pausaTotalSeg, tiempoActivoSeg,
+  relojParaGuardar, relojDesdeGuardado, estadoVista, textoPausaVista, resumenBolsillo
+} from '../../domain/bolsillo'
+import {VistaBolsillo, BarrasSenal, Mantener} from './VistaBolsillo'
 import {guardarRuta} from '../../data/rutas'
 import {
   RUTA_CFG, rutaNueva, agregarPuntoRuta, rutaParaGuardar, rutaDesdeGuardado, armarRuta, totalPuntos
@@ -30,7 +36,9 @@ const K = {
   largo: 'mv_largo_paso',
   ruta: 'mv_ruta_curso',
   guardarRuta: 'mv_ruta_guardar',
-  ocultar: 'mv_ruta_ocultar'
+  ocultar: 'mv_ruta_ocultar',
+  reloj: 'mv_pasos_reloj',
+  vibrar: 'mv_bolsillo_vibrar'
 }
 const leer = k => { try { return localStorage.getItem(k) } catch { return null } }
 const guardar = (k, v) => { try { localStorage.setItem(k, v) } catch { /* sin almacenamiento */ } }
@@ -44,13 +52,21 @@ const guardarRutaActivo = () => leer(K.guardarRuta) !== '0'
 const ocultarActivo = () => leer(K.ocultar) !== '0'
 const largoGuardado = () => normalizarLargoPaso(leer(K.largo) ?? LARGO_PASO_INICIAL)
 const km = m => (m / 1000).toFixed(2).replace('.', ',')
+const vibrarActivo = () => leer(K.vibrar) !== '0'
+// Reloj de la caminata en curso: inicio y pausas (se recupera si la app se cerró).
+const relojDeHoy = () => {
+  if (!activoHoy()) return {inicio: 0, pausa: pausaNueva()}
+  const r = relojDesdeGuardado(leer(K.reloj), Date.now())
+  return r ? {inicio: r.inicio, pausa: r.pausa} : {inicio: Date.now(), pausa: pausaNueva()}
+}
 
 const MSG_SIN_PERMISO_SENSOR =
   'No se concedió permiso al sensor de movimiento. Para dárselo, cerrá MMV por completo, abrilo de nuevo, tocá ▶ y elegí «Permitir».'
 
 // Modo bolsillo: pantalla casi negra mientras se camina. La página sigue visible (el sensor web solo cuenta así),
 // y para salir hay que mantener presionado 1 s, así un roce dentro del bolsillo no hace nada.
-function Bolsillo({pasos, estado, onSalir}) {
+// Pausar y Salir también se activan manteniendo presionado (la pausa 0,6 s, salir 1 s).
+function Bolsillo({vista, pausada, onPausa, onSalir}) {
   const [ret, setRet] = useState(false),
     t = useRef(null)
   const soltar = () => {
@@ -64,21 +80,32 @@ function Bolsillo({pasos, estado, onSalir}) {
   useEffect(() => () => clearTimeout(t.current), [])
   return createPortal(
     <div className="bolsillo-ov" role="dialog" aria-modal="true" aria-label="Modo bolsillo">
-      <span className="bolsillo-n mono">{pasos.toLocaleString('es-AR')}</span>
-      <small className="mu">pasos · {estado}</small>
-      <button
-        type="button"
-        className={'ghost bolsillo-sal' + (ret ? ' on' : '')}
-        onPointerDown={apretar}
-        onPointerUp={soltar}
-        onPointerLeave={soltar}
-        onPointerCancel={soltar}
-        onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && onSalir()}
-        onContextMenu={e => e.preventDefault()}
-      >
-        <i />
-        <span>Mantené presionado para salir</span>
-      </button>
+      <VistaBolsillo {...vista} pausada={pausada} />
+      <div className="bols-acc">
+        <Mantener
+          ms={BOLSILLO_CFG.mantenerPausaMs}
+          onHecho={onPausa}
+          etiqueta={pausada ? 'Reanudar' : 'Pausar'}
+          ayuda="mantené 0,6 s"
+        />
+        <button
+          type="button"
+          className={'ghost mant bolsillo-sal' + (ret ? ' on' : '')}
+          style={{'--t': '1s'}}
+          aria-label="Salir del modo bolsillo: mantené presionado"
+          onPointerDown={apretar}
+          onPointerUp={soltar}
+          onPointerLeave={soltar}
+          onPointerCancel={soltar}
+          onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && onSalir()}
+          onContextMenu={e => e.preventDefault()}
+        >
+          <i />
+          <span>Salir</span>
+          <small>mantené 1 s</small>
+        </button>
+      </div>
+      <small className="mu bols-pie">Si bloqueás el teléfono o salís de MMV, el sensor web se pausa.</small>
     </div>,
     document.body
   )
@@ -98,7 +125,8 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
     [ocultarSt, setOcultarSt] = useState(ocultarActivo),
     [metaTxt, setMetaTxt] = useState(() => cfg('metapasos', '')),
     [visible, setVisible] = useState(() => document.visibilityState !== 'hidden'),
-    [pausaSeg, setPausaSeg] = useState(0),
+    [ahora, setAhora] = useState(() => Date.now()),
+    [vibrarSt, setVibrarSt] = useState(vibrarActivo),
     [bolsillo, setBolsillo] = useState(false),
     [enLinea, setEnLinea] = useState(() => navigator.onLine !== false),
     [recuperando, setRecuperando] = useState(() => {
@@ -115,7 +143,18 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
     guardarRutaRef = useRef(guardarRutaActivo()),
     ocultarRef = useRef(ocultarActivo()),
     ultimoFlush = useRef(0),
-    pausaDesde = useRef(0)
+    ultimoReloj = useRef(0),
+    ritmoRef = useRef([]),
+    vibrarRef = useRef(vibrarActivo())
+  // El reloj se lee una sola vez; `pausa` (estado) es lo que se dibuja y `pausaRef` lo que leen los eventos.
+  const inicioRef = useRef(0),
+    pausaRef = useRef(null)
+  if (pausaRef.current === null) {
+    const r = relojDeHoy()
+    inicioRef.current = r.inicio
+    pausaRef.current = r.pausa
+  }
+  const [pausa, setPausa] = useState(pausaRef.current)
   // La ruta en curso se lee una sola vez (puede pesar): después vive en la referencia.
   const rutaRef = useRef(null)
   if (rutaRef.current === null) rutaRef.current = rutaDeHoy()
@@ -135,6 +174,49 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
     usarGpsRef.current = v
     setUsarGps(v)
     guardar(K.usarGps, v ? '1' : '0')
+  }
+  const cambiarVibrar = v => {
+    vibrarRef.current = v
+    setVibrarSt(v)
+    guardar(K.vibrar, v ? '1' : '0')
+  }
+  // Vibración de confirmación (solo Android; donde no existe, no pasa nada).
+  const vibrar = patron => {
+    if (!vibrarRef.current) return
+    try {
+      navigator.vibrate?.(patron)
+    } catch { /* sin vibración */ }
+  }
+  // Reloj y pausa: dos fuentes (manual y MMV oculto). Se guarda para poder retomar si la app se cierra.
+  const guardarReloj = () => {
+    if (!contandoRef.current) return
+    ultimoReloj.current = Date.now()
+    guardar(K.reloj, relojParaGuardar({inicio: inicioRef.current, pausa: pausaRef.current, visto: Date.now()}))
+  }
+  const ponerPausa = (fuente, activa) => {
+    const n = cambiarPausa(pausaRef.current, fuente, activa, Date.now())
+    if (n === pausaRef.current) return
+    pausaRef.current = n
+    setPausa(n)
+    guardarReloj()
+  }
+  const alternarPausa = () => {
+    if (!contandoRef.current) return
+    const pasar = !pausaRef.current.manual
+    if (pasar) {
+      if (guardarRutaRef.current && totalPuntos(rutaRef.current.segs) > 0)
+        guardar(K.ruta, rutaParaGuardar(rutaRef.current))
+      setEstado('Conteo en pausa. No se suma nada hasta que reanudes.')
+    } else {
+      // Al reanudar el GPS se vuelve a anclar (no suma lo caminado durante la pausa, y la ruta abre un tramo nuevo)
+      // y el detector de pasos arranca limpio.
+      gpsRef.current = {...gpsRef.current, ancla: null, t: null}
+      detector.current = detectorNuevo(detector.current.ultimo)
+      ritmoRef.current = []
+      setEstado('Conteo reanudado.')
+    }
+    ponerPausa('manual', pasar)
+    vibrar(pasar ? VIBRA.pausar : VIBRA.reanudar)
   }
   // La meta se guarda solo si es válida; vacía es válida (el anillo usa entonces tu promedio de 28 días).
   const confirmarMeta = () => {
@@ -175,8 +257,10 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
       ultimoGps.current = 0
       sesionRef.current = 0
       setSesion(0)
-      setPausaSeg(0)
-      pausaDesde.current = 0
+      inicioRef.current = Date.now()
+      pausaRef.current = pausaNueva()
+      setPausa(pausaRef.current)
+      ritmoRef.current = []
       rutaRef.current = rutaNueva()
       ultimoFlush.current = 0
       setSegsVivo([])
@@ -186,6 +270,7 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
       guardar(K.sesion, '0')
       guardar(K.gps, gpsParaGuardar(gpsRef.current))
       contandoRef.current = true
+      guardarReloj()
       setEstado(
         sensorOk
           ? 'Esperando datos del sensor…'
@@ -201,7 +286,8 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
     if (guardando) return
     setGuardando(true)
     contandoRef.current = false
-    borrar(K.activo); borrar(K.sesion); borrar(K.gps); borrar(K.ruta)
+    borrar(K.activo); borrar(K.sesion); borrar(K.gps); borrar(K.ruta); borrar(K.reloj)
+    setBolsillo(false)
     try {
       const distM = gpsRef.current.m
       const r = cerrarConteo({
@@ -238,8 +324,9 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
       rutaRef.current = rutaNueva()
       setSegsVivo([])
       setSesion(0)
-      setPausaSeg(0)
-      pausaDesde.current = 0
+      pausaRef.current = pausaNueva()
+      setPausa(pausaRef.current)
+      ritmoRef.current = []
       setGps({m: 0, seg: 0, senal: ''})
       const origen =
         r.fuente === 'gps'
@@ -263,6 +350,7 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
       guardar(K.gps, gpsParaGuardar(gpsRef.current))
       if (guardarRutaRef.current) guardar(K.ruta, rutaParaGuardar(rutaRef.current))
       contandoRef.current = true
+      guardarReloj()
       onActivoChange(true)
       setEstado('No se pudo guardar el conteo. Sigue activo; intentá detenerlo otra vez.')
     } finally {
@@ -275,6 +363,7 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
     const registrar = e => {
       if (!contandoRef.current) return
       if (document.visibilityState !== 'visible') return
+      if (pausaRef.current.manual) return // en pausa manual el sensor no suma
       const magnitud = magnitudParaPasos(e)
       if (magnitud == null) return
       const primerDato = !ultimoDato.current
@@ -296,17 +385,9 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
         guardar(K.ruta, rutaParaGuardar(rutaRef.current))
       detector.current = detectorNuevo(detector.current.ultimo)
       // Tiempo que MMV estuvo oculto: el sensor web no cuenta en segundo plano, y se muestra el hueco.
-      if (document.visibilityState === 'visible') {
-        setVisible(true)
-        if (pausaDesde.current) {
-          const seg = Math.round((Date.now() - pausaDesde.current) / 1000)
-          pausaDesde.current = 0
-          if (seg > 0) setPausaSeg(p => p + seg)
-        }
-      } else {
-        setVisible(false)
-        if (contandoRef.current) pausaDesde.current = Date.now()
-      }
+      const visibleAhora = document.visibilityState === 'visible'
+      setVisible(visibleAhora)
+      if (contandoRef.current) ponerPausa('oculto', !visibleAhora)
       setEstado(
         document.visibilityState === 'visible'
           ? 'Conteo reanudado. El sensor vuelve a estimar desde este momento.'
@@ -323,13 +404,23 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
         pos => {
           if (!contandoRef.current) return
           const c = pos.coords
+          ultimoGps.current = Date.now()
+          // En pausa manual el punto solo sirve para el indicador de señal: no suma distancia ni ruta.
+          if (pausaRef.current.manual) {
+            setGps(g => ({
+              ...g,
+              senal: c.accuracy > GPS_CFG.precisionMax ? 'débil' : 'buena',
+              precision: c.accuracy
+            }))
+            return
+          }
           const p = {
             lat: c.latitude, lon: c.longitude, precision: c.accuracy, t: pos.timestamp,
             alt: c.altitude, altPrecision: c.altitudeAccuracy
           }
           const r = procesarPuntoGps(gpsRef.current, p)
-          ultimoGps.current = Date.now()
           gpsRef.current = r.estado
+          ritmoRef.current = agregarMuestra(ritmoRef.current, p.t, r.estado.m)
           guardar(K.gps, gpsParaGuardar(r.estado))
           if (guardarRutaRef.current) {
             const antes = rutaRef.current
@@ -346,7 +437,8 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
           setGps({
             m: r.estado.m,
             seg: r.estado.seg,
-            senal: c.accuracy > GPS_CFG.precisionMax ? 'débil' : 'buena'
+            senal: c.accuracy > GPS_CFG.precisionMax ? 'débil' : 'buena',
+            precision: c.accuracy
           })
         },
         err => {
@@ -398,6 +490,18 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
     }
   }, [activo])
 
+  // Un tic por segundo mientras se cuenta: reloj, pausa, ritmo y caducidad de la señal de GPS.
+  useEffect(() => {
+    if (!activo) return
+    setAhora(Date.now())
+    const id = setInterval(() => {
+      const t = Date.now()
+      setAhora(t)
+      if (t - ultimoReloj.current > 5000) guardarReloj()
+    }, 1000)
+    return () => clearInterval(id)
+  }, [activo])
+
   // Aviso de conexión: el conteo no la necesita (sensor y GPS son del teléfono); solo el mapa opcional.
   useEffect(() => {
     const on = () => setEnLinea(true),
@@ -438,7 +542,7 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
             if (fila) await onRuta(fila)
           } catch { /* la ruta es opcional: los pasos ya quedaron guardados */ }
         }
-        borrar(K.activo); borrar(K.sesion); borrar(K.gps); borrar(K.ruta)
+        borrar(K.activo); borrar(K.sesion); borrar(K.gps); borrar(K.ruta); borrar(K.reloj)
         contandoRef.current = false
         sesionRef.current = 0
         gpsRef.current = gpsNuevo()
@@ -462,7 +566,37 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
     sesionVivo = activo ? combinarPasos({sensor: sesion, distM: gps.m, largo: largoGuardado()}).pasos : 0,
     pasosHoy = pasosEnVivo({total, sesion: sesionVivo, activo, esHoy}),
     ef = metaEfectiva({meta: parsearMeta(metaTxt).meta, promedio}),
-    est = estadoConteo({activo, visible, usarGps, senal: gps.senal, sesion})
+    manual = pausa.manual,
+    est = estadoVista({activo, visible, manual, usarGps, senal: gps.senal, sesion}),
+    tiempoSeg = activo ? tiempoActivoSeg({inicio: inicioRef.current, ahora, pausa}) : 0,
+    ritmoTxt = formatoRitmoMin(activo && usarGps && !estaPausado(pausa) ? ritmoAhoraSegKm(ritmoRef.current, ahora) : null),
+    senal = activo
+      ? nivelSenal({
+          usar: usarGps,
+          permiso: gps.senal !== 'sin permiso',
+          precision: gps.precision,
+          edadSeg: ultimoGps.current ? Math.max(0, (ahora - ultimoGps.current) / 1000) : null
+        })
+      : null,
+    pausaTotal = pausaTotalSeg(pausa, ahora),
+    claseDelAnillo = claseAnillo(pasosHoy, ef.valor),
+    vistaBolsillo = {
+      pasosHoy,
+      meta: ef.valor,
+      claseAnillo: claseDelAnillo,
+      sesion: sesionVivo,
+      km: formatoKm(gps.m),
+      tiempo: formatoReloj(tiempoSeg),
+      ritmo: ritmoTxt,
+      estado: est,
+      senal,
+      pausaTxt: textoPausaVista(segPausaActual(pausa, ahora)),
+      pulso: sesion,
+      etiqueta: resumenBolsillo({
+        pasosHoy, meta: ef.valor, sesion: sesionVivo, km: formatoKm(gps.m), tiempo: formatoReloj(tiempoSeg),
+        ritmo: ritmoTxt, pausada: manual
+      })
+    }
   return (
     <>
       <div
@@ -470,7 +604,7 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
         role="group"
         aria-label={ef.valor ? textoAnillo('Pasos', pasosHoy, ef.valor) : `Pasos: ${pasosHoy}`}
       >
-        <Anillo valor={pasosHoy} meta={ef.valor} tam={148} clase={claseAnillo(pasosHoy, ef.valor)}>
+        <Anillo valor={pasosHoy} meta={ef.valor} tam={148} clase={claseDelAnillo}>
           <span className="pasos-n mono">{pasosHoy.toLocaleString('es-AR')}</span>
         </Anillo>
         <div className="pasos-cuerpo">
@@ -484,8 +618,14 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
           {activo && sesionVivo > 0 && (
             <small className="mu">+{sesionVivo.toLocaleString('es-AR')} esta caminata · se suman al terminar</small>
           )}
-          {activo && pausaSeg > 0 && (
-            <small className="mu">Pausas con MMV oculto: {textoPausa(pausaSeg)}</small>
+          {activo && pausaTotal > 0 && (
+            <small className="mu">Tiempo en pausa: {textoPausa(pausaTotal)}</small>
+          )}
+          {activo && (
+            <small className="mu">
+              Tiempo {formatoReloj(tiempoSeg)}
+              {usarGps ? ` · ritmo ${ritmoTxt} min/km` : ''}
+            </small>
           )}
           {!enLinea && (
             <span className="pasos-est">
@@ -523,21 +663,34 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
           <button disabled={cargando || recuperando || fecha !== hoy()} onClick={iniciar}>▶ Contar con el teléfono</button>
         )}
         {activo && (
+          <button className="ghost" disabled={guardando} onClick={alternarPausa}>
+            <Icono n={manual ? 'play' : 'pausa'} tam={18} /> {manual ? 'Reanudar' : 'Pausar'}
+          </button>
+        )}
+        {activo && (
           <button className="ghost" disabled={guardando} onClick={() => setBolsillo(true)}>
             <Icono n="luna" tam={18} /> Modo bolsillo
           </button>
         )}
-        {activo && <small className="mu">Llevá el teléfono encima. Mantengo la pantalla encendida mientras contás; si salís de MMV o la bloqueás, el conteo se pausa. Con «Modo bolsillo» la pantalla queda negra y encendida.</small>}
-      {activo && bolsillo && (
-        <Bolsillo pasos={pasosHoy} estado={est ? est.texto : ''} onSalir={() => setBolsillo(false)} />
-      )}
+        {activo && <small className="mu">Llevá el teléfono encima. Mantengo la pantalla encendida mientras contás; si salís de MMV o la bloqueás, el conteo se pausa. «Pausar» frena pasos, GPS y reloj hasta que reanudes. Con «Modo bolsillo» la pantalla queda negra y encendida.</small>}
       </div>
+      {activo && bolsillo && (
+        <Bolsillo
+          vista={vistaBolsillo}
+          pausada={manual}
+          onPausa={alternarPausa}
+          onSalir={() => {
+            vibrar(VIBRA.salir)
+            setBolsillo(false)
+          }}
+        />
+      )}
       {fecha !== hoy() && <small className="mu">Para otros días podés consultar y corregir los pasos; el sensor solo cuenta hoy.</small>}
       {estado && <small role="status" className="mu">{estado}</small>}
-      {activo && usarGps && (
-        <small className="mu">
-          GPS: {km(gps.m)} km{gps.senal ? ` · señal ${gps.senal}` : ''}
-          {gps.senal === 'débil' ? ' (salí a cielo abierto para mejorar la precisión)' : ''}
+      {activo && usarGps && senal && (
+        <small className="mu gps-linea">
+          <BarrasSenal barras={senal.barras} id={senal.id} /> {senal.texto} · {km(gps.m)} km
+          {senal.id === 'debil' ? ' (salí a cielo abierto para mejorar la precisión)' : ''}
         </small>
       )}
       {activo && usarGps && guardarRutaSt && totalPuntos(segsVivo) >= 2 && (
@@ -551,6 +704,13 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
             <span>Usar GPS para medir distancia y corregir pasos</span>
           </span>
           <small className="mu">Pide el permiso de ubicación. La ubicación en vivo nunca sale del teléfono.</small>
+        </label>
+        <label className="lin">
+          <span className="check">
+            <input type="checkbox" checked={vibrarSt} onChange={e => cambiarVibrar(e.target.checked)} />
+            <span>Vibrar al pausar, reanudar y salir del modo bolsillo</span>
+          </span>
+          <small className="mu">Solo en teléfonos Android: en iPhone el navegador no permite vibrar.</small>
         </label>
         <label className="lin">
           <span className="check">

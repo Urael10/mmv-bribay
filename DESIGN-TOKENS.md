@@ -1,4 +1,4 @@
-# Tokens de diseño de MMV (v0.34.0)
+# Tokens de diseño de MMV (v0.36.0)
 
 Todos los colores viven en `src/tokens.css`. Ni `styles.css` ni los componentes llevan hex/rgb (una prueba lo vigila). Única excepción: `theme-color` en `index.html` y `manifest.webmanifest` repite `--bg` (otra prueba comprueba que coincidan).
 
@@ -53,3 +53,6 @@ Sin tokens nuevos. En Hoy, Entreno y Progreso (clase `plano` en `<main>`) las se
 
 ## Anillo de pasos y modo sueño (v0.34.0)
 Sin tokens nuevos. El anillo de pasos usa `Anillo` (`--info`, `--pos` al llegar a la meta, `--sf-2` de pista); el estado del conteo va siempre con ícono + texto (`--pos` contando, `--warn` buscando o en pausa). La pantalla de dormir usa `--bg` y `--tx-2`, con el anillo a opacidad 0,6 para no encandilar. Cian = tocable y lima = destacado no se usan en los bloques nuevos (los botones heredan el estilo base).
+
+## Modo bolsillo (v0.36.0)
+Sin tokens nuevos. Total del día en `Anillo` (`--info`; `--pos` al llegar a la meta; `--warn` en pausa); estado con ícono + texto (`--pos` contando, `--warn` buscando o en pausa); barras de señal de GPS (`--pos` buena, `--warn` débil, `--tx-dis` apagadas o en pausa) siempre con el texto al lado. La onda por paso usa `--info`. Cian = tocable y lima = destacado no se usan en el bloque; los botones de mantener presionado heredan el borde base de `.ghost`. Toda animación se apaga con `prefers-reduced-motion`.

@@ -67,11 +67,12 @@ test('el componente usa la magnitud nueva y el respaldo GPS en vivo', () => {
   assert.match(a, /addEventListener\('release'/)
 })
 
-test('versión 0.35.1 con su nota en el CHANGELOG', () => {
+test('versión 0.35.1 o posterior, con su nota en el CHANGELOG', () => {
   const pkg = JSON.parse(leer('package.json')),
     lock = JSON.parse(leer('package-lock.json'))
-  assert.equal(pkg.version, '0.35.1')
-  assert.equal(lock.version, '0.35.1')
-  assert.equal(lock.packages[''].version, '0.35.1')
-  assert.match(leer('CHANGELOG.md'), /^# Historial de versiones de MMV\n\n## v0\.35\.1 · Entrega 34 · Corrección: contador de pasos en modo bolsillo/)
+  const [ma, mi, pa] = pkg.version.split('.').map(Number)
+  assert.ok(ma > 0 || mi > 35 || (mi === 35 && pa >= 1), pkg.version)
+  assert.equal(lock.version, pkg.version)
+  assert.equal(lock.packages[''].version, pkg.version)
+  assert.match(leer('CHANGELOG.md'), /## v0\.35\.1 · Entrega 34 · Corrección: contador de pasos en modo bolsillo/)
 })

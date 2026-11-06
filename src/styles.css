@@ -1943,3 +1943,256 @@ button.ruta-fila:active:not(:disabled) {
   width: 100%;
   transition: width 1s linear;
 }
+
+/* ===== v0.36.0 · Entrega 35: modo bolsillo con datos, señal de GPS, pausa y animación ===== */
+.bolsillo-ov {
+  overflow-y: auto;
+  justify-content: flex-start;
+  gap: var(--sp-3);
+}
+.bols {
+  margin-block: auto;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+}
+.bols-top {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+.bols-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 32px;
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-ctl);
+  background: var(--sf-2);
+  color: var(--tx);
+  font-size: 13px;
+}
+.bols-chip.contando .ico {
+  color: var(--pos);
+  animation: bols-respira 1.6s ease-in-out infinite;
+}
+.bols-chip.buscando .ico,
+.bols-chip.pausa .ico {
+  color: var(--warn);
+}
+.bols-chip.pausa {
+  border: 1px solid var(--warn);
+}
+@keyframes bols-respira {
+  50% {
+    opacity: 0.3;
+    transform: scale(0.7);
+  }
+}
+
+/* Barras de señal de GPS: cuántas están llenas depende de la precisión; el texto dice lo mismo */
+.barras {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: var(--sp-1);
+  height: 16px;
+}
+.barras i {
+  width: 4px;
+  background: var(--sf-2);
+  border: 1px solid var(--tx-dis);
+}
+.barras i:nth-child(1) {
+  height: 5px;
+}
+.barras i:nth-child(2) {
+  height: 8px;
+}
+.barras i:nth-child(3) {
+  height: 12px;
+}
+.barras i:nth-child(4) {
+  height: 16px;
+}
+.barras i.on {
+  background: var(--pos);
+  border: 1px solid var(--pos);
+}
+.barras.debil i.on,
+.barras.buscando i.on {
+  background: var(--warn);
+  border: 1px solid var(--warn);
+}
+.bols.pausada .barras i.on {
+  background: var(--tx-dis);
+  border: 1px solid var(--tx-dis);
+}
+.gps-linea {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* Anillo del día con una onda fina por cada paso detectado */
+.bols-hero {
+  position: relative;
+  width: 208px;
+  height: 208px;
+  display: grid;
+  place-items: center;
+}
+.bols-hero .anillo-pista,
+.bols-hero .anillo-arco {
+  stroke-width: 2.2;
+}
+.bols-hero .anillo-arco {
+  transition: stroke-dasharray 0.5s ease;
+}
+.bols.pausada .anillo-arco {
+  stroke: var(--warn);
+}
+.bols-centro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+}
+.bols-n {
+  font-size: 52px;
+  line-height: 1;
+}
+.bols.pausada .bols-n {
+  color: var(--tx-2);
+}
+.bols-onda {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  fill: none;
+  stroke: var(--info);
+  stroke-width: 0.4;
+  transform-origin: center;
+  animation: bols-onda 0.9s ease-out forwards;
+}
+@keyframes bols-onda {
+  from {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.14);
+  }
+}
+
+.bols-cam {
+  margin: 0;
+  font-size: 15px;
+  color: var(--tx);
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+.bols-cam b {
+  font-size: 20px;
+}
+.bols.pausada .bols-cam {
+  opacity: 0.6;
+}
+.bols-pausa {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--warn);
+  border-radius: var(--r-ctl);
+  background: var(--sf-2);
+  color: var(--tx);
+  font-size: 14px;
+}
+.bols-datos {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-2);
+}
+.bols-datos div {
+  background: var(--sf);
+  border-radius: var(--r-tile);
+  padding: var(--sp-3) var(--sp-2);
+  text-align: center;
+}
+.bols-datos b {
+  display: block;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.bols-datos small {
+  color: var(--tx-2);
+  font-size: 12px;
+}
+.bols.pausada .bols-datos b {
+  color: var(--tx-2);
+}
+
+/* Pausar y Salir: se activan manteniendo presionado (relleno de progreso) */
+.bols-acc {
+  width: 100%;
+  max-width: 380px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+}
+.mant {
+  position: relative;
+  overflow: hidden;
+  min-height: 64px;
+  min-width: 0;
+  width: 100%;
+  touch-action: none;
+  user-select: none;
+}
+.mant span,
+.mant small {
+  position: relative;
+  display: block;
+}
+.mant small {
+  font-size: 11px;
+  color: var(--tx-2);
+}
+.mant i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: var(--sf-2);
+}
+.mant.on i {
+  width: 100%;
+  transition: width var(--t) linear;
+}
+.bols-pie {
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bols-chip.contando .ico {
+    animation: none;
+  }
+  .bols-onda {
+    display: none;
+  }
+  .bols-hero .anillo-arco,
+  .mant.on i {
+    transition: none;
+  }
+}
