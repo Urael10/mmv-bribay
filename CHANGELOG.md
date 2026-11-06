@@ -1,5 +1,14 @@
 # Historial de versiones de MMV
 
+## v0.32.0 · Entrega 31 · Lenguaje «lista limpia» en Hoy, Entreno y Progreso (06/11/2026)
+- **Propuesta B aplicada:** en Hoy, Entreno y Progreso/Informe las secciones ya no son cajas: sin fondo, sombra ni borde, separadas por ritmo vertical (`--sp-5`, `--sp-6`). Se activa con la clase `plano` en `<main>` (`App.jsx`); Comidas y Ajustes siguen con tarjetas.
+- **Hoy:** la preparación y el botón lima quedan sin caja. Comida, Agua y Peso pasan de teselas a una lista (rótulo y ayudas a la izquierda, valor a la derecha). Check-in y «Actividad y cuerpo» son filas de texto con chevron cian. **Pantalla ancha (desde 840 px):** preparación y botón a la izquierda, lista a la derecha; lo plegable queda debajo, a todo el ancho.
+- **Entreno y Progreso/Informe:** mismo lenguaje: títulos `h3`, filas `.lin` y `.fila` sin líneas, con más aire entre bloques. Solo cambia el estilo: el contenido, el orden y los textos no se tocaron.
+- **Se mantienen:** las cajas de aviso (`.warn`, p. ej. «Conviene una semana de descarga»), los bordes de todo control tocable y el cian para lo tocable; lima solo en el botón de entrenar.
+- **Sin cambios** en datos (Dexie v11), backup, service worker ni `pantallas.js`; sin tokens nuevos.
+- **Pruebas:** nuevas en `tests/entrega31.test.js`. Se cambiaron a propósito dos en `tests/entrega30.test.js`: la prueba de «solo tokens» ahora mira solo el bloque de la entrega 30 (el de la 31 tiene la suya, que admite `none` y `0` para quitar sombra y radio) y la de versión ya no fija la 0.31.0.
+- **Probado:** `npm test` y `npm run build` en verde; Hoy, Entreno (inicio y sesión en curso) e Informe revisados en Chromium a 390 y 1200 px, sin errores de consola. **No probado:** celular real, teclado en pantalla, modo claro del sistema.
+
 ## v0.31.0 · Entrega 30 · Interfaz simplificada (06/11/2026)
 - **Hoy, propuesta A (foco único):** arriba la **preparación** con el puntaje grande, un solo botón lima **EMPEZAR ENTRENO** (con la cámara al lado) y tres **teselas** de un vistazo: Comida (kcal y proteína), Agua y Peso. Antes eran 9 bloques apilados.
 - **Check-in plegable:** se abre solo si todavía no lo hiciste hoy; hecho, queda en una fila «Hecho ✓». **Actividad y cuerpo** (pasos, rutas, medidas) también va en una fila plegable. El contenido plegado sigue montado (solo oculto): una ruta o un formulario a medias no se pierden.

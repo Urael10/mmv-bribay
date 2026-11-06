@@ -1,4 +1,4 @@
-# Tokens de diseño de MMV (v0.31.0)
+# Tokens de diseño de MMV (v0.32.0)
 
 Todos los colores viven en `src/tokens.css`. Ni `styles.css` ni los componentes llevan hex/rgb (una prueba lo vigila). Única excepción: `theme-color` en `index.html` y `manifest.webmanifest` repite `--bg` (otra prueba comprueba que coincidan).
 
@@ -47,3 +47,6 @@ Radios, espacios y sombras también viven solo en `src/tokens.css`. `styles.css`
 | `--ancho-app` | 520px (760px desde 840px de ancho) | ancho máximo de la app y de la barra inferior |
 
 Las tarjetas ya no llevan borde: se separan del fondo con `--sf` y `--sombra-1`. El borde `--bd` sigue siendo obligatorio en los controles tocables.
+
+## Lista limpia (v0.32.0)
+Sin tokens nuevos. En Hoy, Entreno y Progreso (clase `plano` en `<main>`) las secciones pierden fondo, sombra, radio y relleno; el ritmo lo dan `--sp-5` entre filas y `--sp-6` entre bloques. Siguen con caja las de aviso (`.warn`) y con borde `--bd` todos los controles tocables. El lima sigue siendo uno por pantalla (botón de entrenar).

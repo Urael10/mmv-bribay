@@ -91,7 +91,7 @@ export default function App() {
         </div>
       )}
       {tab !== 'entreno' && <BarraReloj onAbrir={() => ir('entreno')} />}
-      <main>
+      <main className={tab === 'hoy' || tab === 'entreno' || tab === 'progreso' ? 'plano' : undefined}>
         <div hidden={tab !== 'hoy'}>
           <Hoy
             onEmpezar={() => ir('entreno')}

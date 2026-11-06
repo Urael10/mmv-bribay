@@ -1593,3 +1593,110 @@ button.ruta-fila:active:not(:disabled) {
     background-color: var(--sf-2);
   }
 }
+
+/* Entrega 31: lenguaje B (lista limpia) en Hoy, Entreno y Progreso/Informe. Solo tokens.
+   Se activa con la clase .plano en <main>; Comidas y Ajustes siguen con tarjetas.
+   Sin cajas ni líneas: el ritmo vertical (--sp-5, --sp-6) separa los bloques.
+   Se mantienen las cajas de lo que avisa (.warn) y los bordes de todo control tocable. */
+.plano section:not(.warn) {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: var(--sp-6);
+}
+.plano h3 {
+  margin: 0 0 var(--sp-3);
+}
+.plano .lin {
+  border-top: 0;
+  padding: var(--sp-2) 0;
+  font-size: 15px;
+}
+.plano .fila {
+  border-top: 0;
+  padding: var(--sp-3) 0;
+}
+.plano section.vacio .vacio,
+.plano .vacio .vacio + .vacio {
+  border-top: 0;
+}
+.plano .tabs-wrap {
+  margin-bottom: var(--sp-5);
+}
+
+/* Hoy: preparación y botón sin caja, teselas como lista (rótulo a la izquierda, valor a la derecha) */
+.plano .hoy {
+  gap: 0 var(--sp-6);
+}
+.plano .hoy .prep .bar {
+  height: var(--sp-1);
+  margin: var(--sp-3) 0 var(--sp-4);
+}
+.plano .hoy-cta,
+.plano .teselas {
+  margin-bottom: var(--sp-6);
+}
+.plano .hoy > .warn {
+  margin-bottom: var(--sp-6);
+}
+.plano .teselas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+.plano .tesela {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--sp-3);
+  row-gap: var(--sp-1);
+  min-height: 0;
+  padding: var(--sp-2) 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+.plano .tesela > * {
+  grid-column: 1;
+}
+.plano .tesela .tesela-v {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  font-size: 26px;
+  text-align: right;
+}
+.plano .pleg-b {
+  min-height: 52px;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+.plano .pleg-c {
+  margin-top: var(--sp-3);
+}
+@media (hover: hover) {
+  .plano .tesela:hover:not(:disabled),
+  .plano .pleg-b:hover:not(:disabled) {
+    background-color: transparent;
+  }
+}
+
+/* Pantalla ancha: preparación y botón a la izquierda, lista a la derecha; lo plegable queda debajo a todo el ancho */
+@media (min-width: 840px) {
+  .plano .hoy > .prep,
+  .plano .hoy > .vacio {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .plano .hoy > .hoy-cta {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .plano .hoy > .teselas {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: start;
+  }
+}

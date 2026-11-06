@@ -7,7 +7,8 @@ const leer = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8')
 const tokens = leer('src/tokens.css'),
   css = leer('src/styles.css'),
   hoy = leer('src/features/hoy/Hoy.jsx')
-const bloque = css.slice(css.indexOf('Entrega 30: Hoy simplificado'))
+// Entrega 31: el bloque de la entrega 30 termina donde empieza el de la 31 (que tiene sus propias pruebas).
+const bloque = css.slice(css.indexOf('Entrega 30: Hoy simplificado'), css.indexOf('Entrega 31:'))
 
 test('tokens de forma, espacio y elevación en tokens.css', () => {
   for (const t of ['--r-card', '--r-tile', '--r-ctl', '--sp-1', '--sp-2', '--sp-3', '--sp-4', '--sp-5', '--sp-6', '--sombra-1', '--ancho-app'])
@@ -68,10 +69,6 @@ test('Entreno: la sesión manual queda en un plegable y conserva sus acciones', 
   assert.match(resto, /Sesión manual con mis 5 bloques/)
   assert.match(resto, /Sesión en blanco/)
 })
-test('versión 0.31.0 / entrega 30', () => {
-  const pkg = JSON.parse(leer('package.json'))
-  assert.equal(pkg.version, '0.31.0')
-  assert.equal(pkg.entrega, '30')
-  assert.match(leer('package-lock.json'), /"version": "0\.31\.0"/)
-  assert.match(leer('CHANGELOG.md'), /^# Historial de versiones de MMV\n\n## v0\.31\.0 · Entrega 30/)
+test('la entrega 30 sigue en el historial (la versión actual la fija la última entrega)', () => {
+  assert.match(leer('CHANGELOG.md'), /## v0\.31\.0 · Entrega 30 · Interfaz simplificada/)
 })
