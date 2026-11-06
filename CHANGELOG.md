@@ -1,5 +1,11 @@
 # Historial de versiones de MMV
 
+## v0.35.0 · Entrega 34 · Modo bolsillo para caminar (06/11/2026)
+- **Caminar «con la pantalla apagada», dentro de lo que permite una web:** con el conteo en marcha, el botón **Modo bolsillo** deja la pantalla casi negra y encendida (el sensor web solo cuenta con MMV visible). Muestra los pasos de hoy en tenue; para salir hay que **mantener presionado 1 s** (relleno de progreso), así un roce en el bolsillo no cambia nada. Con teclado, Enter o espacio salen directo.
+- **Límite:** si bloqueás el teléfono con el botón de encendido o salís de MMV, el sensor web se pausa (el tiempo se ve en «Pausas con MMV oculto»). Contar con la pantalla realmente apagada pide una app nativa o leer el podómetro del sistema. En pantallas LCD la pantalla negra no ahorra batería; en OLED sí, casi todo.
+- Sin cambios en lógica de conteo, datos, backup ni service worker. Pruebas: `tests/entrega34.test.js`; se relajó la prueba de versión de la entrega 33.
+- **No probado:** celular real (táctil, mantener presionado, batería).
+
 ## v0.34.0 · Entrega 33 · Anillo en el contador de pasos y «Dormir con alarma» (06/11/2026)
 - **Contador de pasos con anillo (propuestas D2, D3, D4 y D6 del informe, en versión acotada):** arriba de «Actividad física» hay un anillo con los **pasos de hoy en vivo** (lo ya guardado + lo que va contando el sensor) contra tu meta. Al lado: «de N · tu meta» o «de N · tu promedio de 28 días», el estado con **ícono + texto** (Contando · sensor y GPS / Buscando señal de GPS / En pausa), «+N esta caminata» y el tiempo que MMV estuvo oculto («Pausas con MMV oculto: 3 min 12 s»; el sensor web no cuenta en segundo plano). Se verde al llegar a la meta. El anillo no se anuncia en vivo: el grupo dice «Pasos: 5482 de 8000 (69 %)».
 - **Meta editable (opcional):** «Ajustes del conteo» › «Meta diaria de pasos» (1.000 a 100.000). Vacía: el anillo se compara con **tu promedio de 28 días** (mínimo 3 días con pasos); sin ninguno de los dos queda vacío y no se inventa una cifra.

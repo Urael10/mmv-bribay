@@ -1,4 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from 'react'
+import {createPortal} from 'react-dom'
 import {db, hoy, cfg, setCfg} from '../../data/db'
 import {sumaDias} from '../../domain/stats'
 import NavFecha from '../../ui/NavFecha'
@@ -47,6 +48,42 @@ const km = m => (m / 1000).toFixed(2).replace('.', ',')
 const MSG_SIN_PERMISO_SENSOR =
   'No se concedió permiso al sensor de movimiento. Para dárselo, cerrá MMV por completo, abrilo de nuevo, tocá ▶ y elegí «Permitir».'
 
+// Modo bolsillo: pantalla casi negra mientras se camina. La página sigue visible (el sensor web solo cuenta así),
+// y para salir hay que mantener presionado 1 s, así un roce dentro del bolsillo no hace nada.
+function Bolsillo({pasos, estado, onSalir}) {
+  const [ret, setRet] = useState(false),
+    t = useRef(null)
+  const soltar = () => {
+    clearTimeout(t.current)
+    setRet(false)
+  }
+  const apretar = () => {
+    setRet(true)
+    t.current = setTimeout(onSalir, 1000)
+  }
+  useEffect(() => () => clearTimeout(t.current), [])
+  return createPortal(
+    <div className="bolsillo-ov" role="dialog" aria-modal="true" aria-label="Modo bolsillo">
+      <span className="bolsillo-n mono">{pasos.toLocaleString('es-AR')}</span>
+      <small className="mu">pasos · {estado}</small>
+      <button
+        type="button"
+        className={'ghost bolsillo-sal' + (ret ? ' on' : '')}
+        onPointerDown={apretar}
+        onPointerUp={soltar}
+        onPointerLeave={soltar}
+        onPointerCancel={soltar}
+        onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && onSalir()}
+        onContextMenu={e => e.preventDefault()}
+      >
+        <i />
+        <span>Mantené presionado para salir</span>
+      </button>
+    </div>,
+    document.body
+  )
+}
+
 function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar, onSumar, onSugerir, onRuta, cargando}) {
   const [sesion, setSesion] = useState(sesionDeHoy),
     [gps, setGps] = useState(() => {
@@ -62,6 +99,7 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
     [metaTxt, setMetaTxt] = useState(() => cfg('metapasos', '')),
     [visible, setVisible] = useState(() => document.visibilityState !== 'hidden'),
     [pausaSeg, setPausaSeg] = useState(0),
+    [bolsillo, setBolsillo] = useState(false),
     [enLinea, setEnLinea] = useState(() => navigator.onLine !== false),
     [recuperando, setRecuperando] = useState(() => {
       const guardada = leer(K.activo)
@@ -474,7 +512,15 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
         ) : (
           <button disabled={cargando || recuperando || fecha !== hoy()} onClick={iniciar}>▶ Contar con el teléfono</button>
         )}
-        {activo && <small className="mu">Llevá el teléfono encima. Mantengo la pantalla encendida mientras contás; si salís de MMV el conteo se pausa.</small>}
+        {activo && (
+          <button className="ghost" disabled={guardando} onClick={() => setBolsillo(true)}>
+            <Icono n="luna" tam={18} /> Modo bolsillo
+          </button>
+        )}
+        {activo && <small className="mu">Llevá el teléfono encima. Mantengo la pantalla encendida mientras contás; si salís de MMV o la bloqueás, el conteo se pausa. Con «Modo bolsillo» la pantalla queda negra y encendida.</small>}
+      {activo && bolsillo && (
+        <Bolsillo pasos={pasosHoy} estado={est ? est.texto : ''} onSalir={() => setBolsillo(false)} />
+      )}
       </div>
       {fecha !== hoy() && <small className="mu">Para otros días podés consultar y corregir los pasos; el sensor solo cuenta hoy.</small>}
       {estado && <small role="status" className="mu">{estado}</small>}
