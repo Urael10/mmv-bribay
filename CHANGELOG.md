@@ -1,5 +1,11 @@
 # Historial de versiones de MMV
 
+## v0.35.1 · Entrega 34 · Corrección: contador de pasos en modo bolsillo (06/11/2026)
+- **Corrección · el contador quedaba en 0 en modo bolsillo:** el detector medía el módulo de la aceleración *lineal* (sin gravedad), que siempre es positivo y deja el golpe del paso casi al nivel de su propio promedio; con el teléfono en el bolsillo (movimiento más suave que en la mano) nunca llegaba al umbral de 1,0 m/s². Ahora usa la aceleración **con gravedad** (cae a la lineal si el equipo no la entrega) y el umbral baja a 0,6 m/s² (rearme en 0,2). En simulación cuenta desde 0,6 m/s² de amplitud a 16, 30 y 60 muestras por segundo y no cuenta nada con el teléfono quieto.
+- **Respaldo con GPS en vivo:** si el sensor no suma pasos pero el GPS midió distancia, el número del anillo, el modo bolsillo y el botón «Terminar conteo» muestran la estimación por GPS (la misma que se suma al terminar), en vez de quedarse en 0.
+- **Pantalla encendida en el bolsillo:** si el sistema suelta el Wake Lock, se vuelve a pedir solo mientras MMV siga visible.
+- **No probado:** celular real (solo simulación y pruebas automáticas: `tests/entrega35.test.js`).
+
 ## v0.35.0 · Entrega 34 · Modo bolsillo para caminar (06/11/2026)
 - **Caminar «con la pantalla apagada», dentro de lo que permite una web:** con el conteo en marcha, el botón **Modo bolsillo** deja la pantalla casi negra y encendida (el sensor web solo cuenta con MMV visible). Muestra los pasos de hoy en tenue; para salir hay que **mantener presionado 1 s** (relleno de progreso), así un roce en el bolsillo no cambia nada. Con teclado, Enter o espacio salen directo.
 - **Límite:** si bloqueás el teléfono con el botón de encendido o salís de MMV, el sensor web se pausa (el tiempo se ve en «Pausas con MMV oculto»). Contar con la pantalla realmente apagada pide una app nativa o leer el podómetro del sistema. En pantallas LCD la pantalla negra no ahorra batería; en OLED sí, casi todo.

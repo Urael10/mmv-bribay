@@ -17,9 +17,11 @@ test('el bloque CSS del bolsillo usa solo tokens', () => {
   assert.ok(b.length > 300)
   assert.doesNotMatch(b, /#[0-9a-fA-F]{3,8}\b|rgba?\(|var\(--ac\)|var\(--pr\)/)
 })
-test('versión 0.35.0 / entrega 34', () => {
+test('versión ≥ 0.35.0 / entrega 34', () => {
   const pkg = JSON.parse(leer('package.json'))
-  assert.equal(pkg.version, '0.35.0')
+  const [ma, mi] = pkg.version.split('.').map(Number)
+  assert.ok(ma > 0 || mi >= 35, pkg.version)
   assert.equal(pkg.entrega, '34')
-  assert.match(leer('CHANGELOG.md'), /^# Historial de versiones de MMV\n\n## v0\.35\.0 · Entrega 34/)
+  assert.match(leer('CHANGELOG.md'), /^# Historial de versiones de MMV\n\n## v0\.\d+\.\d+ · Entrega 34/)
+  assert.match(leer('CHANGELOG.md'), /## v0\.35\.0 · Entrega 34 · Modo bolsillo para caminar/)
 })

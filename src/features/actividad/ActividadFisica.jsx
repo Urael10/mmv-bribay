@@ -17,7 +17,7 @@ import {
 } from '../../domain/rutas'
 import {
   MAX_PASOS, TIPOS, LARGO_PASO_INICIAL, GPS_CFG,
-  parsearPasos, sumarPasos, magnitudAceleracion, detectorNuevo, procesarMuestra,
+  parsearPasos, sumarPasos, magnitudParaPasos, combinarPasos, detectorNuevo, procesarMuestra,
   gpsNuevo, procesarPuntoGps, gpsParaGuardar, gpsDesdeGuardado,
   normalizarLargoPaso, cerrarConteo, armarActividad, resumenActividades
 } from '../../domain/actividad'
@@ -275,7 +275,7 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
     const registrar = e => {
       if (!contandoRef.current) return
       if (document.visibilityState !== 'visible') return
-      const magnitud = magnitudAceleracion(e)
+      const magnitud = magnitudParaPasos(e)
       if (magnitud == null) return
       const primerDato = !ultimoDato.current
       ultimoDato.current = Date.now()
@@ -363,10 +363,17 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
     let candado = null, cancelado = false
     const pedirPantalla = async () => {
       try {
-        if (document.visibilityState === 'visible' && navigator.wakeLock) {
+        if (document.visibilityState === 'visible' && navigator.wakeLock && !(candado && !candado.released)) {
           const l = await navigator.wakeLock.request('screen')
           if (cancelado) l.release().catch(() => {})
-          else candado = l
+          else {
+            candado = l
+            // Si el sistema lo suelta (ahorro de batería, etc.) se vuelve a pedir mientras MMV siga visible.
+            l.addEventListener('release', () => {
+              if (candado === l) candado = null
+              if (!cancelado) setTimeout(pedirPantalla, 500)
+            })
+          }
         }
       } catch { /* el navegador puede negarlo (ahorro de batería) */ }
     }
@@ -450,7 +457,10 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
   }, [onActivoChange, onRuta])
 
   const esHoy = fecha === hoy(),
-    pasosHoy = pasosEnVivo({total, sesion, activo, esHoy}),
+    // Mismo criterio que al terminar: si el sensor no cuenta (o se perdió pasos) y el GPS midió distancia,
+    // el número en vivo usa el GPS en vez de quedarse en 0.
+    sesionVivo = activo ? combinarPasos({sensor: sesion, distM: gps.m, largo: largoGuardado()}).pasos : 0,
+    pasosHoy = pasosEnVivo({total, sesion: sesionVivo, activo, esHoy}),
     ef = metaEfectiva({meta: parsearMeta(metaTxt).meta, promedio}),
     est = estadoConteo({activo, visible, usarGps, senal: gps.senal, sesion})
   return (
@@ -471,8 +481,8 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
               <Icono n={est.icono} tam={16} /> {est.texto}
             </span>
           )}
-          {activo && sesion > 0 && (
-            <small className="mu">+{sesion.toLocaleString('es-AR')} esta caminata · se suman al terminar</small>
+          {activo && sesionVivo > 0 && (
+            <small className="mu">+{sesionVivo.toLocaleString('es-AR')} esta caminata · se suman al terminar</small>
           )}
           {activo && pausaSeg > 0 && (
             <small className="mu">Pausas con MMV oculto: {textoPausa(pausaSeg)}</small>
@@ -507,7 +517,7 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
       <div className="row" style={{marginTop: 8}}>
         {activo ? (
           <button className="ghost" disabled={guardando} onClick={detener}>
-            {guardando ? 'Guardando…' : `■ Terminar conteo · ${sesion.toLocaleString('es-AR')}`}
+            {guardando ? 'Guardando…' : `■ Terminar conteo · ${sesionVivo.toLocaleString('es-AR')}`}
           </button>
         ) : (
           <button disabled={cargando || recuperando || fecha !== hoy()} onClick={iniciar}>▶ Contar con el teléfono</button>
