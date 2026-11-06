@@ -1,4 +1,4 @@
-/* MMV · tokens de diseño (v0.24.0, Propuesta 2; forma y elevación desde v0.31.0).
+/* MMV · tokens de diseño (v0.24.0, Propuesta 2).
    Único lugar donde se escriben colores. Los componentes y styles.css usan solo var(--…).
    Excepción: index.html y manifest.webmanifest repiten --bg (theme-color); una prueba vigila que coincidan.
    Reglas de uso y razones de contraste: DESIGN-TOKENS.md */
@@ -56,25 +56,4 @@
 
   /* Fondo de la cámara */
   --scrim: #000;
-
-  /* Forma, espacio y elevación (Entrega 30): el único lugar donde se escriben radios, espacios y sombras.
-     La sombra es una elevación sutil que reemplaza al borde de las tarjetas. */
-  --r-card: 24px; /* tarjetas grandes (preparación, secciones) */
-  --r-tile: 18px; /* teselas y filas plegables */
-  --r-ctl: 14px; /* botones grandes */
-  --sp-1: 4px;
-  --sp-2: 8px;
-  --sp-3: 12px;
-  --sp-4: 16px;
-  --sp-5: 24px;
-  --sp-6: 32px;
-  --sombra-1: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 18px rgba(0, 0, 0, 0.22);
-  --ancho-app: 520px; /* ancho máximo de la app en el celular */
-}
-
-/* Pantallas anchas: la app se ensancha un poco; el contenido sigue en una sola columna legible */
-@media (min-width: 840px) {
-  :root {
-    --ancho-app: 760px;
-  }
 }

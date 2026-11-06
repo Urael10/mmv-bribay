@@ -115,10 +115,7 @@ function Semana({reg, manual, ses}) {
               <span>
                 <b className="mono">{num(a)}</b>
                 {d !== null ? (
-                  <small className={claseVariacion(d, {neutra: esActual})}>
-                    {' '}
-                    {sg(d)}%
-                  </small>
+                  <small className={claseVariacion(d, {neutra: esActual})}> {sg(d)}%</small>
                 ) : b === 0 && a > 0 ? (
                   <small className="tag"> nuevo</small>
                 ) : null}
@@ -137,8 +134,8 @@ function Semana({reg, manual, ses}) {
       })}
       {filas.length > 0 && (
         <small className="mu">
-          Barra cian: esta semana · barra gris: semana anterior. El % compara con la semana
-          anterior{esActual ? ' y va en gris mientras la semana sigue en curso' : ''}.
+          Barra cian: esta semana · barra gris: semana anterior. El % compara con la semana anterior
+          {esActual ? ' y va en gris mientras la semana sigue en curso' : ''}.
         </small>
       )}
     </section>
@@ -222,15 +219,9 @@ function Historial({ses, reg, marcas, recargar}) {
                                   d = b2 > 0 && a > 0 ? pct(a, b2) : null
                                 const dr = repsTot(r) - repsTot(u)
                                 return d !== null ? (
-                                  <small className={claseVariacion(d)}>
-                                    {' '}
-                                    {sg(d)}%
-                                  </small>
+                                  <small className={claseVariacion(d)}> {sg(d)}%</small>
                                 ) : dr !== 0 ? (
-                                  <small className={claseVariacion(dr)}>
-                                    {' '}
-                                    {sg(dr)} reps
-                                  </small>
+                                  <small className={claseVariacion(dr)}> {sg(dr)} reps</small>
                                 ) : null
                               })()}
                             </span>
@@ -445,23 +436,25 @@ export default function Progreso({subInicial}) {
       </section>
     )
   return (
-    <>
+    <div className="progreso-pag">
       <TabsDeslizables
         etiqueta="Secciones de Progreso"
         items={PESTANAS}
         valor={sub}
         onCambio={setSub}
       />
-      {sub === 'pilares' && <VistaPilares />}
-      {sub === 'tests' && <VistaTests />}
-      {sub === 'semana' && <Semana reg={d.reg} manual={manual} ses={d.ses} />}
-      {sub === 'historial' && (
-        <Historial ses={d.ses} reg={d.reg} marcas={marcas} recargar={cargar} />
-      )}
-      {sub === 'rutas' && <Pantalla clave="rutas" nombre="tus rutas" />}
-      {sub === 'records' && <Records reg={d.reg} ej={d.ej} recargar={cargar} />}
-      {sub === 'cuerpo' && <VistaCuerpo />}
-      {sub === 'informe' && <Informe ses={d.ses} reg={d.reg} manual={manual} />}
-    </>
+      <div className="progreso-cuerpo">
+        {sub === 'pilares' && <VistaPilares />}
+        {sub === 'tests' && <VistaTests />}
+        {sub === 'semana' && <Semana reg={d.reg} manual={manual} ses={d.ses} />}
+        {sub === 'historial' && (
+          <Historial ses={d.ses} reg={d.reg} marcas={marcas} recargar={cargar} />
+        )}
+        {sub === 'rutas' && <Pantalla clave="rutas" nombre="tus rutas" />}
+        {sub === 'records' && <Records reg={d.reg} ej={d.ej} recargar={cargar} />}
+        {sub === 'cuerpo' && <VistaCuerpo />}
+        {sub === 'informe' && <Informe ses={d.ses} reg={d.reg} manual={manual} />}
+      </div>
+    </div>
   )
 }

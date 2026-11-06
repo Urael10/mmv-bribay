@@ -91,7 +91,7 @@ export default function App() {
         </div>
       )}
       {tab !== 'entreno' && <BarraReloj onAbrir={() => ir('entreno')} />}
-      <main className={tab === 'hoy' || tab === 'entreno' || tab === 'progreso' ? 'plano' : undefined}>
+      <main className={'tab-' + tab}>
         <div hidden={tab !== 'hoy'}>
           <Hoy
             onEmpezar={() => ir('entreno')}
@@ -101,13 +101,17 @@ export default function App() {
         </div>
         {tab === 'entreno' && <Pantalla clave="entreno" nombre="Entreno" />}
         {tab === 'comidas' && <Pantalla clave="comidas" nombre="Comidas" />}
-        {tab === 'progreso' && <Pantalla clave="progreso" nombre="Progreso" subInicial={subProgreso} />}
-        {tab === 'ajustes' && <Pantalla clave="ajustes" nombre="Ajustes" onVersion={tocarVersion} />}
+        {tab === 'progreso' && (
+          <Pantalla clave="progreso" nombre="Progreso" subInicial={subProgreso} />
+        )}
+        {tab === 'ajustes' && (
+          <Pantalla clave="ajustes" nombre="Ajustes" onVersion={tocarVersion} />
+        )}
         {tab === 'priv' && (
           <Pantalla clave="priv" nombre="esta pantalla" onSalir={() => setTab(previa)} />
         )}
       </main>
-      <nav>
+      <nav aria-label="Secciones">
         {TABS.map(([k, n, ic]) => (
           <button
             key={k}

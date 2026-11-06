@@ -445,26 +445,24 @@ export default function Entreno() {
               </button>
             </p>
           )}
-          <details className="mas-opc">
-            <summary className="tag">¿Sin foto o sin IA? Armá la sesión a mano</summary>
-            <button
-              style={{width: '100%'}}
-              onClick={() => {
-                empezar(sesionManual5(), 'manual')
-                setCorregir(true)
-              }}
-            >
-              <span className="btn-l">
-                <Icono n="lapiz" /> Sesión manual con mis 5 bloques
-              </span>
-              <small style={{display: 'block', fontWeight: 400}}>
-                Movilidad · Warm up · EMOM 12 min · For time · Tabata. Solo escribís los ejercicios.
-              </small>
-            </button>
-            <button className="ghost" style={{marginTop: 8}} onClick={() => empezar({bloques: []}, 'manual')}>
-              Sesión en blanco
-            </button>
-          </details>
+          <p className="mu" style={{margin: '8px 0'}}>¿Sin foto o sin IA? Armá la sesión a mano:</p>
+          <button
+            style={{width: '100%'}}
+            onClick={() => {
+              empezar(sesionManual5(), 'manual')
+              setCorregir(true)
+            }}
+          >
+            <span className="btn-l">
+              <Icono n="lapiz" /> Sesión manual con mis 5 bloques
+            </span>
+            <small style={{display: 'block', fontWeight: 400}}>
+              Movilidad · Warm up · EMOM 12 min · For time · Tabata. Solo escribís los ejercicios.
+            </small>
+          </button>
+          <button className="ghost" style={{marginTop: 8}} onClick={() => empezar({bloques: []}, 'manual')}>
+            Sesión en blanco
+          </button>
         </section>
       )
     }

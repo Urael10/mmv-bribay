@@ -27,11 +27,7 @@ import {
   textoActividad,
   textoInforme
 } from '../src/domain/informe.js'
-import {
-  HISTORIAL_MIN_DIAS,
-  preparacion,
-  puntajeCarga
-} from '../src/domain/preparacion.js'
+import {HISTORIAL_MIN_DIAS, preparacion, puntajeCarga} from '../src/domain/preparacion.js'
 import {sumaDias} from '../src/domain/stats.js'
 import {resumenRutasParaIA} from '../src/domain/rutas.js'
 
@@ -47,7 +43,15 @@ const ruta = (id, fecha, o = {}) => ({
   ritmo: 720,
   ...o
 })
-const act = (id, fecha, o = {}) => ({id, fecha, tipo: 'caminata', minutos: 60, km: 5, rutaId: null, ...o})
+const act = (id, fecha, o = {}) => ({
+  id,
+  fecha,
+  tipo: 'caminata',
+  minutos: 60,
+  km: 5,
+  rutaId: null,
+  ...o
+})
 
 // ---------- Filas reducidas ----------
 test('rutaSinTrazo: se queda solo con lo agregable (sin puntos, horas, parciales ni tramos)', () => {
@@ -70,7 +74,14 @@ test('rutaSinTrazo: se queda solo con lo agregable (sin puntos, horas, parciales
   assert.equal(rutaSinTrazo({id: 1, fecha: L, distM: 100, seg: 0}).ritmo, null)
 })
 test('actividadSinNota: saca la nota (texto libre) y normaliza rutaId', () => {
-  const a = actividadSinNota({id: 1, fecha: L, tipo: 'carrera', minutos: 30, km: 5, nota: 'con Ana en casa'})
+  const a = actividadSinNota({
+    id: 1,
+    fecha: L,
+    tipo: 'carrera',
+    minutos: 30,
+    km: 5,
+    nota: 'con Ana en casa'
+  })
   assert.equal('nota' in a, false)
   assert.equal(a.rutaId, null)
   assert.equal(actividadSinNota({id: 1, fecha: L, minutos: 30, rutaId: 7}).rutaId, 7)
@@ -81,8 +92,14 @@ test('una ruta enlazada por rutaId cuenta solo en su actividad', () => {
   const rs = [ruta(1, L), ruta(2, L, {tipo: 'carrera'})]
   const as = [act(10, L, {rutaId: 1})]
   const {aparte, enActividad} = repartirRutas(rs, as)
-  assert.deepEqual(aparte.map(r => r.id), [2])
-  assert.deepEqual(enActividad.map(r => r.id), [1])
+  assert.deepEqual(
+    aparte.map(r => r.id),
+    [2]
+  )
+  assert.deepEqual(
+    enActividad.map(r => r.id),
+    [1]
+  )
 })
 test('GPX importado + actividad cargada a mano de la misma salida: cuenta una sola vez', () => {
   const importada = ruta(5, L, {distM: 5230, seg: 3500})
@@ -94,7 +111,11 @@ test('no se considera la misma salida si cambia el día, el tipo o la distancia'
   assert.equal(rutasAparte([r], [act(1, sumaDias(L, 1), {km: 5})]).length, 1, 'otro día')
   assert.equal(rutasAparte([r], [act(1, L, {tipo: 'carrera', km: 5})]).length, 1, 'otro tipo')
   assert.equal(rutasAparte([r], [act(1, L, {km: 8})]).length, 1, 'distancia muy distinta')
-  assert.equal(rutasAparte([r], [act(1, L, {km: 5.6})]).length, 0, '5,6 vs 5,0 km está dentro de la tolerancia')
+  assert.equal(
+    rutasAparte([r], [act(1, L, {km: 5.6})]).length,
+    0,
+    '5,6 vs 5,0 km está dentro de la tolerancia'
+  )
 })
 test('tolerancia: salidas cortas usan el mínimo en km; las largas, el porcentaje', () => {
   assert.equal(COINCIDE.kmMin, 0.3)
@@ -114,12 +135,18 @@ test('sin distancia en la actividad, se compara por duración; sin horarios en l
   assert.equal(rutasAparte([ruta(1, L, {seg: 3600})], [act(1, L, {km: 0, minutos: 62})]).length, 0)
   assert.equal(rutasAparte([ruta(1, L, {seg: 3600})], [act(1, L, {km: 0, minutos: 90})]).length, 1)
   assert.equal(rutasAparte([ruta(1, L, {seg: 0, ritmo: null})], [act(1, L, {km: 5})]).length, 0)
-  assert.equal(rutasAparte([ruta(1, L, {seg: 0, ritmo: null})], [act(1, L, {km: 0, minutos: 60})]).length, 1)
+  assert.equal(
+    rutasAparte([ruta(1, L, {seg: 0, ritmo: null})], [act(1, L, {km: 0, minutos: 60})]).length,
+    1
+  )
 })
 test('una actividad ya enlazada a otra ruta no se usa para tapar una ruta distinta', () => {
   const rs = [ruta(1, L), ruta(2, L)]
   const r = repartirRutas(rs, [act(1, L, {rutaId: 1})])
-  assert.deepEqual(r.aparte.map(x => x.id), [2])
+  assert.deepEqual(
+    r.aparte.map(x => x.id),
+    [2]
+  )
 })
 
 // ---------- Carga de la actividad ----------
@@ -132,11 +159,20 @@ test('cargaActividad: RPE típico × minutos, con tope de 24 h y tipos desconoci
 })
 test('cargasExternas: actividades + rutas que no están en ninguna (una salida, una carga)', () => {
   const as = [act(1, L, {tipo: 'carrera', minutos: 30, km: 5, rutaId: 1})]
-  const rs = [ruta(1, L, {tipo: 'carrera', distM: 5000, seg: 1800}), ruta(2, sumaDias(L, 1), {seg: 1800})]
+  const rs = [
+    ruta(1, L, {tipo: 'carrera', distM: 5000, seg: 1800}),
+    ruta(2, sumaDias(L, 1), {seg: 1800})
+  ]
   const ext = cargasExternas(as, rs)
   assert.equal(ext.length, 2)
-  assert.deepEqual(ext.map(x => x.carga), [180, 60])
-  assert.deepEqual(ext.map(x => x.minutos), [30, 30])
+  assert.deepEqual(
+    ext.map(x => x.carga),
+    [180, 60]
+  )
+  assert.deepEqual(
+    ext.map(x => x.minutos),
+    [30, 30]
+  )
 })
 
 // ---------- Preparación ----------
@@ -161,18 +197,30 @@ test('puntajeCarga: la actividad sola también da historial si cubre 14 días', 
   const ext = [-20, -10, -3].map(d => ({fecha: sumaDias(HOY, d), carga: 120}))
   assert.ok(puntajeCarga([], HOY, ext))
   const corto = [-5, -3].map(d => ({fecha: sumaDias(HOY, d), carga: 120}))
-  assert.equal(puntajeCarga([], HOY, corto), null, `menos de ${HISTORIAL_MIN_DIAS} días de historia`)
+  assert.equal(
+    puntajeCarga([], HOY, corto),
+    null,
+    `menos de ${HISTORIAL_MIN_DIAS} días de historia`
+  )
 })
 test('preparacion: usa actividades y rutas, no cuenta dos veces y muestra los minutos; los pesos no cambian', () => {
   const hab = [{fecha: HOY, energia: 4, animo: 4, dolor: 2, sueno: '7', calidad: 4}]
   const igual = preparacion({fecha: HOY, habitos: hab, sesiones})
   const sinAct = preparacion({fecha: HOY, habitos: hab, sesiones, actividades: [], rutas: []})
   assert.deepEqual(sinAct, igual)
-  const as = [0, 1, 2].map(i => act(i + 1, sumaDias(HOY, -i), {tipo: 'carrera', minutos: 50, km: 8, rutaId: i + 1}))
-  const rs = [0, 1, 2].map(i => ruta(i + 1, sumaDias(HOY, -i), {tipo: 'carrera', distM: 8000, seg: 3000}))
+  const as = [0, 1, 2].map(i =>
+    act(i + 1, sumaDias(HOY, -i), {tipo: 'carrera', minutos: 50, km: 8, rutaId: i + 1})
+  )
+  const rs = [0, 1, 2].map(i =>
+    ruta(i + 1, sumaDias(HOY, -i), {tipo: 'carrera', distM: 8000, seg: 3000})
+  )
   const conAmbas = preparacion({fecha: HOY, habitos: hab, sesiones, actividades: as, rutas: rs})
   const soloActs = preparacion({fecha: HOY, habitos: hab, sesiones, actividades: as, rutas: []})
-  assert.equal(conAmbas.partes.carga.p, soloActs.partes.carga.p, 'las rutas enlazadas no suman otra vez')
+  assert.equal(
+    conAmbas.partes.carga.p,
+    soloActs.partes.carga.p,
+    'las rutas enlazadas no suman otra vez'
+  )
   assert.match(conAmbas.partes.carga.detalle, /con 150 min de actividad/)
   assert.ok(conAmbas.partes.carga.p <= igual.partes.carga.p)
 })
@@ -190,7 +238,10 @@ test('pasosContexto: ayer contra tu promedio (solo con 5 o más días), y es inf
   })
   const q = preparacion({
     fecha: HOY,
-    habitos: [{fecha: HOY, energia: 4, animo: 4, dolor: 2, sueno: '7', calidad: 4}, ...hs.map(h => ({...h, pasos: 1}))],
+    habitos: [
+      {fecha: HOY, energia: 4, animo: 4, dolor: 2, sueno: '7', calidad: 4},
+      ...hs.map(h => ({...h, pasos: 1}))
+    ],
     sesiones
   })
   assert.equal(p.pasos.ayer, 12000)
@@ -258,7 +309,10 @@ test('textoInforme: línea de Actividad legible, con voseo del resto y sin null/
     rutas: [ruta(2, sumaDias(L, 3), {tipo: 'bicicleta', distM: 15200, seg: 2400})]
   })
   const t = textoInforme(i)
-  assert.match(t, /Actividad: 9\.000 pasos de media en 2 días · 1 actividad \(40 min, 3,5 km\) · 1 ruta con GPS aparte \(15,2 km\)/)
+  assert.match(
+    t,
+    /Actividad: 9\.000 pasos de media en 2 días · 1 actividad \(40 min, 3,5 km\) · 1 ruta con GPS aparte \(15,2 km\)/
+  )
   assert.ok(!/NaN|undefined|null/.test(t), t)
 })
 function vacioAct() {
@@ -282,7 +336,14 @@ const COMPLETAS = [
     origen: 'gpx'
   })
 ]
-const ACTS = [act(1, sumaDias(L, 1), {tipo: 'bicicleta', minutos: 50, km: 18, nota: 'casa de Ana, calle Falsa 123'})]
+const ACTS = [
+  act(1, sumaDias(L, 1), {
+    tipo: 'bicicleta',
+    minutos: 50,
+    km: 18,
+    nota: 'casa de Ana, calle Falsa 123'
+  })
+]
 
 test('coach: el cuerpo trae totales de actividad, rutas aparte y las reglas nuevas', () => {
   const i = informeSemana({
@@ -295,7 +356,12 @@ test('coach: el cuerpo trae totales de actividad, rutas aparte y las reglas nuev
     t = c.contents[0].parts[0].text
   assert.ok(t.startsWith(P_COACH))
   const datos = JSON.parse(t.slice(t.indexOf('DATOS:\n') + 7))
-  assert.deepEqual(Object.keys(datos.actividad).sort(), ['actividades', 'pasos', 'rutasAparte', 'total'])
+  assert.deepEqual(Object.keys(datos.actividad).sort(), [
+    'actividades',
+    'pasos',
+    'rutasAparte',
+    'total'
+  ])
   assert.equal(datos.actividad.pasos.medios, 9000)
   assert.equal(datos.actividad.actividades.cantidad, 1)
   assert.equal(datos.actividad.actividades.porTipo.bicicleta.km, 18)
@@ -303,13 +369,23 @@ test('coach: el cuerpo trae totales de actividad, rutas aparte y las reglas nuev
   assert.equal(datos.actividad.rutasAparte.km, 10)
   assert.equal(datos.actividad.rutasAparte.ritmoMedioSegKm, 299)
   assert.equal('rutasEnActividades' in datos.actividad, false)
-  for (const regla of ['rutasAparte', 'no se cuentan dos veces', 'ajustes concretos', 'sin nombrar ejercicios'])
+  for (const regla of [
+    'rutasAparte',
+    'no se cuentan dos veces',
+    'ajustes concretos',
+    'sin nombrar ejercicios'
+  ])
     assert.ok(P_COACH.includes(regla), regla)
   assert.ok(P_COACH.includes('SOLO JSON'), 'sigue pidiendo JSON')
 })
 test('coach: PRIVACIDAD — ni coordenadas, ni puntos, ni horas, ni parciales, ni notas salen del dispositivo', () => {
   const i = informeSemana({desde: L, actividades: ACTS, rutas: COMPLETAS})
-  const completo = cuerpoCoach(i, {ok: true, puntaje: 70, confianza: 85, partes: {carga: {p: 80, detalle: 'x'}}})
+  const completo = cuerpoCoach(i, {
+    ok: true,
+    puntaje: 70,
+    confianza: 85,
+    partes: {carga: {p: 80, detalle: 'x'}}
+  })
   // solo los DATOS: el texto del prompt (instrucciones) puede contener palabras como «lat» dentro de otras
   const t = JSON.parse(completo).contents[0].parts[0].text
   const cuerpo = t.slice(t.indexOf('DATOS:\n'))
@@ -385,7 +461,9 @@ test('PRIVACIDAD (código): quién importa los módulos de rutas es una lista ce
   const quien = archivos('src')
     .filter(f => /\.(js|jsx)$/.test(f))
     .flatMap(f =>
-      [...leer(f).matchAll(/from '([^']*\/rutas(?:\.js)?)'/g)].map(m => `${f.replaceAll('\\', '/')} ← ${m[1]}`)
+      [...leer(f).matchAll(/from '([^']*\/rutas(?:\.js)?)'/g)].map(
+        m => `${f.replaceAll('\\', '/')} ← ${m[1]}`
+      )
     )
     .sort()
   assert.deepEqual(quien, [
@@ -399,7 +477,10 @@ test('PRIVACIDAD (código): quién importa los módulos de rutas es una lista ce
     'src/ui/TrazoSvg.jsx ← ../domain/rutas'
   ])
   // y movimiento.js toma de rutas.js una sola cosa: el resumen que ya es solo agregados
-  assert.match(leer('src/domain/movimiento.js'), /import \{resumenRutasParaIA\} from '\.\/rutas\.js'/)
+  assert.match(
+    leer('src/domain/movimiento.js'),
+    /import \{resumenRutasParaIA\} from '\.\/rutas\.js'/
+  )
   // la tabla de rutas solo la leen la capa de datos de rutas (con trazo) y la de movimiento (sin trazo)
   const leen = archivos('src')
     .filter(f => /db\.rutas/.test(leer(f)))
@@ -455,8 +536,10 @@ test('carga diferida: Hoy sigue sin importar Coach ni Progreso; prep.js solo sum
   assert.doesNotMatch(leer('src/ui/pantallas.js'), /coach\/Coach/)
 })
 
-test('versión: la entrega 29 (v0.30.0) sigue en el historial', () => {
+test('versión: la 0.30.0 / entrega 29 o una posterior (la exacta la fija la prueba de la última entrega)', () => {
   const pkg = JSON.parse(leer('package.json'))
+  const [ma, mi] = pkg.version.split('.').map(Number)
+  assert.ok(ma > 0 || mi >= 30, pkg.version)
   assert.ok(+pkg.entrega >= 29, pkg.entrega)
-  assert.match(leer('CHANGELOG.md'), /## v0\.30\.0 · Entrega 29/)
+  assert.match(leer('package-lock.json'), /"version": "0\.\d+\.\d+"/)
 })

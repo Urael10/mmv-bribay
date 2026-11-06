@@ -1,9 +1,10 @@
 import {useState, useEffect} from 'react'
 import {db, hoy, cfg} from '../../data/db'
+import Icono from '../../ui/Icono'
 import {totales, fmt} from '../../domain/alimentos'
 import {ultima, proteinaObjetivo, PROT_KG} from '../../domain/cuerpo'
 
-// Tesela de Hoy (Entrega 30): calorías y proteína del día; al tocarla lleva a Comidas (el detalle vive allá).
+// Fila compacta de Hoy: calorías y proteína del día; al tocarla lleva a Comidas (el detalle vive allá).
 // La meta de proteína sale del último peso registrado (g por kg configurable en Ajustes → Perfil y objetivo).
 export default function FilaAlimentacion({onAbrir}) {
   const [t, setT] = useState(null),
@@ -24,19 +25,28 @@ export default function FilaAlimentacion({onAbrir}) {
   const factor = +String(cfg('protkg', PROT_KG)).replace(',', '.') || PROT_KG,
     metaP = proteinaObjetivo(peso, factor)
   return (
-    <button type="button" className="tesela" onClick={onAbrir} aria-label="Alimentación de hoy: abrir Comidas">
-      <span className="eti">Comida</span>
-      <b className="mono tesela-v">{t.kcal}</b>
-      <small className="mu">de {meta} kcal</small>
-      <small className="mu tesela-p">
+    <button type="button" className="filahoy" onClick={onAbrir} aria-label="Alimentación de hoy: abrir Comidas">
+      <span className="filahoy-t">Alimentación de hoy</span>
+      <span className="filahoy-v">
+        <b className="mono">{t.kcal}</b>
+        <small className="mu"> / {meta} kcal</small>
+      </span>
+      <span className="bar" aria-hidden="true">
+        <i style={{width: Math.min(100, (t.kcal / meta) * 100) + '%'}} />
+      </span>
+      <span className="filahoy-p mu">
         {metaP ? (
           <>
-            Prot. {fmt(t.p)} / {metaP} g
+            Proteína <b className="mono">{fmt(t.p)}</b> / {metaP} g
           </>
         ) : (
-          <>Prot. {fmt(t.p)} g</>
+          <>
+            Proteína <b className="mono">{fmt(t.p)}</b> g
+          </>
         )}
-      </small>
+      </span>
+      <Icono n="chevron-abajo" tam={18} className="filahoy-ch" />
     </button>
   )
 }
+
