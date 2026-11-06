@@ -1,5 +1,18 @@
 # Historial de versiones de MMV
 
+## v0.31.0 · Entrega 30 · Interfaz simplificada (06/11/2026)
+- **Hoy, propuesta A (foco único):** arriba la **preparación** con el puntaje grande, un solo botón lima **EMPEZAR ENTRENO** (con la cámara al lado) y tres **teselas** de un vistazo: Comida (kcal y proteína), Agua y Peso. Antes eran 9 bloques apilados.
+- **Check-in plegable:** se abre solo si todavía no lo hiciste hoy; hecho, queda en una fila «Hecho ✓». **Actividad y cuerpo** (pasos, rutas, medidas) también va en una fila plegable. El contenido plegado sigue montado (solo oculto): una ruta o un formulario a medias no se pierden.
+- **Agua:** tocar la tesela abre el detalle con los mismos controles de antes (+250, +500, deshacer, otra cantidad, reiniciar).
+- **Preparación:** el cálculo quedó igual. «Calculado con X % de los datos» y «Cómo se calcula» pasaron al plegable «Detalle y cómo se calcula».
+- **Entreno:** «Sesión manual» y «Sesión en blanco» pasaron a un plegable «¿Sin foto o sin IA?».
+- **Tarjetas sin borde en toda la app** (Entreno, Progreso, Informe, Comidas…): elevación sutil en lugar de línea.
+- **Tokens nuevos** (solo en `src/tokens.css`): radios `--r-card`, `--r-tile`, `--r-ctl`; espacios `--sp-1` a `--sp-6`; sombra `--sombra-1`; ancho `--ancho-app` (520 px; 760 px desde 840 px de ancho de pantalla).
+- **Se quitó** el texto largo bajo el botón de entrenar (explicaba la cámara; el botón conserva su etiqueta accesible).
+- **Carga diferida intacta:** Hoy sigue importando solo `FilaAlimentacion`, `Preparacion` y `AvisoDescarga`; sin cambios en `pantallas.js`, Dexie (v11), backup ni service worker.
+- **Pruebas:** nuevas en `tests/entrega30.test.js`. Se actualizó a propósito `tests/entrega29.test.js` (la prueba de versión ya no fija la 0.30.0).
+- **No probado:** celular real (táctil, teclado en pantalla). Sí se revisó en Chromium en 390 px y 1200 px de ancho.
+
 ## v0.30.0 · Entrega 29 · IA con actividad y rutas (05/11/2026)
 - **Informe semanal:** nueva sección **Actividad** (solo si hay datos): pasos (promedio de los días con dato y variación contra la semana anterior), actividades (cantidad, minutos, km) y **rutas con GPS aparte**. También entra en «Copiar informe» y cuenta para que la semana tenga informe.
 - **Sin doble conteo (riesgo de la entrega 28 resuelto):** una ruta enlazada a una actividad por `rutaId`, o que coincide con una actividad sin enlace (mismo día y tipo, distancia o duración parecidas: ±15 % o 0,3 km; ±20 % o 5 min si falta la distancia), cuenta una sola vez, como actividad. El emparejamiento es uno a uno, así una actividad no tapa dos salidas. Un GPX importado de una caminata que ya cargaste a mano no se suma de nuevo.

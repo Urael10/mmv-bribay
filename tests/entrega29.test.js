@@ -455,10 +455,8 @@ test('carga diferida: Hoy sigue sin importar Coach ni Progreso; prep.js solo sum
   assert.doesNotMatch(leer('src/ui/pantallas.js'), /coach\/Coach/)
 })
 
-test('versión 0.30.0 / entrega 29', () => {
+test('versión: la entrega 29 (v0.30.0) sigue en el historial', () => {
   const pkg = JSON.parse(leer('package.json'))
-  assert.equal(pkg.version, '0.30.0')
-  assert.equal(pkg.entrega, '29')
-  assert.match(leer('package-lock.json'), /"version": "0\.30\.0"/)
-  assert.match(leer('CHANGELOG.md'), /^# Historial de versiones de MMV\n\n## v0\.30\.0 · Entrega 29/)
+  assert.ok(+pkg.entrega >= 29, pkg.entrega)
+  assert.match(leer('CHANGELOG.md'), /## v0\.30\.0 · Entrega 29/)
 })

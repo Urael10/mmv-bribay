@@ -21,32 +21,31 @@ export default function Preparacion({h}) {
       </Plegable>
     )
   return (
-    <section>
+    <section className="prep">
       <h3>Preparación para entrenar</h3>
       {r.ok ? (
         <>
-          <div className="big">
+          <div className="prep-n">
             <span className={'sc ' + r.etiqueta.c}>{r.puntaje}</span>
             <small> / 100</small>
           </div>
           <div className="bar">
             <i style={{width: r.puntaje + '%'}} />
           </div>
-          <b>{r.etiqueta.t}</b>
-          <p style={{margin: '4px 0 0', fontSize: 14}}>{r.recomendacion.texto}</p>
+          <p className="prep-t">{r.etiqueta.t}</p>
+          <p className="mu prep-r">{r.recomendacion.texto}</p>
           {r.recomendacion.avisos.map(a => (
             <small key={a} className="warn">
               {a}
             </small>
           ))}
-          {r.faltan.length > 0 && (
-            <small className="mu" style={{display: 'block', marginTop: 4}}>
-              Calculado con el {r.confianza}% de los datos. Falta:{' '}
-              {r.faltan.join(', ').toLowerCase()}.
-            </small>
-          )}
-          <details>
-            <summary className="tag">Cómo se calcula</summary>
+          <details className="prep-d">
+            <summary className="tag">Detalle y cómo se calcula</summary>
+            {r.faltan.length > 0 && (
+              <small className="mu" style={{display: 'block', margin: '6px 0'}}>
+                Calculado con el {r.confianza}% de los datos. Falta: {r.faltan.join(', ').toLowerCase()}.
+              </small>
+            )}
             {Object.entries(r.partes).map(([k, v]) => (
               <div key={k} className="lin">
                 <span>

@@ -29,7 +29,7 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
 }
 .app {
-  max-width: 520px;
+  max-width: var(--ancho-app);
   margin: auto;
   min-height: 100dvh;
   display: flex;
@@ -59,10 +59,11 @@ main {
 }
 section {
   background: var(--sf);
-  border: 1px solid var(--ln);
-  border-radius: 22px;
-  padding: 14px;
-  margin-bottom: 12px;
+  border: 0;
+  border-radius: var(--r-card);
+  box-shadow: var(--sombra-1);
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-3);
 }
 h3 {
   margin: 0 0 8px;
@@ -149,7 +150,7 @@ nav {
   bottom: 0;
   left: 0;
   right: 0;
-  max-width: 520px;
+  max-width: var(--ancho-app);
   margin: auto;
   display: flex;
   background: var(--sf);
@@ -1176,63 +1177,6 @@ section.vacio > .vacio:first-of-type {
   border-top: 0;
 }
 
-/* Hoy: fila compacta de alimentación (lleva a Comidas) */
-.bento > .filahoy {
-  grid-column: span 2;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto 18px;
-  grid-template-areas:
-    'tit val ch'
-    'bar bar bar'
-    'pro pro pro';
-  align-items: center;
-  gap: 2px 8px;
-  width: 100%;
-  min-height: 64px;
-  padding: 10px 14px;
-  text-align: left;
-  color: var(--tx);
-  background: var(--sf);
-  border: 1.5px solid var(--bd);
-  border-radius: 22px;
-  font-weight: 400;
-}
-.filahoy-t {
-  grid-area: tit;
-  font-family: 'Chakra Petch', sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--tx-2);
-  font-weight: 600;
-}
-.filahoy-v {
-  grid-area: val;
-  white-space: nowrap;
-}
-.filahoy-v b {
-  font-size: 20px;
-}
-.filahoy .bar {
-  grid-area: bar;
-  display: block;
-  margin: 4px 0;
-  height: 6px;
-}
-.filahoy-p {
-  grid-area: pro;
-  font-size: 13px;
-}
-.filahoy-ch {
-  grid-area: ch;
-  transform: rotate(-90deg);
-  color: var(--ac);
-}
-@media (hover: hover) {
-  .bento > .filahoy:hover {
-    background: var(--sf-2);
-  }
-}
 
 /* Comidas: lista única de recientes y frecuentes */
 .atajos {
@@ -1497,4 +1441,155 @@ button.ruta-fila:active:not(:disabled) {
 }
 .pantalla-carga p {
   margin: 0;
+}
+
+/* Entrega 30: Hoy simplificado (propuesta A, foco único) y tarjetas sin borde. Solo tokens. */
+.bento {
+  gap: var(--sp-3);
+}
+.hoy {
+  gap: var(--sp-4);
+}
+.hoy .prep {
+  padding: var(--sp-5);
+}
+.prep-n {
+  font-family: 'Chakra Petch', ui-monospace, monospace;
+  font-size: 72px;
+  font-weight: 600;
+  line-height: 1.05;
+  margin: var(--sp-2) 0 var(--sp-1);
+}
+.prep-n small {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--tx-2);
+}
+.prep .bar {
+  height: 6px;
+  margin: var(--sp-2) 0 var(--sp-4);
+}
+.prep-t {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+.prep-r {
+  margin: 2px 0 0;
+  font-size: 14px;
+}
+.prep-d {
+  margin-top: var(--sp-3);
+}
+.hoy-cta {
+  grid-column: span 2;
+}
+.hoy-cta .ctafila {
+  margin-bottom: 0;
+}
+.hoy-cta .cta {
+  min-height: 60px;
+  border-radius: var(--r-ctl);
+}
+.hoy-cta .ctafoto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 60px;
+  width: 60px;
+  min-height: 60px;
+  border-radius: var(--r-ctl);
+  background: var(--sf-2);
+  color: var(--ac);
+}
+.hoy-nota {
+  display: block;
+  margin-top: var(--sp-2);
+}
+.teselas {
+  grid-column: span 2;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+.tesela {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
+  min-height: 96px;
+  padding: var(--sp-4) var(--sp-3);
+  text-align: left;
+  color: var(--tx);
+  background: var(--sf);
+  border: 0;
+  border-radius: var(--r-tile);
+  box-shadow: var(--sombra-1);
+  font-weight: 400;
+}
+.tesela .eti {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tx-2);
+  font-weight: 600;
+}
+.tesela-v {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+.tesela small {
+  font-size: 12px;
+  line-height: 1.3;
+}
+.pleg {
+  grid-column: span 2;
+}
+.pleg-b {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 56px;
+  padding: var(--sp-3) var(--sp-4);
+  text-align: left;
+  color: var(--tx);
+  background: var(--sf);
+  border: 0;
+  border-radius: var(--r-tile);
+  box-shadow: var(--sombra-1);
+  font-weight: 400;
+  font-size: 15px;
+}
+.pleg-b b {
+  font-weight: 600;
+}
+.pleg-r {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pleg-b .vacio-ch {
+  color: var(--ac);
+}
+.pleg-c {
+  margin-top: var(--sp-3);
+}
+.pleg-c > section:last-child {
+  margin-bottom: 0;
+}
+.mas-opc {
+  margin-top: var(--sp-3);
+}
+@media (hover: hover) {
+  .tesela:hover:not(:disabled),
+  .pleg-b:hover:not(:disabled) {
+    background-color: var(--sf-2);
+  }
 }

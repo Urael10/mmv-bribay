@@ -1,4 +1,4 @@
-# Mi Mejor Versión (MMV) · Entrega 29 (v0.30.0)
+# Mi Mejor Versión (MMV) · Entrega 30 (v0.31.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 
@@ -40,6 +40,9 @@ Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.z
 - Hoy va en el paquete principal; Entreno, Comidas, Progreso (con Rutas), Ajustes y el menú oculto se bajan aparte al abrirlos (`React.lazy` + `Suspense`). Mientras bajan se ve «Cargando…».
 - Unos segundos después de abrir, la app baja las demás pantallas en segundo plano (no lo hace sin conexión, con «ahorro de datos» ni con red 2G) y `public/sw.js` las guarda, así andan sin conexión. Si una pantalla no se puede bajar aparece «No se pudo abrir…» con **Reintentar** y **Actualizar la app**; tus datos no se tocan.
 - Regla para el código: nadie fuera de `src/ui/pantallas.js` importa esas pantallas de forma estática (una prueba lo vigila); una pantalla nueva se agrega ahí y a `ORDEN_PRECARGA`.
+
+## Interfaz simplificada (v0.31.0)
+Hoy muestra primero la preparación y el botón de entrenar; comida, agua y peso son tres teselas, y el check-in y «Actividad y cuerpo» se pliegan. Las tarjetas de toda la app pasaron de borde a elevación sutil. Radios, espacios y sombras viven en `src/tokens.css`. Detalle en `CHANGELOG.md` y `DESIGN-TOKENS.md`.
 
 ## IA con actividad y rutas (v0.30.0)
 - El informe semanal, el puntaje de preparación y el coach usan ahora pasos, actividades y rutas. Pasos: promedio diario de los días con dato y variación contra la semana anterior. Actividades: cantidad, minutos y km por tipo. Rutas: solo las que **no** están ya en una actividad.

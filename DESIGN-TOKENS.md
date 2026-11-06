@@ -1,4 +1,4 @@
-# Tokens de diseño de MMV (v0.24.0)
+# Tokens de diseño de MMV (v0.31.0)
 
 Todos los colores viven en `src/tokens.css`. Ni `styles.css` ni los componentes llevan hex/rgb (una prueba lo vigila). Única excepción: `theme-color` en `index.html` y `manifest.webmanifest` repite `--bg` (otra prueba comprueba que coincidan).
 
@@ -33,3 +33,17 @@ Normal (`--sf-2` + borde `--bd`) · presionado (`:active`) · seleccionado (`.on
 
 ## Cambiar un color
 Edita solo `src/tokens.css` y corré `npm test`: las pruebas recalculan los contrastes.
+
+## Forma, espacio y elevación (v0.31.0)
+Radios, espacios y sombras también viven solo en `src/tokens.css`. `styles.css` y los componentes usan `var(--…)`.
+
+| Token | Valor | Uso |
+|---|---|---|
+| `--r-card` | 24px | tarjetas grandes (`section`, preparación) |
+| `--r-tile` | 18px | teselas y filas plegables de Hoy |
+| `--r-ctl` | 14px | botón principal de Hoy |
+| `--sp-1` … `--sp-6` | 4 · 8 · 12 · 16 · 24 · 32 px | separaciones |
+| `--sombra-1` | dos capas suaves | elevación de tarjetas y teselas (reemplaza el borde) |
+| `--ancho-app` | 520px (760px desde 840px de ancho) | ancho máximo de la app y de la barra inferior |
+
+Las tarjetas ya no llevan borde: se separan del fondo con `--sf` y `--sombra-1`. El borde `--bd` sigue siendo obligatorio en los controles tocables.
