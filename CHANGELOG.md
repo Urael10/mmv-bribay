@@ -1,13 +1,35 @@
 # Historial de versiones de MMV
 
-## v0.31.0 · Entrega 30 · Responsive: tablet y pantalla ancha (06/11/2026)
-- **Tres tamaños:** celular (< 720 px) idéntico a antes; **tablet** (≥ 720 px) con columna de 760 px, cabecera y barra al mismo ancho y **Hoy en dos columnas**; **pantalla ancha** (≥ 1024 px, o celular acostado con altura ≤ 520 px) con **riel vertical a la izquierda** en lugar de la barra inferior, contenido hasta 1240 px y respeto del área segura.
-- **Hoy:** dos pilas (`.col`). Izquierda: check-in, preparación, aviso de descarga, empezar entreno y alimentación. Derecha: hidratación, actividad física y cuerpo. En celular las pilas son transparentes, así que el orden es el de siempre.
-- **Progreso:** en pantalla ancha las 8 pestañas pasan a una lista vertical fija a la izquierda del contenido (las flechas ↑/↓ también cambian de pestaña). Entreno, Comidas, Ajustes y el menú oculto se centran en una columna de lectura de 820 px.
-- **Instalada:** `manifest` pasa de `portrait` a `any` para poder girar la tablet o el celular.
-- **Sin cambios en** datos (Dexie v11), backup, service worker ni carga diferida: el cambio es CSS más una clase por pantalla (`main.tab-…`) y dos contenedores en Hoy y Progreso. El arranque no cambia de tamaño (JS 426 kB).
-- **Pruebas:** nuevas en `tests/entrega30.test.js`. Se relajó la prueba de versión de la entrega 29 (como en la 28).
-- **No probado:** tablet o celular reales; solo Chromium con tamaños emulados (390, 768, 1280 y 844×390).
+## v0.33.0 · Entrega 32 · Anillos de progreso en Hoy (06/11/2026)
+- **Apariencia circular:** la v0.32.0 (lista limpia) no tenía ningún elemento circular. Ahora **Preparación** muestra el puntaje dentro de un anillo grande (verde si es «Listo para entrenar fuerte», rojo si dice «Priorizá la recuperación», azul de datos en el medio) con la etiqueta y la recomendación al lado; **Comida** y **Agua** llevan un anillo chico a la izquierda de su fila, que se llena con las kcal y los ml del día y se pone verde al llegar a la meta. **Peso** no tiene meta y no lleva anillo.
+- **Hechos con SVG, sin librerías:** `src/ui/Anillo.jsx` (decorativo, `aria-hidden`) y `src/domain/anillo.js` (lógica pura: fracción 0–1, largo del arco, clase de color, texto accesible). Los colores salen de los tokens (`--info`, `--pos`, `--neg`, `--sf-2`); el cian sigue siendo solo para lo tocable y el lima solo para el botón de entrenar.
+- **Accesibilidad:** el anillo no se anuncia; la fila de Comida y la de Agua dicen «Agua: 1250 de 2500 ml (50 %)» en su etiqueta.
+- **Se quitó** la barra horizontal de la preparación y el número de 72 px (ahora 40 px dentro del anillo). El cálculo no cambia.
+- **Sin cambios** en datos (Dexie v11), backup, service worker ni carga diferida: `Anillo` es un archivo chico que Hoy ya podía importar.
+- **Pruebas:** nuevas en `tests/entrega32.test.js`. Se relajó a propósito la prueba de versión de `tests/entrega31.test.js`.
+- **No probado:** celular real, modo claro del sistema.
+
+## v0.32.0 · Entrega 31 · Lenguaje «lista limpia» en Hoy, Entreno y Progreso (06/11/2026)
+- **Propuesta B aplicada:** en Hoy, Entreno y Progreso/Informe las secciones ya no son cajas: sin fondo, sombra ni borde, separadas por ritmo vertical (`--sp-5`, `--sp-6`). Se activa con la clase `plano` en `<main>` (`App.jsx`); Comidas y Ajustes siguen con tarjetas.
+- **Hoy:** la preparación y el botón lima quedan sin caja. Comida, Agua y Peso pasan de teselas a una lista (rótulo y ayudas a la izquierda, valor a la derecha). Check-in y «Actividad y cuerpo» son filas de texto con chevron cian. **Pantalla ancha (desde 840 px):** preparación y botón a la izquierda, lista a la derecha; lo plegable queda debajo, a todo el ancho.
+- **Entreno y Progreso/Informe:** mismo lenguaje: títulos `h3`, filas `.lin` y `.fila` sin líneas, con más aire entre bloques. Solo cambia el estilo: el contenido, el orden y los textos no se tocaron.
+- **Se mantienen:** las cajas de aviso (`.warn`, p. ej. «Conviene una semana de descarga»), los bordes de todo control tocable y el cian para lo tocable; lima solo en el botón de entrenar.
+- **Sin cambios** en datos (Dexie v11), backup, service worker ni `pantallas.js`; sin tokens nuevos.
+- **Pruebas:** nuevas en `tests/entrega31.test.js`. Se cambiaron a propósito dos en `tests/entrega30.test.js`: la prueba de «solo tokens» ahora mira solo el bloque de la entrega 30 (el de la 31 tiene la suya, que admite `none` y `0` para quitar sombra y radio) y la de versión ya no fija la 0.31.0.
+- **Probado:** `npm test` y `npm run build` en verde; Hoy, Entreno (inicio y sesión en curso) e Informe revisados en Chromium a 390 y 1200 px, sin errores de consola. **No probado:** celular real, teclado en pantalla, modo claro del sistema.
+
+## v0.31.0 · Entrega 30 · Interfaz simplificada (06/11/2026)
+- **Hoy, propuesta A (foco único):** arriba la **preparación** con el puntaje grande, un solo botón lima **EMPEZAR ENTRENO** (con la cámara al lado) y tres **teselas** de un vistazo: Comida (kcal y proteína), Agua y Peso. Antes eran 9 bloques apilados.
+- **Check-in plegable:** se abre solo si todavía no lo hiciste hoy; hecho, queda en una fila «Hecho ✓». **Actividad y cuerpo** (pasos, rutas, medidas) también va en una fila plegable. El contenido plegado sigue montado (solo oculto): una ruta o un formulario a medias no se pierden.
+- **Agua:** tocar la tesela abre el detalle con los mismos controles de antes (+250, +500, deshacer, otra cantidad, reiniciar).
+- **Preparación:** el cálculo quedó igual. «Calculado con X % de los datos» y «Cómo se calcula» pasaron al plegable «Detalle y cómo se calcula».
+- **Entreno:** «Sesión manual» y «Sesión en blanco» pasaron a un plegable «¿Sin foto o sin IA?».
+- **Tarjetas sin borde en toda la app** (Entreno, Progreso, Informe, Comidas…): elevación sutil en lugar de línea.
+- **Tokens nuevos** (solo en `src/tokens.css`): radios `--r-card`, `--r-tile`, `--r-ctl`; espacios `--sp-1` a `--sp-6`; sombra `--sombra-1`; ancho `--ancho-app` (520 px; 760 px desde 840 px de ancho de pantalla).
+- **Se quitó** el texto largo bajo el botón de entrenar (explicaba la cámara; el botón conserva su etiqueta accesible).
+- **Carga diferida intacta:** Hoy sigue importando solo `FilaAlimentacion`, `Preparacion` y `AvisoDescarga`; sin cambios en `pantallas.js`, Dexie (v11), backup ni service worker.
+- **Pruebas:** nuevas en `tests/entrega30.test.js`. Se actualizó a propósito `tests/entrega29.test.js` (la prueba de versión ya no fija la 0.30.0).
+- **No probado:** celular real (táctil, teclado en pantalla). Sí se revisó en Chromium en 390 px y 1200 px de ancho.
 
 ## v0.30.0 · Entrega 29 · IA con actividad y rutas (05/11/2026)
 - **Informe semanal:** nueva sección **Actividad** (solo si hay datos): pasos (promedio de los días con dato y variación contra la semana anterior), actividades (cantidad, minutos, km) y **rutas con GPS aparte**. También entra en «Copiar informe» y cuenta para que la semana tenga informe.

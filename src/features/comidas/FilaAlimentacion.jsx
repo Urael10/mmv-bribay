@@ -1,10 +1,11 @@
 import {useState, useEffect} from 'react'
 import {db, hoy, cfg} from '../../data/db'
-import Icono from '../../ui/Icono'
 import {totales, fmt} from '../../domain/alimentos'
+import Anillo from '../../ui/Anillo'
+import {claseAnillo, textoAnillo} from '../../domain/anillo'
 import {ultima, proteinaObjetivo, PROT_KG} from '../../domain/cuerpo'
 
-// Fila compacta de Hoy: calorías y proteína del día; al tocarla lleva a Comidas (el detalle vive allá).
+// Tesela de Hoy (Entrega 30): calorías y proteína del día; al tocarla lleva a Comidas (el detalle vive allá).
 // La meta de proteína sale del último peso registrado (g por kg configurable en Ajustes → Perfil y objetivo).
 export default function FilaAlimentacion({onAbrir}) {
   const [t, setT] = useState(null),
@@ -25,28 +26,25 @@ export default function FilaAlimentacion({onAbrir}) {
   const factor = +String(cfg('protkg', PROT_KG)).replace(',', '.') || PROT_KG,
     metaP = proteinaObjetivo(peso, factor)
   return (
-    <button type="button" className="filahoy" onClick={onAbrir} aria-label="Alimentación de hoy: abrir Comidas">
-      <span className="filahoy-t">Alimentación de hoy</span>
-      <span className="filahoy-v">
-        <b className="mono">{t.kcal}</b>
-        <small className="mu"> / {meta} kcal</small>
-      </span>
-      <span className="bar" aria-hidden="true">
-        <i style={{width: Math.min(100, (t.kcal / meta) * 100) + '%'}} />
-      </span>
-      <span className="filahoy-p mu">
+    <button
+      type="button"
+      className="tesela"
+      onClick={onAbrir}
+      aria-label={`${textoAnillo('Alimentación de hoy', t.kcal, meta, 'kcal')}: abrir Comidas`}
+    >
+      <Anillo valor={t.kcal} meta={meta} clase={claseAnillo(t.kcal, meta)} />
+      <span className="eti">Comida</span>
+      <b className="mono tesela-v">{t.kcal}</b>
+      <small className="mu">de {meta} kcal</small>
+      <small className="mu tesela-p">
         {metaP ? (
           <>
-            Proteína <b className="mono">{fmt(t.p)}</b> / {metaP} g
+            Prot. {fmt(t.p)} / {metaP} g
           </>
         ) : (
-          <>
-            Proteína <b className="mono">{fmt(t.p)}</b> g
-          </>
+          <>Prot. {fmt(t.p)} g</>
         )}
-      </span>
-      <Icono n="chevron-abajo" tam={18} className="filahoy-ch" />
+      </small>
     </button>
   )
 }
-

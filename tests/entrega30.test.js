@@ -1,113 +1,74 @@
-// Entrega 30 · Responsive: tablet y pantalla ancha. Es CSS más estructura mínima; las pruebas fijan los cortes,
-// que Hoy siga con el orden de siempre y que no se haya movido nada de la carga diferida.
+// Entrega 30 · Interfaz simplificada (Hoy, propuesta A) y tarjetas sin borde.
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {readFileSync} from 'node:fs'
 
-const leer = p => readFileSync(new URL('../' + p, import.meta.url), 'utf8')
-const css = leer('src/styles.css')
-const bloque = (inicio, desde = 0) => {
-  // Devuelve el contenido de la media query que empieza con `inicio`, respetando llaves anidadas.
-  const i = css.indexOf(inicio, desde)
-  assert.ok(i >= 0, 'no está: ' + inicio)
-  let n = 0,
-    k = css.indexOf('{', i)
-  const ini = k
-  for (; k < css.length; k++) {
-    if (css[k] === '{') n++
-    else if (css[k] === '}' && --n === 0) break
-  }
-  return css.slice(ini + 1, k)
-}
-const entrega30 = css.slice(css.indexOf('Entrega 30: layout responsive'))
+const leer = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8')
+const tokens = leer('src/tokens.css'),
+  css = leer('src/styles.css'),
+  hoy = leer('src/features/hoy/Hoy.jsx')
+// Entrega 31: el bloque de la entrega 30 termina donde empieza el de la 31 (que tiene sus propias pruebas).
+const bloque = css.slice(css.indexOf('Entrega 30: Hoy simplificado'), css.indexOf('Entrega 31:'))
 
-test('cortes: tablet a 720 px y riel a 1024 px (o celular acostado de poca altura)', () => {
-  assert.match(entrega30, /@media \(min-width: 720px\)/)
-  assert.match(
-    entrega30,
-    /@media \(min-width: 1024px\), \(orientation: landscape\) and \(min-width: 640px\) and \(max-height: 520px\)/
-  )
+test('tokens de forma, espacio y elevación en tokens.css', () => {
+  for (const t of ['--r-card', '--r-tile', '--r-ctl', '--sp-1', '--sp-2', '--sp-3', '--sp-4', '--sp-5', '--sp-6', '--sombra-1', '--ancho-app'])
+    assert.match(tokens, new RegExp(`${t}:`), t)
+  assert.match(tokens, /@media \(min-width: 840px\)[\s\S]*--ancho-app: 760px/)
 })
-test('la barra inferior pasa a riel vertical a la izquierda en pantalla ancha', () => {
-  const ancho = bloque(
-    '@media (min-width: 1024px), (orientation: landscape)',
-    css.indexOf('Entrega 30: layout responsive')
-  )
-  assert.match(ancho, /nav \{[^}]*flex-direction: column/)
-  assert.match(ancho, /nav \{[^}]*width: var\(--rail\)/)
-  assert.match(ancho, /\.app \{[^}]*padding-left: var\(--rail\)/)
-  assert.match(ancho, /env\(safe-area-inset-top\)/)
+test('el CSS de la entrega 30 usa solo tokens: sin colores, radios, sombras ni espacios sueltos', () => {
+  assert.ok(bloque.length > 500)
+  assert.doesNotMatch(bloque, /#[0-9a-fA-F]{3,8}\b|rgba?\(/)
+  for (const m of bloque.matchAll(/border-radius:\s*([^;]+);/g)) assert.match(m[1], /^var\(--r-/, m[0])
+  for (const m of bloque.matchAll(/box-shadow:\s*([^;]+);/g)) assert.equal(m[1], 'var(--sombra-1)')
+  for (const m of bloque.matchAll(/\b(?:padding|gap|margin)[a-z-]*:\s*([^;]+);/g))
+    for (const v of m[1].split(/\s+/)) assert.ok(/^(var\(--sp-\d\)|0|auto|2px)$/.test(v), m[0])
 })
-test('el celular no cambia: ninguna regla nueva fuera de media query afecta el layout salvo .col transparente', () => {
-  const fuera = entrega30.replace(/@media[^{]*\{(?:[^{}]|\{[^{}]*\})*\}/g, '')
-  assert.doesNotMatch(fuera, /nav\s*\{/)
-  assert.doesNotMatch(fuera, /\.bento/)
-  assert.match(css, /\.bento > \.col \{\s*display: contents;/)
+test('las tarjetas ya no llevan borde: elevación con token', () => {
+  const base = css.slice(css.indexOf('\nsection {'), css.indexOf('}', css.indexOf('\nsection {')))
+  assert.match(base, /border:\s*0/)
+  assert.match(base, /box-shadow:\s*var\(--sombra-1\)/)
+  assert.match(base, /border-radius:\s*var\(--r-card\)/)
+  assert.match(css, /max-width:\s*var\(--ancho-app\)/)
 })
-test('los cortes de styles.css no tienen colores sueltos ni usan hex/rgb', () => {
-  assert.doesNotMatch(entrega30, /#[0-9a-fA-F]{3,8}\b|rgba?\(/)
+test('Hoy: orden A (preparación, botón, teselas, check-in, actividad y cuerpo)', () => {
+  const orden = ['<Preparacion', 'EMPEZAR ENTRENO', '<AvisoDescarga', 'className="teselas"', 'id="hoy-checkin"', 'id="hoy-mas"']
+  const pos = orden.map(t => hoy.indexOf(t))
+  assert.ok(pos.every(p => p > 0), JSON.stringify(pos))
+  assert.deepEqual([...pos].sort((a, b) => a - b), pos)
+  assert.match(hoy, /<FilaAlimentacion onAbrir=\{onComidas\}/)
 })
-test('Hoy: dos pilas .col en el orden original (celular intacto)', () => {
-  const j = leer('src/features/hoy/Hoy.jsx')
-  assert.equal((j.match(/className="col"/g) || []).length, 2)
-  const orden = [
-    'checkin',
-    '<Preparacion',
-    '<AvisoDescarga',
-    'EMPEZAR ENTRENO',
-    '<FilaAlimentacion',
-    'Hidratación',
-    '<ActividadFisica',
-    '<TarjetaCuerpo'
-  ]
-  let pos = -1
-  for (const t of orden) {
-    const p = j.indexOf(t)
-    assert.ok(p > pos, 'fuera de orden: ' + t)
-    pos = p
-  }
-  const medio = j.indexOf('className="col"', j.indexOf('className="col"') + 1)
-  assert.ok(j.indexOf('<FilaAlimentacion') < medio && medio < j.indexOf('Hidratación'))
+test('Hoy: el check-in se abre solo si no está hecho y el contenido plegado sigue montado', () => {
+  assert.match(hoy, /setCkAb\(!checkinHecho\(x\)\)/)
+  assert.match(hoy, /hidden=\{!abierto\}/)
+  assert.match(hoy, /<ActividadFisica onVerRutas=\{onRutas\}/)
+  assert.match(hoy, /<TarjetaCuerpo \/>/)
+  assert.match(hoy, /aria-expanded=\{abierto\}/)
 })
-test('ningún selector viejo quedó pegado a .bento sin pasar por .col', () => {
-  assert.doesNotMatch(css, /\.bento > (section|\.mitad|\.filahoy)/)
+test('Hoy: el agua conserva todos sus controles en el detalle', () => {
+  for (const t of ['+{n}', 'Deshacer', 'Otra (ml)', '+ Sumar', 'Reiniciar', 'aguaLog'])
+    assert.ok(hoy.includes(t), t)
 })
-test('App: cada pantalla lleva su clase main.tab-… y la barra tiene nombre accesible', () => {
-  const a = leer('src/App.jsx')
-  assert.match(a, /<main className=\{'tab-' \+ tab\}>/)
-  assert.match(a, /<nav aria-label="Secciones">/)
-  for (const t of ['hoy', 'entreno', 'comidas', 'progreso', 'ajustes', 'priv'])
-    assert.ok(t === 'priv' || css.includes('main.tab-' + t) || t === 'hoy' || t === 'progreso', t)
-  for (const t of ['entreno', 'comidas', 'ajustes', 'priv'])
-    assert.ok(css.includes('main.tab-' + t), t)
+test('carga diferida: Hoy sigue sin importar pantallas pesadas', () => {
+  assert.match(hoy, /from '\.\.\/comidas\/FilaAlimentacion'/)
+  assert.match(hoy, /from '\.\.\/coach\/Preparacion'/)
+  assert.match(hoy, /from '\.\.\/progreso\/AvisoDescarga'/)
+  assert.doesNotMatch(hoy, /comidas\/Comidas|coach\/Coach|progreso\/Progreso|progreso\/Pilares|entreno\/Entreno|rutas\/Rutas|import\(/)
+  assert.doesNotMatch(leer('src/ui/pantallas.js'), /hoy\/Hoy|ActividadFisica/)
 })
-test('Progreso: pestañas verticales en ancho y flechas arriba/abajo', () => {
-  const p = leer('src/features/progreso/Progreso.jsx')
-  assert.match(p, /className="progreso-pag"/)
-  assert.match(p, /className="progreso-cuerpo"/)
-  assert.match(entrega30, /\.progreso-pag \{[^}]*grid-template-columns: 180px/)
-  const t = leer('src/ui/TabsDeslizables.jsx')
-  assert.match(t, /ArrowDown/)
-  assert.match(t, /ArrowUp/)
+test('Preparación: el cálculo no cambia, el detalle va en un plegable', () => {
+  const p = leer('src/features/coach/Preparacion.jsx')
+  assert.match(p, /Detalle y cómo se calcula/)
+  assert.match(p, /Calculado con el \{r\.confianza\}% de los datos/)
+  assert.match(p, /Cómo te sentís 40 %/)
 })
-test('el cambio es solo de presentación: no se tocaron imports de pantallas ni el registro', () => {
-  const a = leer('src/App.jsx')
-  assert.doesNotMatch(
-    a,
-    /features\/(comidas\/Comidas|coach\/Coach|progreso\/(Progreso|Pilares)|entreno\/Entreno)'/
-  )
-  assert.doesNotMatch(
-    leer('src/features/hoy/Hoy.jsx'),
-    /from '\.\.\/(comidas\/Comidas|coach\/Coach|progreso\/Pilares)'/
-  )
+test('Entreno: la sesión manual queda en un plegable y conserva sus acciones', () => {
+  const e = leer('src/features/entreno/Entreno.jsx')
+  const i = e.indexOf('className="mas-opc"')
+  assert.ok(i > 0)
+  const resto = e.slice(i, e.indexOf('</details>', i))
+  assert.match(resto, /Sesión manual con mis 5 bloques/)
+  assert.match(resto, /Sesión en blanco/)
 })
-test('el manifest ya no fija la orientación vertical', () => {
-  const m = JSON.parse(leer('public/manifest.webmanifest'))
-  assert.equal(m.orientation, 'any')
-})
-test('versión 0.31.0 / entrega 30', () => {
-  const pkg = JSON.parse(leer('package.json'))
-  assert.equal(pkg.version, '0.31.0')
-  assert.equal(pkg.entrega, '30')
-  assert.match(leer('package-lock.json'), /"version": "0\.31\.0"/)
+test('la entrega 30 sigue en el historial (la versión actual la fija la última entrega)', () => {
+  assert.match(leer('CHANGELOG.md'), /## v0\.31\.0 · Entrega 30 · Interfaz simplificada/)
 })

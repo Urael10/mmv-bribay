@@ -29,7 +29,7 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
 }
 .app {
-  max-width: 520px;
+  max-width: var(--ancho-app);
   margin: auto;
   min-height: 100dvh;
   display: flex;
@@ -59,10 +59,11 @@ main {
 }
 section {
   background: var(--sf);
-  border: 1px solid var(--ln);
-  border-radius: 22px;
-  padding: 14px;
-  margin-bottom: 12px;
+  border: 0;
+  border-radius: var(--r-card);
+  box-shadow: var(--sombra-1);
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-3);
 }
 h3 {
   margin: 0 0 8px;
@@ -149,7 +150,7 @@ nav {
   bottom: 0;
   left: 0;
   right: 0;
-  max-width: 520px;
+  max-width: var(--ancho-app);
   margin: auto;
   display: flex;
   background: var(--sf);
@@ -317,25 +318,22 @@ button {
   border-radius: 14px;
   font-family: 'Inter', sans-serif;
 }
-.bento > .col {
-  display: contents;
-}
 .bento {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
-.bento > .col > section {
+.bento > section {
   grid-column: span 2;
   margin-bottom: 0;
 }
-.bento > .col > .mitad {
+.bento > .mitad {
   grid-column: span 1;
 }
-.bento > .col > .mitad .big {
+.bento > .mitad .big {
   font-size: 24px;
 }
-.bento > .col > .mitad .row input {
+.bento > .mitad .row input {
   width: 100%;
 }
 .hero {
@@ -366,7 +364,7 @@ nav button.on {
   background: var(--ac-soft);
 }
 /* v0.4.2 · con los botones a 15 px (antes caían a 13 px por un error de CSS) +250 y +500 siguen entrando lado a lado en media columna */
-.bento > .col > .mitad button {
+.bento > .mitad button {
   padding: 12px 10px;
 }
 
@@ -1179,63 +1177,6 @@ section.vacio > .vacio:first-of-type {
   border-top: 0;
 }
 
-/* Hoy: fila compacta de alimentación (lleva a Comidas) */
-.bento > .col > .filahoy {
-  grid-column: span 2;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto 18px;
-  grid-template-areas:
-    'tit val ch'
-    'bar bar bar'
-    'pro pro pro';
-  align-items: center;
-  gap: 2px 8px;
-  width: 100%;
-  min-height: 64px;
-  padding: 10px 14px;
-  text-align: left;
-  color: var(--tx);
-  background: var(--sf);
-  border: 1.5px solid var(--bd);
-  border-radius: 22px;
-  font-weight: 400;
-}
-.filahoy-t {
-  grid-area: tit;
-  font-family: 'Chakra Petch', sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--tx-2);
-  font-weight: 600;
-}
-.filahoy-v {
-  grid-area: val;
-  white-space: nowrap;
-}
-.filahoy-v b {
-  font-size: 20px;
-}
-.filahoy .bar {
-  grid-area: bar;
-  display: block;
-  margin: 4px 0;
-  height: 6px;
-}
-.filahoy-p {
-  grid-area: pro;
-  font-size: 13px;
-}
-.filahoy-ch {
-  grid-area: ch;
-  transform: rotate(-90deg);
-  color: var(--ac);
-}
-@media (hover: hover) {
-  .bento > .col > .filahoy:hover {
-    background: var(--sf-2);
-  }
-}
 
 /* Comidas: lista única de recientes y frecuentes */
 .atajos {
@@ -1502,144 +1443,335 @@ button.ruta-fila:active:not(:disabled) {
   margin: 0;
 }
 
-/* ===== v0.31.0 · Entrega 30: layout responsive =====
-   Tres tamaños (los mismos valores están fijados en tests/entrega30.test.js):
-   · celular (< 720 px): como siempre, una columna y barra inferior.
-   · tablet (≥ 720 px): columna más ancha, Hoy en dos columnas, barra inferior del mismo ancho.
-   · pantalla ancha (≥ 1024 px, o celular acostado de poca altura): la barra pasa a un riel
-     vertical a la izquierda y cada pantalla usa mejor el ancho.
-   Todo es CSS: no se importó nada nuevo, así que la carga diferida queda igual. */
-:root {
-  --rail: 96px;
-  --ancho-tablet: 760px;
-  --ancho-app: 1240px;
-  --ancho-lectura: 820px;
+/* Entrega 30: Hoy simplificado (propuesta A, foco único) y tarjetas sin borde. Solo tokens. */
+.bento {
+  gap: var(--sp-3);
 }
-.app,
-main {
+.hoy {
+  gap: var(--sp-4);
+}
+.hoy .prep {
+  padding: var(--sp-5);
+}
+.prep-n {
+  font-family: 'Chakra Petch', ui-monospace, monospace;
+  font-size: 72px;
+  font-weight: 600;
+  line-height: 1.05;
+  margin: var(--sp-2) 0 var(--sp-1);
+}
+.prep-n small {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--tx-2);
+}
+.prep .bar {
+  height: 6px;
+  margin: var(--sp-2) 0 var(--sp-4);
+}
+.prep-t {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+.prep-r {
+  margin: 2px 0 0;
+  font-size: 14px;
+}
+.prep-d {
+  margin-top: var(--sp-3);
+}
+.hoy-cta {
+  grid-column: span 2;
+}
+.hoy-cta .ctafila {
+  margin-bottom: 0;
+}
+.hoy-cta .cta {
+  min-height: 60px;
+  border-radius: var(--r-ctl);
+}
+.hoy-cta .ctafoto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 60px;
+  width: 60px;
+  min-height: 60px;
+  border-radius: var(--r-ctl);
+  background: var(--sf-2);
+  color: var(--ac);
+}
+.hoy-nota {
+  display: block;
+  margin-top: var(--sp-2);
+}
+.teselas {
+  grid-column: span 2;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+.tesela {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
+  min-height: 96px;
+  padding: var(--sp-4) var(--sp-3);
+  text-align: left;
+  color: var(--tx);
+  background: var(--sf);
+  border: 0;
+  border-radius: var(--r-tile);
+  box-shadow: var(--sombra-1);
+  font-weight: 400;
+}
+.tesela .eti {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tx-2);
+  font-weight: 600;
+}
+.tesela-v {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+.tesela small {
+  font-size: 12px;
+  line-height: 1.3;
+}
+.pleg {
+  grid-column: span 2;
+}
+.pleg-b {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 56px;
+  padding: var(--sp-3) var(--sp-4);
+  text-align: left;
+  color: var(--tx);
+  background: var(--sf);
+  border: 0;
+  border-radius: var(--r-tile);
+  box-shadow: var(--sombra-1);
+  font-weight: 400;
+  font-size: 15px;
+}
+.pleg-b b {
+  font-weight: 600;
+}
+.pleg-r {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pleg-b .vacio-ch {
+  color: var(--ac);
+}
+.pleg-c {
+  margin-top: var(--sp-3);
+}
+.pleg-c > section:last-child {
+  margin-bottom: 0;
+}
+.mas-opc {
+  margin-top: var(--sp-3);
+}
+@media (hover: hover) {
+  .tesela:hover:not(:disabled),
+  .pleg-b:hover:not(:disabled) {
+    background-color: var(--sf-2);
+  }
+}
+
+/* Entrega 31: lenguaje B (lista limpia) en Hoy, Entreno y Progreso/Informe. Solo tokens.
+   Se activa con la clase .plano en <main>; Comidas y Ajustes siguen con tarjetas.
+   Sin cajas ni líneas: el ritmo vertical (--sp-5, --sp-6) separa los bloques.
+   Se mantienen las cajas de lo que avisa (.warn) y los bordes de todo control tocable. */
+.plano section:not(.warn) {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: var(--sp-6);
+}
+.plano h3 {
+  margin: 0 0 var(--sp-3);
+}
+.plano .lin {
+  border-top: 0;
+  padding: var(--sp-2) 0;
+  font-size: 15px;
+}
+.plano .fila {
+  border-top: 0;
+  padding: var(--sp-3) 0;
+}
+.plano section.vacio .vacio,
+.plano .vacio .vacio + .vacio {
+  border-top: 0;
+}
+.plano .tabs-wrap {
+  margin-bottom: var(--sp-5);
+}
+
+/* Hoy: preparación y botón sin caja, teselas como lista (rótulo a la izquierda, valor a la derecha) */
+.plano .hoy {
+  gap: 0 var(--sp-6);
+}
+.plano .hoy .prep .bar {
+  height: var(--sp-1);
+  margin: var(--sp-3) 0 var(--sp-4);
+}
+.plano .hoy-cta,
+.plano .teselas {
+  margin-bottom: var(--sp-6);
+}
+.plano .hoy > .warn {
+  margin-bottom: var(--sp-6);
+}
+.plano .teselas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+.plano .tesela {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--sp-3);
+  row-gap: var(--sp-1);
+  min-height: 0;
+  padding: var(--sp-2) 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+.plano .tesela > * {
+  grid-column: 1;
+}
+.plano .tesela .tesela-v {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  font-size: 26px;
+  text-align: right;
+}
+.plano .pleg-b {
+  min-height: 52px;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+.plano .pleg-c {
+  margin-top: var(--sp-3);
+}
+@media (hover: hover) {
+  .plano .tesela:hover:not(:disabled),
+  .plano .pleg-b:hover:not(:disabled) {
+    background-color: transparent;
+  }
+}
+
+/* Pantalla ancha: preparación y botón a la izquierda, lista a la derecha; lo plegable queda debajo a todo el ancho */
+@media (min-width: 840px) {
+  .plano .hoy > .prep,
+  .plano .hoy > .vacio {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .plano .hoy > .hoy-cta {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .plano .hoy > .teselas {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: start;
+  }
+}
+
+/* ===== v0.33.0 · Entrega 32: anillos de progreso (preparación, comida y agua) ===== */
+.anillo {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+.anillo svg {
+  display: block;
+}
+.anillo-pista,
+.anillo-arco {
+  fill: none;
+  stroke-width: 3.6;
+}
+.anillo-pista {
+  stroke: var(--sf-2);
+}
+.anillo-arco {
+  stroke: var(--info);
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.4s;
+}
+.anillo.ok .anillo-arco {
+  stroke: var(--pos);
+}
+.anillo.bajo .anillo-arco {
+  stroke: var(--neg);
+}
+.anillo-c {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+/* Preparación: anillo con el puntaje a la izquierda, el texto a la derecha */
+.prep-cab {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  margin: var(--sp-3) 0 var(--sp-3);
+}
+.prep-cab .prep-n {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 40px;
+  line-height: 1;
+  margin: 0;
+}
+.prep-cab .prep-n small {
+  font-size: 12px;
+  margin-top: var(--sp-1);
+}
+.prep-cuerpo {
   min-width: 0;
 }
 
-@media (min-width: 720px) {
-  .app {
-    max-width: var(--ancho-tablet);
-  }
-  nav {
-    max-width: var(--ancho-tablet);
-  }
-  header {
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-  main {
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-  .barrareloj {
-    margin-left: 24px;
-    margin-right: 24px;
-  }
-  .upd {
-    margin-left: 24px;
-    margin-right: 24px;
-  }
-  /* Hoy: dos columnas. En celular las columnas son transparentes (display: contents) y el orden es el de siempre. */
-  .bento {
-    gap: 12px;
-    align-items: start;
-  }
-  .bento > .col {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    min-width: 0;
-  }
+/* Hoy: en la lista, el anillo de Comida y Agua va a la izquierda (Peso no tiene meta y deja el hueco vacío) */
+.plano .tesela {
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  column-gap: var(--sp-4);
 }
-
-@media (min-width: 1024px), (orientation: landscape) and (min-width: 640px) and (max-height: 520px) {
-  .app {
-    max-width: var(--ancho-app);
-    padding-left: var(--rail);
-  }
-  nav {
-    top: 0;
-    bottom: 0;
-    left: max(0px, calc(50% - var(--ancho-app) / 2));
-    right: auto;
-    width: var(--rail);
-    max-width: none;
-    margin: 0;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 6px;
-    padding: calc(12px + env(safe-area-inset-top)) 8px 12px;
-    border-top: 0;
-    border-right: 1px solid var(--ln);
-    overflow-y: auto;
-  }
-  nav button {
-    flex: 0 0 auto;
-    width: 100%;
-    min-height: 64px;
-    border-radius: 14px;
-  }
-  nav button.on {
-    background: var(--ac-soft);
-  }
-  main {
-    padding-bottom: 32px;
-  }
-  /* Cada pantalla se centra en la columna de contenido con un ancho cómodo de lectura. */
-  main.tab-entreno,
-  main.tab-comidas,
-  main.tab-ajustes,
-  main.tab-priv {
-    width: 100%;
-    max-width: var(--ancho-lectura);
-    margin-left: auto;
-    margin-right: auto;
-  }
-  main.tab-hoy,
-  main.tab-progreso {
-    width: 100%;
-    max-width: 1100px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  /* Progreso: las pestañas pasan a una lista vertical fija a la izquierda. */
-  .progreso-pag {
-    display: grid;
-    grid-template-columns: 180px minmax(0, 1fr);
-    gap: 20px;
-    align-items: start;
-  }
-  .progreso-pag > .tabs-wrap {
-    position: sticky;
-    top: 12px;
-    margin: 0;
-  }
-  .progreso-pag .tabs-lista {
-    flex-direction: column;
-    overflow: visible;
-    gap: 4px;
-    padding: 0;
-  }
-  .progreso-pag .tabs-lista .chip {
-    width: 100%;
-    text-align: left;
-  }
-  .progreso-pag .tabs-wrap::before,
-  .progreso-pag .tabs-wrap::after {
-    display: none;
-  }
-  .progreso-cuerpo {
-    min-width: 0;
-  }
+.plano .tesela > * {
+  grid-column: 2;
 }
-
-/* Con ratón o trackpad, el contenido no necesita el espacio extra para el dedo de la barra. */
-@media (min-width: 1024px) and (hover: hover) {
-  nav button {
-    min-height: 60px;
-  }
+.plano .tesela > .anillo {
+  grid-column: 1;
+  grid-row: 1 / span 3;
+}
+.plano .tesela .tesela-v {
+  grid-column: 3;
 }

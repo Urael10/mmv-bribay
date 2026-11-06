@@ -1,4 +1,4 @@
-# Mi Mejor Versión (MMV) · Entrega 30 (v0.31.0)
+# Mi Mejor Versión (MMV) · Entrega 31 (v0.32.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 
@@ -8,7 +8,7 @@ src/domain/    lógica pura con pruebas: actividad (pasos, GPS, actividades), ru
 src/data/      base de datos (Dexie v11), backup, biblioteca, menú privado, semilla de alimentos
 src/services/  IA (Gemini), Open Food Facts, escáner de código de barras, imágenes, reloj del entrenamiento, pendientes
 src/features/  pantallas: hoy, actividad (pasos y actividades), rutas (historial GPS, dentro de Progreso), entreno, comidas, progreso, cuerpo, coach, ajustes, bienestar (menú privado), biblioteca (ejercicios)
-tests/         pruebas con `node --test` (`entrega20.test.js`: actividad física; `entrega26.test.js`: rutas GPS; `entrega27.test.js`: mapa y GPX; `entrega28.test.js`: carga diferida; `entrega29.test.js`: IA con actividad y rutas; `entrega30.test.js`: layout responsive)
+tests/         pruebas con `node --test` (`entrega20.test.js`: actividad física; `entrega26.test.js`: rutas GPS; `entrega27.test.js`: mapa y GPX; `entrega28.test.js`: carga diferida; `entrega29.test.js`: IA con actividad y rutas)
 public/        manifest, íconos y service worker (`sw.js`)
 ```
 `src/ui/pantallas.js` es el registro de las pantallas con carga diferida (`React.lazy`); `src/domain/carga.js` tiene su lógica pura (reintento, cuándo precargar). Los componentes de `features/` solo muestran y guardan; las reglas y cálculos viven en `domain/` para poder probarlos.
@@ -41,16 +41,17 @@ Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.z
 - Unos segundos después de abrir, la app baja las demás pantallas en segundo plano (no lo hace sin conexión, con «ahorro de datos» ni con red 2G) y `public/sw.js` las guarda, así andan sin conexión. Si una pantalla no se puede bajar aparece «No se pudo abrir…» con **Reintentar** y **Actualizar la app**; tus datos no se tocan.
 - Regla para el código: nadie fuera de `src/ui/pantallas.js` importa esas pantallas de forma estática (una prueba lo vigila); una pantalla nueva se agrega ahí y a `ORDEN_PRECARGA`.
 
+## Lista limpia (v0.32.0)
+Hoy, Entreno y Progreso/Informe usan el lenguaje «lista limpia»: sin cajas ni líneas, separados por espacio vertical. Lo activa la clase `plano` en `<main>` y vive en el último bloque de `src/styles.css` (solo tokens). Comidas y Ajustes siguen con tarjetas. Para volver a las tarjetas en una pantalla, quitá su clave de la condición de `<main>` en `App.jsx`.
+
+## Interfaz simplificada (v0.31.0)
+Hoy muestra primero la preparación y el botón de entrenar; comida, agua y peso son tres teselas, y el check-in y «Actividad y cuerpo» se pliegan. Las tarjetas de toda la app pasaron de borde a elevación sutil. Radios, espacios y sombras viven en `src/tokens.css`. Detalle en `CHANGELOG.md` y `DESIGN-TOKENS.md`.
+
 ## IA con actividad y rutas (v0.30.0)
 - El informe semanal, el puntaje de preparación y el coach usan ahora pasos, actividades y rutas. Pasos: promedio diario de los días con dato y variación contra la semana anterior. Actividades: cantidad, minutos y km por tipo. Rutas: solo las que **no** están ya en una actividad.
 - Sin doble conteo: una ruta enlazada a una actividad (`rutaId`), o que coincide con una actividad sin enlace (mismo día y tipo, distancia o duración parecidas: ±15 % o 0,3 km), cuenta una sola vez. Las demás cuentan aparte («Rutas con GPS aparte»).
 - Preparación: la carga reciente (20 %) suma la actividad como RPE típico por tipo × minutos (caminata 2, bicicleta 5, carrera/natación/deporte 6, otro 4). Los pesos no cambian y, sin actividad, el puntaje es idéntico. Los pasos de ayer se muestran como dato, sin sumar al puntaje.
 - Privacidad: a Gemini solo llegan totales (cantidades, minutos, km, desnivel, ritmo medio). Nunca coordenadas, trazos, horas de inicio, parciales ni notas. `data/movimiento.js` lee las rutas ya sin trazo y `domain/movimiento.js` elige campo por campo qué puede salir; una prueba fija además la lista de archivos que pueden importar los módulos de rutas.
-
-## Pantalla ancha (v0.31.0)
-- Tres tamaños, solo con CSS (no se importó nada nuevo: la carga diferida queda igual). **Celular** (< 720 px): como siempre. **Tablet** (≥ 720 px): columna de 760 px y Hoy en dos columnas. **Pantalla ancha** (≥ 1024 px, o celular acostado de poca altura): la barra inferior pasa a un riel vertical a la izquierda; Hoy usa dos columnas, Progreso muestra sus pestañas como lista vertical y Entreno, Comidas y Ajustes quedan en una columna de lectura de 820 px.
-- Hoy se arma con dos pilas (`.col`): en celular son transparentes (`display: contents`) y el orden no cambia.
-- La app instalada ya no queda fija en vertical (`orientation: any`).
 
 ## Formato
 `.prettierrc` (Prettier 3: sin punto y coma, comillas simples, 100 columnas).

@@ -1,5 +1,6 @@
 import {useState, useEffect, useMemo} from 'react'
 import Plegable from '../../ui/Plegable'
+import Anillo from '../../ui/Anillo'
 import {NOMBRES} from '../../domain/preparacion'
 import {cargarPrep, calcPrep} from './prep'
 
@@ -21,32 +22,40 @@ export default function Preparacion({h}) {
       </Plegable>
     )
   return (
-    <section>
+    <section className="prep">
       <h3>Preparación para entrenar</h3>
       {r.ok ? (
         <>
-          <div className="big">
-            <span className={'sc ' + r.etiqueta.c}>{r.puntaje}</span>
-            <small> / 100</small>
+          <div className="prep-cab">
+            <Anillo
+              valor={r.puntaje}
+              meta={100}
+              tam={128}
+              clase={r.etiqueta.c === 'up' ? 'ok' : r.etiqueta.c === 'down' ? 'bajo' : ''}
+            >
+              <span className="prep-n">
+                <span className={'sc ' + r.etiqueta.c}>{r.puntaje}</span>
+                <small>/ 100</small>
+              </span>
+            </Anillo>
+            <div className="prep-cuerpo">
+              <p className="prep-t">{r.etiqueta.t}</p>
+              <p className="mu prep-r">{r.recomendacion.texto}</p>
+            </div>
           </div>
-          <div className="bar">
-            <i style={{width: r.puntaje + '%'}} />
-          </div>
-          <b>{r.etiqueta.t}</b>
-          <p style={{margin: '4px 0 0', fontSize: 14}}>{r.recomendacion.texto}</p>
           {r.recomendacion.avisos.map(a => (
             <small key={a} className="warn">
               {a}
             </small>
           ))}
-          {r.faltan.length > 0 && (
-            <small className="mu" style={{display: 'block', marginTop: 4}}>
-              Calculado con el {r.confianza}% de los datos. Falta:{' '}
-              {r.faltan.join(', ').toLowerCase()}.
-            </small>
-          )}
-          <details>
-            <summary className="tag">Cómo se calcula</summary>
+          <details className="prep-d">
+            <summary className="tag">Detalle y cómo se calcula</summary>
+            {r.faltan.length > 0 && (
+              <small className="mu" style={{display: 'block', margin: '6px 0'}}>
+                Calculado con el {r.confianza}% de los datos. Falta:{' '}
+                {r.faltan.join(', ').toLowerCase()}.
+              </small>
+            )}
             {Object.entries(r.partes).map(([k, v]) => (
               <div key={k} className="lin">
                 <span>
@@ -70,10 +79,10 @@ export default function Preparacion({h}) {
             )}
             <small className="mu" style={{display: 'block', marginTop: 6}}>
               Cómo te sentís 40 %, sueño contra tu propio promedio 30 %, carga reciente (entrenos,
-              actividades y rutas, sin contar dos veces la misma salida) 20 %,
-              hábitos de ayer (comida y agua) 10 %. Los pesos son una propuesta de diseño, no salen
-              de un estudio: es una orientación basada en tus propios datos, no una medición médica.
-              Un dolor agudo o en una articulación no es dolor muscular: parar y consultar.
+              actividades y rutas, sin contar dos veces la misma salida) 20 %, hábitos de ayer
+              (comida y agua) 10 %. Los pesos son una propuesta de diseño, no salen de un estudio:
+              es una orientación basada en tus propios datos, no una medición médica. Un dolor agudo
+              o en una articulación no es dolor muscular: parar y consultar.
             </small>
           </details>
         </>
@@ -89,4 +98,3 @@ export default function Preparacion({h}) {
     </section>
   )
 }
-

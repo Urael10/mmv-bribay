@@ -37,8 +37,8 @@ export default function TabsDeslizables({items, valor, onCambio, etiqueta = 'Sec
   const tecla = e => {
     const i = items.findIndex(([k]) => k === valor)
     let j = null
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') j = Math.min(items.length - 1, i + 1)
-    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') j = Math.max(0, i - 1)
+    if (e.key === 'ArrowRight') j = Math.min(items.length - 1, i + 1)
+    else if (e.key === 'ArrowLeft') j = Math.max(0, i - 1)
     else if (e.key === 'Home') j = 0
     else if (e.key === 'End') j = items.length - 1
     if (j === null) return
