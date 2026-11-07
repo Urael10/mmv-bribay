@@ -1,5 +1,16 @@
 # Historial de versiones de MMV
 
+## v0.37.0 · Entrega 36 · «Dormir con alarma» suma el sueño del día (06/11/2026)
+- **Total del día, a confirmar:** al apagar la alarma, «Tu noche» ya no propone solo las horas de esa sesión: propone el **total del día** = horas que ya había guardadas ese día en el check-in + esta sesión. Ejemplo: noche de 7 h, siesta de 1 h 30 min → propone **8,5 h**. La línea «Ya tenías 7 h hoy + esta sesión 1,5 h = 8,5 h en el día» muestra la cuenta; el campo (ahora «Total de sueño de hoy») se puede corregir antes de «Guardar en mi check-in». Sin horas previas se ve igual que antes.
+- **Dos atajos:** «Solo esta sesión (1,5 h)» pone en el campo solo lo de esta sesión (por si lo anterior estaba mal o era de otro día) y «Volver al total» restituye la suma.
+- **Correcto aunque Hoy haya quedado abierta de noche:** se suma y se guarda en el día de la hora de despertar, no en el día en que se abrió la pantalla (antes, con Hoy abierta desde la noche anterior, las horas iban a la fila de ayer; ahora, además, sumarlas allí habría dado un total absurdo).
+- **Límites:** el total del día admite hasta 24 h; una sola sesión sigue en 0,3 a 16 h (más se pide cargarlo a mano, como antes). Si el campo queda vacío o fuera de rango, avisa y no guarda.
+- **Nuevo en `src/domain/sueno.js` (lógica pura con pruebas):** `horasPrevias`, `sumarHoras`, `fechaDeMs`, `propuestaDia`, `HORAS_MAX_DIA`; `parseHoras` acepta un tope opcional. `ModoSueno` recibe `previoDe(fecha)` y `onGuardar(total, fecha)`; `Hoy.jsx` define `leerSueno` y `guardarSueno` (transacción sobre la fila del día, sin pisar pasos ni agua). Etiqueta accesible del campo de Sueño en el check-in: «Horas de sueño de hoy (total del día)».
+- **Sin cambios** en Dexie (v11), backup, service worker ni carga diferida. Un solo estilo nuevo (`.sueno-suma`, solo tokens).
+- **Pruebas:** `tests/entrega37.test.js`. Se relajaron a propósito dos de `tests/entrega33.test.js` (la forma de `onGuardar` y del montaje de `ModoSueno` en Hoy).
+- **A tener en cuenta:** la preparación usa ese total como «sueño de hoy»; una siesta que lleve el total a más de 9,5 h resta 10 puntos al componente de horas (regla previa, no se tocó).
+- **No probado:** celular real (flujo completo noche + siesta, Hoy abierta de un día para el otro).
+
 ## v0.36.0 · Entrega 35 · Modo bolsillo con datos, señal de GPS, pausa y animación (06/11/2026)
 - **Pantalla del bolsillo rediseñada (B1):** anillo grande con el **total del día** (contra tu meta o tu promedio), debajo **«Esta caminata +N pasos»** y una fila con **km · tiempo · ritmo**. Arriba, dos chips: el estado (ícono + texto) y la **señal de GPS**. Abajo, **Pausar** y **Salir**. Sigue casi negra, sin cian ni lima.
 - **Ritmo «ahora» (B2):** promedio del último minuto en min/km. Muestra «—» hasta tener 30 s y 30 m válidos, si estás casi parado (más lento que 30 min/km) o si no hay GPS: no se inventa una cifra.

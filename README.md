@@ -1,10 +1,10 @@
-# Mi Mejor Versión (MMV) · Entrega 35 (v0.36.0)
+# Mi Mejor Versión (MMV) · Entrega 36 (v0.37.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 
 ## Estructura
 ```
-src/domain/    lógica pura con pruebas: actividad (pasos, GPS, actividades), metaPasos (meta, promedio y estado del conteo), sueno (alarma y horas de sueño), rutas (recorrido, trazo, parciales), mapa (teselas OSM), gpx (exportar/importar), alimentos, backup, biblioteca, checkin, cuerpo, entreno, informe, movimiento (pasos, actividades y rutas sin doble conteo), preparacion, privado (cifrado), progreso, registro, stats, temporizador
+src/domain/    lógica pura con pruebas: actividad (pasos, GPS, actividades), metaPasos (meta, promedio y estado del conteo), sueno (alarma, horas de sueño y total del día), rutas (recorrido, trazo, parciales), mapa (teselas OSM), gpx (exportar/importar), alimentos, backup, biblioteca, checkin, cuerpo, entreno, informe, movimiento (pasos, actividades y rutas sin doble conteo), preparacion, privado (cifrado), progreso, registro, stats, temporizador
 src/data/      base de datos (Dexie v11), backup, biblioteca, menú privado, semilla de alimentos
 src/services/  IA (Gemini), Open Food Facts, escáner de código de barras, imágenes, reloj del entrenamiento, pendientes
 src/features/  pantallas: hoy, actividad (pasos y actividades), rutas (historial GPS, dentro de Progreso), entreno, comidas, progreso, cuerpo, coach, ajustes, bienestar (menú privado), biblioteca (ejercicios)
@@ -40,6 +40,12 @@ Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.z
 - Hoy va en el paquete principal; Entreno, Comidas, Progreso (con Rutas), Ajustes y el menú oculto se bajan aparte al abrirlos (`React.lazy` + `Suspense`). Mientras bajan se ve «Cargando…».
 - Unos segundos después de abrir, la app baja las demás pantallas en segundo plano (no lo hace sin conexión, con «ahorro de datos» ni con red 2G) y `public/sw.js` las guarda, así andan sin conexión. Si una pantalla no se puede bajar aparece «No se pudo abrir…» con **Reintentar** y **Actualizar la app**; tus datos no se tocan.
 - Regla para el código: nadie fuera de `src/ui/pantallas.js` importa esas pantallas de forma estática (una prueba lo vigila); una pantalla nueva se agrega ahí y a `ORDEN_PRECARGA`.
+
+## Dormir con alarma: total del día (v0.37.0)
+- «Dormir con alarma» (Hoy) ya no pisa las horas de sueño del día: al apagar la alarma propone el **total del día** (lo que ya estaba guardado en el check-in + esta sesión) para que lo confirmes o lo corrijas. Una siesta se suma a la noche; con varias siestas el total va creciendo.
+- Si no había horas ese día, propone solo las de esta sesión, como antes. «Solo esta sesión» y «Volver al total» alternan la cuenta; el campo es editable (hasta 24 h por día; una sola sesión, hasta 16 h).
+- Se lee y se guarda el día en que te despertás (hora de fin), aunque Hoy haya quedado abierta de la noche anterior.
+- Lógica pura en `src/domain/sueno.js` (`sumarHoras`, `propuestaDia`, `fechaDeMs`); la base solo se toca desde `Hoy.jsx`. Sin cambios de datos (Dexie v11).
 
 ## Modo bolsillo (v0.35.0 y v0.36.0)
 - Con el conteo en marcha, «Modo bolsillo» deja la pantalla casi negra y encendida: total del día en un anillo, pasos de la caminata, km, tiempo, ritmo «ahora» y señal de GPS (barras + texto). Una onda fina marca cada paso.

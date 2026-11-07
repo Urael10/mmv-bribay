@@ -2196,3 +2196,9 @@ button.ruta-fila:active:not(:disabled) {
     transition: none;
   }
 }
+
+/* Entrega 36: total del día en «Dormir con alarma» (solo tokens, sin tokens nuevos) */
+.sueno-suma {
+  margin: 0;
+  color: var(--tx);
+}

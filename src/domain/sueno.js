@@ -3,6 +3,7 @@
 
 export const HORAS_MIN = 0.25 // por debajo de esto se descarta (probablemente un toque por error)
 export const HORAS_MAX = 16 // por encima, casi seguro se olvidó apagar: se pide cargarlas a mano
+export const HORAS_MAX_DIA = 24 // tope del total del día (noche + siestas)
 export const TOLERANCIA_MS = 10 * 60 * 1000 // si la alarma pasó hace más y no la vimos sonar, no suena de golpe
 export const ALARMA_INICIAL = '07:00'
 
@@ -34,11 +35,42 @@ export function horasDormidas(inicioMs, finMs) {
 }
 
 // Texto del campo de horas («7,5» o «7.5») → número a décimas, o null si no es válido.
-export function parseHoras(txt) {
+// `max`: 16 h para una sola sesión; el total del día admite hasta HORAS_MAX_DIA.
+export function parseHoras(txt, max = HORAS_MAX) {
   const t = String(txt ?? '').trim().replace(',', '.')
   if (!/^\d+(\.\d+)?$/.test(t)) return null
   const n = Math.round(Number(t) * 10) / 10
-  return n >= HORAS_MIN && n <= HORAS_MAX ? n : null
+  return n >= HORAS_MIN && n <= max ? n : null
+}
+
+// Entrega 36 · Total del día. Horas ya guardadas en el check-in (número o texto «7,5»); 0 si no hay dato válido.
+export function horasPrevias(v) {
+  if (v == null || v === '') return 0
+  const n = Number(String(v).trim().replace(',', '.'))
+  return Number.isFinite(n) && n > 0 ? Math.min(Math.round(n * 10) / 10, HORAS_MAX_DIA) : 0
+}
+
+// Suma lo ya guardado con la sesión nueva, a décimas y sin pasar de HORAS_MAX_DIA. null si la sesión no es válida.
+export function sumarHoras(previo, nueva) {
+  const n = Number(nueva)
+  if (!Number.isFinite(n) || n <= 0) return null
+  return Math.min(Math.round((horasPrevias(previo) + n) * 10) / 10, HORAS_MAX_DIA)
+}
+
+// Día calendario local («2026-11-07») de un instante: el mismo criterio que `hoy()` de la base de datos.
+export function fechaDeMs(ms) {
+  if (!Number.isFinite(ms)) return null
+  const d = new Date(ms),
+    z = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`
+}
+
+// Lo que se propone en el resumen: las horas de esta sesión, lo ya guardado ese día y el total a confirmar.
+// `total` es null si la sesión no es plausible (se pide cargar el total a mano).
+export function propuestaDia({previo, inicio, fin}) {
+  const antes = horasPrevias(previo),
+    sesion = horasDormidas(inicio, fin)
+  return {antes, sesion, total: sesion == null ? null : sumarHoras(antes, sesion)}
 }
 
 export const textoHoras = h => `${String(h).replace('.', ',')} h`

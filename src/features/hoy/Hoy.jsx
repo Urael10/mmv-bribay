@@ -129,6 +129,19 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
       await db.habitos.put({...(actual || h), ...p, fecha: f})
     })
   }
+  // «Dormir con alarma»: lee y escribe el sueño del día en que te despertás (puede no ser el de esta pantalla si
+  // quedó abierta de la noche anterior). Lo que llega a `guardarSueno` ya es el total confirmado (lo previo + la sesión).
+  const leerSueno = async f => (await db.habitos.get(f))?.sueno
+  const guardarSueno = async (horas, f) => {
+    const dia = f || h.fecha
+    const fila = await db.transaction('rw', db.habitos, async () => {
+      const actual = await db.habitos.get(dia)
+      const nueva = {...(actual || {agua: 0, calidad: 3}), sueno: horas, fecha: dia}
+      await db.habitos.put(nueva)
+      return nueva
+    })
+    setH(prev => (prev.fecha === dia ? {...prev, sueno: horas} : fila))
+  }
   const log = h.aguaLog || []
   const sumar = ml => {
     ml = Math.round(+ml)
@@ -279,7 +292,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
               inputMode="decimal"
               step="0.5"
               placeholder="horas"
-              aria-label="Horas de sueño de anoche"
+              aria-label="Horas de sueño de hoy (total del día)"
               value={h.sueno}
               onChange={e => g({sueno: e.target.value})}
             />
@@ -305,7 +318,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
         onCambio={setSuAb}
       >
         <section>
-          <ModoSueno onGuardar={horas => g({sueno: horas})} />
+          <ModoSueno previoDe={leerSueno} onGuardar={guardarSueno} />
         </section>
       </Pleg>
       <Pleg id="hoy-mas" titulo="Actividad y cuerpo" resumen="Pasos, rutas, medidas" abierto={masAb} onCambio={setMasAb}>

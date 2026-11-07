@@ -164,7 +164,7 @@ test('Hoy: fila de Pasos con anillo, plegable «Dormir con alarma» y guardado s
   assert.match(h, /function TeselaPasos/)
   assert.match(h, /<TeselaPasos abierto=\{masAb\}/)
   assert.match(h, /id="hoy-sueno"/)
-  assert.match(h, /<ModoSueno onGuardar=\{horas => g\(\{sueno: horas\}\)\} \/>/)
+  assert.match(h, /<ModoSueno previoDe=\{leerSueno\} onGuardar=\{guardarSueno\} \/>/) // entrega 36: suma del día
   assert.match(h, /db\.transaction\('rw', db\.habitos/) // no pisa los pasos con una copia vieja
   assert.ok(h.indexOf('id="hoy-checkin"') < h.indexOf('id="hoy-sueno"'))
   assert.ok(h.indexOf('id="hoy-sueno"') < h.indexOf('id="hoy-mas"'))
@@ -180,7 +180,7 @@ test('modo sueño: pantalla que se queda encendida, diálogo accesible y límite
   assert.match(m, /createPortal/)
   assert.match(m, /no puede sonar con la pantalla bloqueada/)
   assert.match(m, /tiempo en cama, no sueño medido/)
-  assert.match(m, /onGuardar\(h\)/)
+  assert.match(m, /onGuardar\(h, fecha\)/) // entrega 36: se guarda el total del día de despertar
 })
 test('sin cambios de datos: Dexie sigue en v11 y la sesión de sueño vive en localStorage', () => {
   assert.match(leer('src/data/db.js'), /db\.version\(11\)/)

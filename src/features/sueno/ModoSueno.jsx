@@ -6,7 +6,7 @@ import {cfg, setCfg} from '../../data/db'
 import {
   ALARMA_INICIAL, parseHora, proximaAlarma, horasDormidas, parseHoras, textoHoras, textoDuracion,
   volumenAlarma, nuevaSesion, sesionParaGuardar, sesionDesdeGuardado, faseSueno, finPropuesto,
-  alternativaFin
+  alternativaFin, propuestaDia, fechaDeMs, horasPrevias, HORAS_MAX_DIA
 } from '../../domain/sueno'
 
 const CLAVE = 'mv_sueno_sesion'
@@ -19,7 +19,10 @@ const enCampo = h => (h == null ? '' : String(h).replace('.', ','))
 // Dormir con alarma: pantalla casi negra que se queda encendida, suena a la hora elegida y, al apagarla,
 // propone las horas de sueño para el check-in. Las horas se calculan con los instantes guardados (no con
 // un contador), así que salen bien aunque el teléfono haya frenado el reloj de la página.
-export default function ModoSueno({onGuardar}) {
+// Entrega 36: la propuesta es el TOTAL DEL DÍA (lo ya guardado ese día + esta sesión), para que una siesta
+// se sume a la noche en vez de pisarla. `previoDe(fecha)` devuelve las horas ya guardadas de ese día y
+// `onGuardar(total, fecha)` escribe el total confirmado en la fila de ese día.
+export default function ModoSueno({onGuardar, previoDe}) {
   const [sesion, setSesion] = useState(() => sesionDesdeGuardado(leer(CLAVE))),
     [ahora, setAhora] = useState(() => Date.now()),
     [alarmaTxt, setAlarmaTxt] = useState(() => {
@@ -29,6 +32,7 @@ export default function ModoSueno({onGuardar}) {
     [horasTxt, setHorasTxt] = useState(''),
     [aviso, setAviso] = useState(''),
     [ultimo, setUltimo] = useState(null),
+    [previo, setPrevio] = useState({fecha: null, horas: 0}),
     ctx = useRef(null),
     vivo = useRef(!!sesion && Date.now() < sesion.alarma),
     sono = useRef(false)
@@ -120,10 +124,27 @@ export default function ModoSueno({onGuardar}) {
     }
   }, [fase])
 
-  // Al entrar al resumen se propone la cuenta; la persona la puede corregir.
+  // Día en que se despierta (el de la hora de fin): ahí se suma y se guarda, aunque la pantalla de Hoy
+  // se haya abierto la noche anterior.
+  const fecha = fin == null ? null : fechaDeMs(fin)
+
+  // Al entrar al resumen se leen las horas que ya había ese día (otra noche o siestas).
   useEffect(() => {
-    if (fase === 'resumen' && sesion) setHorasTxt(enCampo(horasDormidas(sesion.inicio, finPropuesto(sesion))))
-  }, [fase, sesion?.inicio, fin]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (fase !== 'resumen' || !fecha) return
+    let vigente = true
+    const listo = h => vigente && setPrevio({fecha, horas: horasPrevias(h)})
+    Promise.resolve(previoDe ? previoDe(fecha) : 0).then(listo, () => listo(0))
+    return () => {
+      vigente = false
+    }
+  }, [fase, fecha]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Con eso leído se propone el total; la persona lo puede corregir. Hasta entonces el campo espera (sin parpadeo).
+  const previoListo = previo.fecha === fecha
+  useEffect(() => {
+    if (fase !== 'resumen' || !sesion || !previoListo) return
+    setHorasTxt(enCampo(propuestaDia({previo: previo.horas, inicio: sesion.inicio, fin: finPropuesto(sesion)}).total))
+  }, [fase, sesion?.inicio, fin, previoListo, previo.horas]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const empezar = () => {
     const t = Date.now(),
@@ -137,6 +158,7 @@ export default function ModoSueno({onGuardar}) {
     sono.current = false
     setAviso('')
     setUltimo(null)
+    setPrevio({fecha: null, horas: 0})
     setAhora(t)
     setSesion(s)
   }
@@ -156,16 +178,18 @@ export default function ModoSueno({onGuardar}) {
     sono.current = false
     setSesion(null)
     setAviso('')
+    setPrevio({fecha: null, horas: 0})
   }
   const confirmar = () => {
-    const h = parseHoras(horasTxt)
-    if (!h) return setAviso('Escribí las horas de sueño, entre 0,3 y 16 (por ejemplo 7,5).')
-    onGuardar(h)
+    const h = parseHoras(horasTxt, HORAS_MAX_DIA)
+    if (!h) return setAviso(`Escribí las horas de sueño, entre 0,3 y ${HORAS_MAX_DIA} (por ejemplo 7,5).`)
+    onGuardar(h, fecha)
     borrar(CLAVE)
     sono.current = false
     setSesion(null)
     setAviso('')
-    setUltimo(h)
+    setUltimo({horas: h, suma: previoListo && previo.horas > 0})
+    setPrevio({fecha: null, horas: 0})
   }
 
   const probar = () => {
@@ -190,17 +214,23 @@ export default function ModoSueno({onGuardar}) {
         </button>
       </div>
       <small className="mu">
-        La pantalla queda casi negra y encendida; a la hora elegida suena la alarma. Al apagarla te propongo las horas de sueño para el check-in.
+        La pantalla queda casi negra y encendida; a la hora elegida suena la alarma. Al apagarla te propongo las horas de sueño para el check-in; si ya tenías horas ese día (otra noche o una siesta), te propongo el total sumado para que lo confirmes.
       </small>
       {aviso && !sesion && <small role="alert" className="mu">{aviso}</small>}
-      {ultimo != null && <small role="status" className="mu">Guardé {textoHoras(ultimo)} de sueño en el check-in de hoy.</small>}
+      {ultimo != null && (
+        <small role="status" className="mu">
+          {ultimo.suma
+            ? `Guardé ${textoHoras(ultimo.horas)} de sueño en total hoy (sumé esta sesión a lo que ya tenías).`
+            : `Guardé ${textoHoras(ultimo.horas)} de sueño en el check-in de hoy.`}
+        </small>
+      )}
       <details>
         <summary><small className="mu">Cómo funciona y límites</small></summary>
         <small className="mu">
           Una app web no puede sonar con la pantalla bloqueada ni con MMV cerrado o en segundo plano. Por eso la pantalla se queda encendida (casi negra) y conviene dejar el teléfono cargando. Poné además una alarma del teléfono de respaldo.
         </small>
         <small className="mu">
-          Las horas son el tiempo desde que tocás «Empezar a dormir» hasta que apagás la alarma: es tiempo en cama, no sueño medido. Si tardaste en dormirte o te despertaste antes, corregilas antes de guardar.
+          Las horas son el tiempo desde que tocás «Empezar a dormir» hasta que apagás la alarma: es tiempo en cama, no sueño medido. Si tardaste en dormirte o te despertaste antes, corregilas antes de guardar. Cada vez que uses «Dormir con alarma» el mismo día (por ejemplo una siesta), se suma al total de ese día y vos confirmás la cuenta.
         </small>
       </details>
     </div>
@@ -211,6 +241,9 @@ export default function ModoSueno({onGuardar}) {
   // ---- Pantalla completa (casi negra) ----
   const alt = fase === 'resumen' ? alternativaFin({sesion, ahora}) : null
   const total = sesion.alarma - sesion.inicio
+  const prop = propuestaDia({previo: previoListo ? previo.horas : 0, inicio: sesion.inicio, fin: fin ?? sesion.alarma}),
+    suma = previoListo && prop.antes > 0 && prop.sesion != null
+  const soloSesion = suma && parseHoras(horasTxt, HORAS_MAX_DIA) === prop.sesion
   return (
     <>
       {inicio}
@@ -255,8 +288,14 @@ export default function ModoSueno({onGuardar}) {
                 Te acostaste a las {hhmm(sesion.inicio)} · despertaste a las {hhmm(fin)}
                 {sesion.fin == null && ' (la hora de la alarma: la app estaba cerrada cuando sonó)'}
               </p>
+              {suma && (
+                <p className="sueno-suma" role="status">
+                  Ya tenías <b>{textoHoras(prop.antes)}</b> hoy + esta sesión <b>{textoHoras(prop.sesion)}</b> ={' '}
+                  <b>{textoHoras(prop.total)}</b> en el día.
+                </p>
+              )}
               <div className="row">
-                <label htmlFor="horas-sueno">Horas de sueño</label>
+                <label htmlFor="horas-sueno">{suma ? 'Total de sueño de hoy' : 'Horas de sueño'}</label>
                 <input
                   id="horas-sueno"
                   className="fx"
@@ -268,13 +307,24 @@ export default function ModoSueno({onGuardar}) {
                 />
                 <span className="tag">h</span>
               </div>
+              {suma && (
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={() => setHorasTxt(enCampo(soloSesion ? prop.total : prop.sesion))}
+                >
+                  {soloSesion ? `Volver al total (${textoHoras(prop.total)})` : `Solo esta sesión (${textoHoras(prop.sesion)})`}
+                </button>
+              )}
               {alt != null && (
                 <button type="button" className="ghost" onClick={() => usarFin(alt)}>
-                  Usar las {hhmm(alt)} ({textoHoras(horasDormidas(sesion.inicio, alt))})
+                  Usar las {hhmm(alt)} ({textoHoras(horasDormidas(sesion.inicio, alt))} de esta sesión)
                 </button>
               )}
               <small className="mu">
-                Es el tiempo desde que te acostaste: si tardaste en dormirte o te despertaste antes, corregilo.
+                {suma
+                  ? 'Es lo que ya tenías ese día más el tiempo desde que te acostaste: si tardaste en dormirte, te despertaste antes o lo anterior estaba mal, corregilo.'
+                  : 'Es el tiempo desde que te acostaste: si tardaste en dormirte o te despertaste antes, corregilo.'}
               </small>
               {aviso && <small role="alert" className="mu">{aviso}</small>}
               <div className="row">
