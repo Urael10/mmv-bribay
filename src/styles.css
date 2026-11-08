@@ -887,7 +887,7 @@ nav button.on {
 .igual {
   background: var(--ac-soft);
 }
-/* Chips: normal / presionado / seleccionado (el seleccionado lleva ✓ además del color) */
+/* Chips: normal / presionado / seleccionado (el seleccionado lleva un ícono de tilde además del color) */
 .chip {
   background: var(--sf-2);
   color: var(--tx);
@@ -916,9 +916,15 @@ nav button.on {
 }
 .chip.on::before,
 .chip[aria-pressed='true']::before {
-  content: '✓';
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 14px;
   margin-right: 6px;
-  font-weight: 700;
+  vertical-align: -2px;
+  background: currentColor;
+  -webkit-mask: var(--ico-check) center / contain no-repeat;
+  mask: var(--ico-check) center / contain no-repeat;
 }
 .escala button {
   border: 1.5px solid var(--bd);
@@ -953,12 +959,20 @@ nav button.on {
 .delta.neutra.baja::before {
   content: '▼ ';
 }
-/* Estado confirmado (✓) */
+/* Estado confirmado (ícono de tilde + texto) */
 .ok-msg {
   color: var(--pos);
 }
 .ok-msg::before {
-  content: '✓ ';
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  vertical-align: -2px;
+  background: currentColor;
+  -webkit-mask: var(--ico-check) center / contain no-repeat;
+  mask: var(--ico-check) center / contain no-repeat;
 }
 /* Rótulos de estado: chip con ícono y color semántico */
 .estado {
@@ -1717,7 +1731,7 @@ button.ruta-fila:active:not(:disabled) {
   stroke-width: 3.6;
 }
 .anillo-pista {
-  stroke: var(--sf-2);
+  stroke: var(--pista);
 }
 .anillo-arco {
   stroke: var(--info);
@@ -2222,4 +2236,62 @@ button.ruta-fila:active:not(:disabled) {
   margin: 0;
   border-radius: var(--r-tile);
   box-shadow: var(--sombra-1);
+}
+
+/* Entrega 38: arreglos de las capturas del celular (solo tokens; el único token nuevo es --pista, y --ico-check es un ícono) */
+/* Macros: «Proteína» ya se muestra aparte con su meta, así que quedan dos columnas */
+.macros.dos {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.prot-lin {
+  margin-top: var(--sp-3);
+}
+/* Anillos: pista visible en 0 y un ícono en el centro (comida, agua, pasos) */
+.anillo-c .ico {
+  color: var(--tx-2);
+}
+.anillo.ok .anillo-c .ico {
+  color: var(--pos);
+}
+/* Las pantallas casi negras (dormir y bolsillo) conservan su pista tenue para no encandilar */
+.sueno-ov .anillo-pista,
+.bolsillo-ov .anillo-pista {
+  stroke: var(--sf-2);
+}
+/* Check-in: «Sueño» con rótulos «Horas» y «Calidad» sobre cada campo */
+.ck-sueno {
+  grid-template-columns: 56px 64px minmax(40px, 1fr) auto;
+  align-items: end;
+}
+.ck-sueno .ck-n {
+  align-self: center;
+}
+.ck-c {
+  display: grid;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.ck-c > span {
+  font-size: 12px;
+  line-height: 1;
+}
+.ck-sueno output {
+  align-self: center;
+}
+/* Resumen de las filas plegables: si no entra en una línea, baja a otra en vez de cortarse con «…» */
+.pleg-r {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.25;
+}
+/* Preparación sin datos: pide la acción en vez de mostrar una línea con «i» */
+.prep-vacia .prep-t {
+  margin: var(--sp-2) 0 var(--sp-1);
+}
+.prep-vacia .prep-r {
+  margin: 0 0 var(--sp-3);
+}
+.prot-lin ~ .macros {
+  margin-top: var(--sp-3);
 }

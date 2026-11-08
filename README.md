@@ -1,4 +1,4 @@
-# Mi Mejor Versión (MMV) · Entrega 37 (v0.38.0)
+# Mi Mejor Versión (MMV) · Entrega 38 (v0.39.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 
@@ -40,6 +40,11 @@ Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.z
 - Hoy va en el paquete principal; Entreno, Comidas, Progreso (con Rutas), Ajustes y el menú oculto se bajan aparte al abrirlos (`React.lazy` + `Suspense`). Mientras bajan se ve «Cargando…».
 - Unos segundos después de abrir, la app baja las demás pantallas en segundo plano (no lo hace sin conexión, con «ahorro de datos» ni con red 2G) y `public/sw.js` las guarda, así andan sin conexión. Si una pantalla no se puede bajar aparece «No se pudo abrir…» con **Reintentar** y **Actualizar la app**; tus datos no se tocan.
 - Regla para el código: nadie fuera de `src/ui/pantallas.js` importa esas pantallas de forma estática (una prueba lo vigila); una pantalla nueva se agrega ahí y a `ORDEN_PRECARGA`.
+
+## Arreglos de la interfaz (v0.39.0)
+- Comidas: «Carbos», la proteína una sola vez (con su meta) y el buscador con «Buscar…». Check-in: «Horas» y «Calidad» sobre los campos de sueño.
+- Hoy: anillos con pista visible (`--pista`) e ícono (cubiertos, gota, huellas); resúmenes de las filas plegables cortos; «Preparación» sin datos pide el check-in con un botón que lo abre (`pedidoPreparacion` en `src/domain/checkin.js`).
+- El tilde de los chips seleccionados es un ícono por máscara (`--ico-check` en `src/tokens.css`), no un carácter.
 
 ## Íconos y avisos (v0.38.0)
 - Los emojis y símbolos de texto de la interfaz (✔ ⚠ 🏆 🎥 🌐 ⭐ 🔒 ↶ …) se reemplazaron por el set de íconos propio (`src/ui/Icono.jsx`, trazo de 2 px). Los mensajes de confirmación («Backup compartido.», «Comida guardada.») ya no llevan símbolo: el texto dice el estado.

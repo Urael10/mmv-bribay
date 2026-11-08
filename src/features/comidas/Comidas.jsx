@@ -78,24 +78,27 @@ async function leer(file, prompt, prog, fn) {
   await db.uso.add({fecha: hoy(), fn})
   return r
 }
-// Macronutrientes con nombre completo. `compacto` = una línea de texto para filas; si no, tres columnas con mini-barra
-// (la barra muestra el reparto por gramos entre proteína, carbohidratos y grasas).
+// Macronutrientes con nombre corto que entra en una columna de celular («Carbos», no «Carbohidratos»).
+// `compacto` = una línea de texto para filas; si no, columnas con mini-barra (la barra muestra el reparto por
+// gramos entre proteína, carbohidratos y grasas). `sinProteina` deja afuera la proteína cuando ya se muestra
+// aparte con su meta (así no aparece dos veces en el diario).
 const MACROS = [
   ['Proteína', 'Prot.', 'p', '--m-p'],
-  ['Carbohidratos', 'Carb.', 'c', '--m-c'],
+  ['Carbos', 'Carb.', 'c', '--m-c'],
   ['Grasas', 'Gras.', 'gr', '--m-g']
 ]
-const Macros = ({t, compacto}) => {
+const Macros = ({t, compacto, sinProteina}) => {
   if (compacto)
     return (
       <small className="mu">
         {MACROS.map(([, corto, k]) => `${corto} ${fmt(t[k])} g`).join(' · ')}
       </small>
     )
-  const rp = repartoMacros(t)
+  const rp = repartoMacros(t),
+    lista = sinProteina ? MACROS.filter(m => m[2] !== 'p') : MACROS
   return (
-    <div className="macros" role="group" aria-label="Macronutrientes">
-      {MACROS.map(([largo, , k, col]) => (
+    <div className={'macros' + (lista.length === 2 ? ' dos' : '')} role="group" aria-label="Macronutrientes">
+      {lista.map(([largo, , k, col]) => (
         <div className="macro" key={k}>
           <span className="macro-n">{largo}</span>
           <b className="mono macro-v">{fmt(t[k])} g</b>
@@ -420,7 +423,7 @@ function Agregar({base, atajos, plant, usarComida, agregar, libre, nuevo, usarPl
           inputMode="search"
           enterKeyHint="search"
           aria-label="Buscar alimento"
-          placeholder="Buscar alimento"
+          placeholder="Buscar…"
           value={q}
           onChange={e => {
             setQ(e.target.value)
@@ -1135,10 +1138,9 @@ export default function Comidas() {
             <div className="bar">
               <i style={{width: Math.min(100, (tot.kcal / meta) * 100) + '%'}} />
             </div>
-            <Macros t={tot} />
             {prot ? (
               <>
-                <div className="lin" style={{borderColor: 'var(--hero-ln)'}}>
+                <div className="lin prot-lin" style={{borderColor: 'var(--hero-ln)'}}>
                   <span>Proteína</span>
                   <span className="mono">
                     {fmt(tot.p)} / {metaP} g
@@ -1152,13 +1154,17 @@ export default function Comidas() {
                     ? 'Meta de proteína cumplida.'
                     : `Faltan ${prot.falta} g para tu meta (orientativa: ${String(factorP).replace('.', ',')} g por kg).`}
                 </small>
+                <Macros t={tot} sinProteina />
               </>
             ) : (
-              peso === null && (
-                <small className="mu" style={{display: 'block', marginTop: 4}}>
-                  Registrá tu peso (Hoy → tarjeta Cuerpo) y acá aparece tu meta de proteína.
-                </small>
-              )
+              <>
+                <Macros t={tot} />
+                {peso === null && (
+                  <small className="mu" style={{display: 'block', marginTop: 4}}>
+                    Registrá tu peso (Hoy → tarjeta Cuerpo) y acá aparece tu meta de proteína.
+                  </small>
+                )}
+              </>
             )}
           </section>
           <Agregar

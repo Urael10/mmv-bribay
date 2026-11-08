@@ -2,6 +2,7 @@ import {useState, useEffect} from 'react'
 import {db, hoy, cfg} from '../../data/db'
 import {totales, fmt} from '../../domain/alimentos'
 import Anillo from '../../ui/Anillo'
+import Icono from '../../ui/Icono'
 import {claseAnillo, textoAnillo} from '../../domain/anillo'
 import {ultima, proteinaObjetivo, PROT_KG} from '../../domain/cuerpo'
 
@@ -32,7 +33,9 @@ export default function FilaAlimentacion({onAbrir}) {
       onClick={onAbrir}
       aria-label={`${textoAnillo('Alimentación de hoy', t.kcal, meta, 'kcal')}: abrir Comidas`}
     >
-      <Anillo valor={t.kcal} meta={meta} clase={claseAnillo(t.kcal, meta)} />
+      <Anillo valor={t.kcal} meta={meta} clase={claseAnillo(t.kcal, meta)}>
+        <Icono n="cubiertos" tam={20} />
+      </Anillo>
       <span className="eti">Comida</span>
       <b className="mono tesela-v">{t.kcal}</b>
       <small className="mu">de {meta} kcal</small>

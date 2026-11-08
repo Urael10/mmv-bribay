@@ -70,7 +70,9 @@ function TeselaPasos({abierto, onAbrir}) {
       onClick={onAbrir}
       aria-label={ef.valor ? textoAnillo('Pasos', d.pasos, ef.valor) + ': abrir conteo' : `Pasos: ${d.pasos}. Abrir conteo`}
     >
-      <Anillo valor={d.pasos} meta={ef.valor} clase={claseAnillo(d.pasos, ef.valor)} />
+      <Anillo valor={d.pasos} meta={ef.valor} clase={claseAnillo(d.pasos, ef.valor)}>
+        <Icono n="pasos" tam={20} />
+      </Anillo>
       <span className="eti">Pasos</span>
       <b className="mono tesela-v">{d.pasos ? d.pasos.toLocaleString('es-AR') : '—'}</b>
       <small className="mu">{d.pasos || ef.valor ? textoMetaPasos(ef) : 'tocá para contar'}</small>
@@ -107,6 +109,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
     [suAb, setSuAb] = useState(false),
     [masAb, setMasAb] = useState(false),
     [reinicio, setReinicio] = useState(null), // lo que había antes de «Reiniciar», para deshacerlo sin preguntar
+    [pedirCk, setPedirCk] = useState(0), // sube cada vez que «Preparación» pide el check-in: abre, lleva y enfoca
     meta = +cfg('meta', 2500),
     enCurso = haySesionEnCurso(localStorage.getItem('mv_sesion'))
   useEffect(() => {
@@ -120,6 +123,15 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
       .toArray()
       .then(a => setVideos(videosPendientes(a, hoy())))
   }, [])
+  // «Preparación» sin datos ofrece un botón que abre el check-in, lo trae a la vista y enfoca su primer botón.
+  useEffect(() => {
+    if (!pedirCk) return
+    const el = document.getElementById('hoy-checkin')
+    if (!el) return
+    const quieto = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    el.scrollIntoView({block: 'center', behavior: quieto ? 'auto' : 'smooth'})
+    el.querySelector('button')?.focus({preventScroll: true})
+  }, [pedirCk])
   // Se guarda sobre la fila que hay en la base (no sobre la copia de esta pantalla): los pasos los escribe
   // «Actividad y cuerpo» por su lado y una copia vieja los pisaría. La transacción ordena los toques seguidos.
   const g = p => {
@@ -158,7 +170,13 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
   const resumenCk = checkinHecho(h) ? 'Hecho' : '20 segundos'
   return (
     <div className="bento hoy">
-      <Preparacion h={h} />
+      <Preparacion
+        h={h}
+        onCheckin={() => {
+          setCkAb(true)
+          setPedirCk(n => n + 1)
+        }}
+      />
       <div className="hoy-cta">
         <div className="ctafila">
           <button className="cta" onClick={onEmpezar}>
@@ -204,7 +222,9 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
           aria-label={textoAnillo('Agua', h.agua, meta, 'ml')}
           onClick={() => setAguaAb(v => !v)}
         >
-          <Anillo valor={h.agua} meta={meta} clase={claseAnillo(h.agua, meta)} />
+          <Anillo valor={h.agua} meta={meta} clase={claseAnillo(h.agua, meta)}>
+            <Icono n="gota" tam={20} />
+          </Anillo>
           <span className="eti">Agua</span>
           <b className="mono tesela-v">{fmtVal(h.agua, {dec: 0})}</b>
           <small className="mu">de {meta} ml</small>
@@ -303,24 +323,30 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
           </small>
           <div className="ck-sueno">
             <b className="ck-n">Sueño</b>
-            <input
-              className="fx"
-              type="number"
-              inputMode="decimal"
-              step="0.5"
-              placeholder="horas"
-              aria-label="Horas de sueño de hoy (total del día)"
-              value={h.sueno}
-              onChange={e => g({sueno: e.target.value})}
-            />
-            <input
-              type="range"
-              min="1"
-              max="5"
-              value={hayDato(h.calidad) ? h.calidad : 3}
-              aria-label="Calidad del sueño"
-              onChange={e => g({calidad: +e.target.value})}
-            />
+            <label className="ck-c">
+              <span className="mu">Horas</span>
+              <input
+                className="fx"
+                type="number"
+                inputMode="decimal"
+                step="0.5"
+                placeholder="—"
+                aria-label="Horas de sueño de hoy (total del día)"
+                value={h.sueno}
+                onChange={e => g({sueno: e.target.value})}
+              />
+            </label>
+            <label className="ck-c">
+              <span className="mu">Calidad</span>
+              <input
+                type="range"
+                min="1"
+                max="5"
+                value={hayDato(h.calidad) ? h.calidad : 3}
+                aria-label="Calidad del sueño"
+                onChange={e => g({calidad: +e.target.value})}
+              />
+            </label>
             <output className="mono" aria-live="polite">
               {fmtVal(h.calidad, {dec: 0})}/5
             </output>
@@ -330,7 +356,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
       <Pleg
         id="hoy-sueno"
         titulo="Dormir con alarma"
-        resumen={+h.sueno > 0 ? `${String(h.sueno).replace('.', ',')} h hoy` : 'Calcula tus horas'}
+        resumen={+h.sueno > 0 ? `${String(h.sueno).replace('.', ',')} h hoy` : 'Alarma y horas'}
         abierto={suAb}
         onCambio={setSuAb}
       >
@@ -338,7 +364,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
           <ModoSueno previoDe={leerSueno} onGuardar={guardarSueno} />
         </section>
       </Pleg>
-      <Pleg id="hoy-mas" titulo="Actividad y cuerpo" resumen="Pasos, rutas, medidas" abierto={masAb} onCambio={setMasAb}>
+      <Pleg id="hoy-mas" titulo="Actividad y cuerpo" resumen="Pasos y rutas" abierto={masAb} onCambio={setMasAb}>
         <ActividadFisica onVerRutas={onRutas} />
         <TarjetaCuerpo />
       </Pleg>

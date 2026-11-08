@@ -1,5 +1,19 @@
 # Historial de versiones de MMV
 
+## v0.39.0 · Entrega 38 · Arreglos de las capturas del celular (08/11/2026)
+- **Comidas · «Carbohidratos» ya no se parte:** la columna se llama «Carbos».
+- **Comidas · la proteína aparece una sola vez:** con meta (hay peso cargado), «Proteína 42 / 120 g» con su barra y el «Faltan N g…» van arriba, y debajo quedan **Carbos** y **Grasas** en dos columnas. Sin peso (sin meta) sigue el trío Proteína · Carbos · Grasas y el aviso para registrar el peso.
+- **Comidas · buscador:** el placeholder es «Buscar…» (el nombre accesible sigue siendo «Buscar alimento»), así no se corta junto a los botones de código de barras y cámara.
+- **Chips seleccionados y «Tenés la última versión publicada»:** el ✓ de texto del CSS pasó a un ícono de tilde (el mismo trazo de `Icono` «check») pintado con máscara y `currentColor`. Ya no queda ningún carácter ✓ en JSX ni en CSS. Token nuevo `--ico-check` (un ícono, no un color).
+- **Check-in · Sueño:** los dos campos llevan rótulo propio, **Horas** y **Calidad**, sobre el campo (antes el deslizador «3/5» no decía qué era). El campo de horas muestra «—» vacío en lugar de «horas».
+- **Hoy · resúmenes de las filas plegables:** «Pasos y rutas» (antes «Pasos, rutas, medidas») y «Alarma y horas» (antes «Calcula tus horas»). Además, si un resumen no entra en una línea, baja a otra en vez de cortarse con «…».
+- **Hoy · anillos en 0:** pista vacía visible (token nuevo `--pista`, 3,1:1 sobre `--bg`; antes `--sf-2`, 1,2:1) y un ícono en el centro: cubiertos (Comida), gota (Agua) y huellas (Pasos). El ícono se pone verde al llegar a la meta. Dormir y bolsillo conservan su pista tenue. 3 trazos nuevos en `Icono.jsx`: `cubiertos`, `gota`, `pasos`.
+- **Hoy · Preparación sin datos:** ya no es una línea con «i». Dice **«Hacé el check-in para ver tu preparación»** y tiene el botón **Hacer el check-in**, que abre el check-in, lo trae a la vista y enfoca su primer botón (sin animación con «reducir movimiento»). Si el check-in ya está hecho pero faltan las horas de sueño, pide el sueño («Cargar el sueño»). La lógica del texto es pura: `pedidoPreparacion` en `src/domain/checkin.js`. Se quitó el `Plegable` de ese estado y una rama que nunca se ejecutaba en `Preparacion.jsx`.
+- **Sin cambios** en Dexie (v11), backup, service worker, carga diferida ni en el cálculo de la preparación.
+- **Pruebas:** `tests/entrega39.test.js`.
+- **No probado:** celular real (solo capturas en Chromium a 360 px de ancho: lectura de los íconos a 20 px, foco y desplazamiento del botón de la preparación en iOS/Android).
+- **Queda** (de la revisión de diseño): Hoy más compacto, tesela de Sueño y color por métrica (entrega 39 del informe de continuidad); fila Peso alineada con los anillos; línea larga de escalas del check-in con «baja/alta» a los extremos; Comidas en estilo plano.
+
 ## v0.38.0 · Entrega 37 · Íconos coherentes, avisos flotantes y reinicio de agua sin confirm (08/11/2026)
 - **Íconos en lugar de emojis:** ✔ ✓ ✅ ⚠ ✕ ✎ ↑ ↓ ↶ ⬆ ＋ ↔ ⏸ ▶ 🏆 🎥 🌐 ⭐ ⚡ 🏁 🔎 🔒 🍽 🏷 se reemplazaron por `Icono` (check, alerta, cerrar, lapiz, flecha-arriba/abajo, deshacer, mas, izq-der, pausa, play, trofeo, video, web, estrella, rayo, bandera, lupa, candado, plato, etiqueta, chevron-izq/der, detener, reloj). También ◀ ▶ del navegador de fecha, ■ y ▶ del conteo de pasos y ▶ y ⏱ de los bloques del entreno; los textos que decían «tocá ▶» ahora nombran el botón. 17 trazos nuevos en `src/ui/Icono.jsx`, todos de 2 px sobre 24×24. Los que dicen algo importante llevan `etiqueta` accesible («copiado de la web», «con video», «récord»).
 - **Mensajes de confirmación sin símbolo:** «✔ Backup compartido.» → «Backup compartido.» (idem GPX, informe, comida, plantilla, sesión). El texto ya dice el estado.
