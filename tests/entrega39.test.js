@@ -46,12 +46,11 @@ test('ya no queda ningún carácter ✓ en JSX ni en CSS (el tilde es un ícono 
   assert.match(chip, /background: currentColor/)
 })
 
-test('Check-in: el sueño tiene rótulos «Horas» y «Calidad» y conserva sus nombres accesibles', () => {
-  const h = leer('src/features/hoy/Hoy.jsx')
-  assert.match(h, /<span className="mu">Horas<\/span>/)
-  assert.match(h, /<span className="mu">Calidad<\/span>/)
+test('Check-in: el sueño tiene rótulos «Horas» y «Calidad» y conserva sus nombres accesibles (desde la entrega 39, en RegistroSueno)', () => {
+  const h = leer('src/features/sueno/RegistroSueno.jsx')
+  assert.match(h, /<b className="ck-n" id="ck-calidad">\s*Calidad\s*<\/b>/)
   assert.match(h, /aria-label="Horas de sueño de hoy \(total del día\)"/)
-  assert.match(h, /aria-label="Calidad del sueño"/)
+  assert.match(leer('src/features/hoy/Hoy.jsx'), /<RegistroSueno h=\{h\} g=\{g\}/)
 })
 
 test('Hoy: resúmenes cortos de los plegables y sin corte con «…»', () => {
@@ -93,8 +92,9 @@ test('Preparación sin datos: botón que abre el check-in desde Hoy, sin Plegabl
   assert.match(p, /pedidoPreparacion\(h\)/)
   assert.match(p, /onClick=\{onCheckin\}/)
   assert.match(h, /<Preparacion\s+h=\{h\}\s+onCheckin=/)
+  assert.match(h, /abrirCk\('hoy-checkin'\)/)
   assert.match(h, /setCkAb\(true\)/)
-  assert.match(h, /getElementById\('hoy-checkin'\)/)
+  assert.match(h, /getElementById\(pedir\.id\)/)
   assert.match(h, /prefers-reduced-motion/)
 })
 

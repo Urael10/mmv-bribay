@@ -1,5 +1,22 @@
 # Historial de versiones de MMV
 
+## v0.40.0 · Entrega 39 · Registro de sueño: horas de acostarse y levantarse, «Igual que siempre» y tesela en Hoy (08/11/2026)
+- **Nuevo bloque «Sueño» en el check-in** (`src/features/sueno/RegistroSueno.jsx`; reemplaza la fila de número + deslizador). Tres maneras de registrar, de menos a más esfuerzo:
+  1. **«Igual que siempre · 23:30 → 07:15»:** un toque con tu hora habitual (mediana de los 7 días anteriores, redondeada a 5 min; aparece con al menos 2 días que tengan las dos horas; acostarse a pasada la medianoche se calcula bien).
+  2. **«Me acosté» y «Me desperté»:** selectores de hora del teléfono; el total se calcula solo, también si cruza la medianoche, y se muestra arriba como «7 h 45 min».
+  3. **Solo la duración:** campo «Total de horas» (pasos de 0,25) y chips de **5, 6, 7, 8, 9 h**. Un chip borra las dos horas (ya no describen ese total); tocarlo de nuevo lo quita.
+- **Calidad con botones 1 a 5** (los mismos que Energía, Ánimo y Dolor) con «1 · mala / 5 · excelente» bajo los botones, en lugar del deslizador. Tocar el botón elegido lo quita.
+- **Calidad sin valor inventado:** antes una fila nueva nacía con calidad 3 sin que la eligieras; ahora queda vacía hasta que la elijas. Las filas viejas no se tocan. Consecuencia: sin calidad, el componente de sueño de la preparación usa solo las horas (antes mezclaba un 3 implícito).
+- **Siestas desglosadas, sin esquema nuevo:** si el total del día es mayor que lo que dan las dos horas, el bloque dice «Incluye ≈ 1 h de siestas u otras sesiones». Al corregir la hora de acostarte o levantarte, las siestas ya sumadas se conservan.
+- **Tesela de Sueño en Hoy** (entre Agua y Pasos): anillo contra una referencia de 8 h (`OBJETIVO_SUENO_H`, orientativa, no médica) con ícono de luna, «7 h 45» y «de 8 h · calidad 4/5». Sin registro dice «tocá para registrar». Al tocarla abre el check-in y lleva al bloque de sueño (el mismo mecanismo que el botón de «Preparación»).
+- **«Dormir con alarma» alimenta el bloque:** al guardar anota la hora de acostarte y de levantarte (`acosto`, `desperto`) **solo si la sesión fue de noche (≥ 4 h)**, y solo si ese día no tenía ya las suyas (una siesta no pisa la hora de acostarte). El resumen suma **«Calidad (opcional)»** con los mismos botones.
+- **Datos:** `acosto` y `desperto` («HH:MM») son campos opcionales de la fila de hábitos del día; Dexie sigue en v11 y el backup los lleva sin cambios.
+- **Lógica pura con pruebas** en `src/domain/sueno.js`: `horasEntre`, `duracionHM`, `duracionCorta`, `extraSiestas`, `reaplicarNoche`, `habitualNoche`, `nocheDeSesion`, `horaDeMs`, `fraccionSueno`, `OBJETIVO_SUENO_H`, `NOCHE_MIN_H`, `DURACIONES_RAPIDAS`.
+- **Pruebas:** `tests/entrega40.test.js`. Se relajaron a propósito tres aserciones de `tests/entrega33.test.js` y `tests/entrega37.test.js` (la firma `onGuardar(total, fecha, {noche, calidad})` y `guardarSueno(horas, f, extra)`, y el lugar del campo de horas, ahora `RegistroSueno.jsx`). Se quitaron los estilos `.ck-sueno`.
+- **Límites que se mantienen:** el total sumado con la alarma se redondea a décimas de hora (6 min), como siempre; las horas son tiempo en cama, no sueño medido.
+- **No incluido (queda para otra entrega):** siestas como tipo de dato propio, regularidad y promedio semanal en Progreso, importar de un reloj o de Salud (una web no puede leerlos: solo por archivo exportado), corregir días anteriores, meta de sueño propia en Ajustes, contexto por hora del día en «Dormir con alarma».
+- **No probado:** celular real (selector de hora nativo en iOS y Android, formato 12/24 h, lectura del bloque a 360 px en pantallas chicas). Revisado solo en Chromium a 360 px.
+
 ## v0.39.0 · Entrega 38 · Arreglos de las capturas del celular (08/11/2026)
 - **Comidas · «Carbohidratos» ya no se parte:** la columna se llama «Carbos».
 - **Comidas · la proteína aparece una sola vez:** con meta (hay peso cargado), «Proteína 42 / 120 g» con su barra y el «Faltan N g…» van arriba, y debajo quedan **Carbos** y **Grasas** en dos columnas. Sin peso (sin meta) sigue el trío Proteína · Carbos · Grasas y el aviso para registrar el peso.

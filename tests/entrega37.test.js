@@ -67,7 +67,7 @@ test('ModoSueno: propone el total, deja corregirlo y guarda en el día de desper
   assert.match(m, /previoDe\(fecha\)/)
   assert.match(m, /fechaDeMs\(fin\)/)
   assert.match(m, /parseHoras\(horasTxt, HORAS_MAX_DIA\)/)
-  assert.match(m, /onGuardar\(h, fecha\)/)
+  assert.match(m, /onGuardar\(h, fecha, \{noche:/) // entrega 39: lleva también la noche y la calidad
   assert.match(m, /Total de sueño de hoy/)
   assert.match(m, /Solo esta sesión/)
   assert.match(m, /Volver al total/)
@@ -78,10 +78,10 @@ test('ModoSueno: propone el total, deja corregirlo y guarda en el día de desper
 test('Hoy: guarda el total en la fila del día de despertar, dentro de una transacción', () => {
   const h = leer('src/features/hoy/Hoy.jsx')
   assert.match(h, /const leerSueno = async f =>/)
-  assert.match(h, /const guardarSueno = async \(horas, f\) =>/)
+  assert.match(h, /const guardarSueno = async \(horas, f, extra = \{\}\) =>/) // entrega 39: acepta la noche y la calidad
   assert.match(h, /db\.transaction\('rw', db\.habitos, async \(\) => \{\s*const actual = await db\.habitos\.get\(dia\)/)
   assert.match(h, /<ModoSueno previoDe=\{leerSueno\} onGuardar=\{guardarSueno\} \/>/)
-  assert.match(h, /aria-label="Horas de sueño de hoy \(total del día\)"/)
+  assert.match(leer('src/features/sueno/RegistroSueno.jsx'), /aria-label="Horas de sueño de hoy \(total del día\)"/) // entrega 39: el campo vive en RegistroSueno
 })
 test('sin cambios de datos ni de las demás pantallas', () => {
   assert.match(leer('src/data/db.js'), /db\.version\(11\)/)

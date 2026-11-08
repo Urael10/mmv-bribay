@@ -1,4 +1,4 @@
-# Mi Mejor Versión (MMV) · Entrega 38 (v0.39.0)
+# Mi Mejor Versión (MMV) · Entrega 39 (v0.40.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 
@@ -40,6 +40,11 @@ Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.z
 - Hoy va en el paquete principal; Entreno, Comidas, Progreso (con Rutas), Ajustes y el menú oculto se bajan aparte al abrirlos (`React.lazy` + `Suspense`). Mientras bajan se ve «Cargando…».
 - Unos segundos después de abrir, la app baja las demás pantallas en segundo plano (no lo hace sin conexión, con «ahorro de datos» ni con red 2G) y `public/sw.js` las guarda, así andan sin conexión. Si una pantalla no se puede bajar aparece «No se pudo abrir…» con **Reintentar** y **Actualizar la app**; tus datos no se tocan.
 - Regla para el código: nadie fuera de `src/ui/pantallas.js` importa esas pantallas de forma estática (una prueba lo vigila); una pantalla nueva se agrega ahí y a `ORDEN_PRECARGA`.
+
+## Registro de sueño (v0.40.0)
+- Check-in › Sueño: «Igual que siempre» (tu hora habitual de los últimos 7 días), «Me acosté» / «Me desperté» (el total se calcula solo) o solo la duración (chips de 5 a 9 h y campo). Calidad con botones 1–5. Si el total supera lo de la noche, el bloque lo explica como siestas.
+- Hoy tiene una tesela de Sueño (anillo contra 8 h de referencia) que abre ese bloque. «Dormir con alarma» anota la hora de acostarte y de levantarte si la sesión fue de noche (≥ 4 h) y deja elegir la calidad.
+- Datos: `acosto` y `desperto` («HH:MM») son campos opcionales de la fila de hábitos del día (sin cambio de Dexie). Lógica pura en `src/domain/sueno.js`; el bloque en `src/features/sueno/RegistroSueno.jsx` (la base solo se toca desde `Hoy.jsx`).
 
 ## Arreglos de la interfaz (v0.39.0)
 - Comidas: «Carbos», la proteína una sola vez (con su meta) y el buscador con «Buscar…». Check-in: «Horas» y «Calidad» sobre los campos de sueño.
