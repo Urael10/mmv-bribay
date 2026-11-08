@@ -18,7 +18,6 @@ import {
   debeBloquear,
   fechaLocal
 } from '../../domain/privado'
-import Icono from '../../ui/Icono'
 
 const fF = f => f.split('-').reverse().join('/').slice(0, 5)
 const fH = iso => new Date(iso).toLocaleTimeString('es-UY', {hour: '2-digit', minute: '2-digit', hour12: false})
@@ -234,7 +233,7 @@ function Registro({clave, bloques, recargar}) {
         ))}
       </div>
       <button className="pri" onClick={hecho}>
-        <Icono n="mas" tam={16} className="en-texto" /> Registrar ahora
+        ＋ Registrar ahora
       </button>
       <small className="mu" style={{display: 'block', marginTop: 8}}>
         La hora se puede corregir en el historial.
@@ -294,7 +293,7 @@ function Historial({clave, bloques, recargar, onVer}) {
                 Editar
               </button>
               <button className="ghost mini" aria-label="Borrar día" onClick={() => borrarDia(f)}>
-                <Icono n="cerrar" tam={18} />
+                ✕
               </button>
             </span>
           </div>
@@ -326,7 +325,7 @@ function Historial({clave, bloques, recargar, onVer}) {
                     Hora
                   </button>
                   <button className="ghost mini" aria-label="Borrar registro" onClick={() => borrarEv(f)}>
-                    <Icono n="cerrar" tam={18} />
+                    ✕
                   </button>
                 </span>
               </>
@@ -352,7 +351,7 @@ function Clave({clave, onNueva, onBorrado}) {
       onNueva(await cambiarClave(clave, a))
       setA('')
       setB('')
-      setMsg('Clave cambiada. Todo el registro quedó cifrado con la nueva.')
+      setMsg('✔ Clave cambiada. Todo el registro quedó cifrado con la nueva.')
     } catch {
       setMsg('No se pudo cambiar la clave; no se modificó nada.')
     }
@@ -416,7 +415,7 @@ function Abierto({clave, onBloquear, onNueva, onBorrado}) {
           </button>
         ))}
         <button className="ghost mini bloquear" onClick={onBloquear}>
-          <Icono n="candado" tam={16} className="en-texto" /> Bloquear
+          🔒 Bloquear
         </button>
       </div>
       {vista === 'registro' && <Registro clave={clave} bloques={bloques} recargar={recargar} />}

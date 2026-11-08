@@ -17,7 +17,6 @@ import {CLAVE_MAPA} from '../../domain/mapa'
 import TrazoSvg from '../../ui/TrazoSvg'
 import MapaOsm from '../../ui/MapaOsm'
 import {entregarArchivo} from '../../ui/entregarArchivo'
-import Icono from '../../ui/Icono'
 
 const PAGINA = 15
 const kmTxt = m => (m / 1000).toFixed(2).replace('.', ',')
@@ -49,8 +48,8 @@ function Detalle({ruta, onBorrar, onAviso}) {
       r === 'cancelado'
         ? ''
         : r === 'compartido'
-          ? 'GPX compartido.'
-          : 'GPX descargado (revisá Descargas).'
+          ? '✔ GPX compartido.'
+          : '✔ GPX descargado (revisá Descargas).'
     )
   }
   return (
@@ -211,7 +210,7 @@ export default function Rutas() {
       if (r.error) setAviso(r.error)
       else {
         setAviso(
-          `Se importaron ${r.agregadas} ${r.agregadas === 1 ? 'ruta' : 'rutas'}` +
+          `✔ Se importaron ${r.agregadas} ${r.agregadas === 1 ? 'ruta' : 'rutas'}` +
             (r.repetidas ? ` (${r.repetidas} ya estaban)` : '') +
             (r.invalidas ? ` (${r.invalidas} sin recorrido válido)` : '') +
             '.'
@@ -231,8 +230,8 @@ export default function Rutas() {
         r === 'cancelado'
           ? ''
           : r === 'compartido'
-            ? 'GPX compartido.'
-            : 'GPX descargado (revisá Descargas).'
+            ? '✔ GPX compartido.'
+            : '✔ GPX descargado (revisá Descargas).'
       )
     } catch {
       setAviso('No se pudo exportar. Intentá de nuevo.')

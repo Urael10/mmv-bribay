@@ -10,7 +10,6 @@ import {
   sumarRonda,
   terminar
 } from '../../services/reloj'
-import Icono from '../../ui/Icono'
 
 // Se vuelve a dibujar con cada aviso del reloj (la hora siempre sale de Date.now(), no de ticks contados).
 export const useReloj = () => {
@@ -77,12 +76,8 @@ export function BarraReloj({onAbrir}) {
   if (!st || !pos) return null
   return (
     <div className="barrareloj">
-      <button
-        className="ghost mini"
-        aria-label={pos.fin ? 'Terminado' : on ? 'Pausar' : 'Reanudar'}
-        onClick={pausarOReanudar}
-      >
-        <Icono n={pos.fin ? 'check' : on ? 'pausa' : 'play'} tam={18} />
+      <button className="ghost mini" onClick={pausarOReanudar}>
+        {pos.fin ? '✔' : on ? '⏸' : '▶'}
       </button>
       <span className="mono">
         {TIPOS[st.b.tipo]} · {pos.seg.ej || pos.seg.l}

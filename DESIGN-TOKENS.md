@@ -1,4 +1,4 @@
-# Tokens de diseño de MMV (v0.39.0)
+# Tokens de diseño de MMV (v0.36.0)
 
 Todos los colores viven en `src/tokens.css`. Ni `styles.css` ni los componentes llevan hex/rgb (una prueba lo vigila). Única excepción: `theme-color` en `index.html` y `manifest.webmanifest` repite `--bg` (otra prueba comprueba que coincidan).
 
@@ -9,7 +9,6 @@ Todos los colores viven en `src/tokens.css`. Ni `styles.css` ni los componentes 
 | `--tx-2` (`--mu`) | #a9b7c6 | ayudas, unidades, etiquetas | ≥ 4,5:1 |
 | `--tx-3` | #8d9aaa | placeholders | ≥ 4,5:1 sobre `--bg` |
 | `--bd` | #5f7083 | borde de todo control tocable y campo | ≥ 3:1 |
-| `--pista` | #506378 | pista vacía de los anillos (visible con el anillo en 0) | ≥ 3:1 sobre `--bg` |
 | `--ln` | #1f2a37 | separadores decorativos (nunca marca algo tocable) | — |
 | `--ac` | #22d3ee | **todo lo tocable**. Nunca texto informativo | ≥ 4,5:1 |
 | `--pr` | #c6f432 | **un solo destacado por pantalla** (CTA o dato clave) | — |
@@ -25,7 +24,7 @@ Todos los colores viven en `src/tokens.css`. Ni `styles.css` ni los componentes 
 - `.ghost` sigue existiendo como sinónimo de secundario.
 
 ## Chips
-Normal (`--sf-2` + borde `--bd`) · presionado (`:active`) · seleccionado (`.on` / `aria-pressed`, relleno cian e ícono de tilde: `--ico-check`, pintado con máscara y `currentColor`).
+Normal (`--sf-2` + borde `--bd`) · presionado (`:active`) · seleccionado (`.on` / `aria-pressed`, relleno cian y ✓).
 
 ## Variaciones y estados
 - `claseVariacion(d, {neutra})` (`src/domain/variacion.js`): verde ▲ / rojo ▼ con comparación firme; gris con ▲/▼ si la semana sigue en curso o el dato no se juzga (peso).
@@ -57,6 +56,3 @@ Sin tokens nuevos. El anillo de pasos usa `Anillo` (`--info`, `--pos` al llegar 
 
 ## Modo bolsillo (v0.36.0)
 Sin tokens nuevos. Total del día en `Anillo` (`--info`; `--pos` al llegar a la meta; `--warn` en pausa); estado con ícono + texto (`--pos` contando, `--warn` buscando o en pausa); barras de señal de GPS (`--pos` buena, `--warn` débil, `--tx-dis` apagadas o en pausa) siempre con el texto al lado. La onda por paso usa `--info`. Cian = tocable y lima = destacado no se usan en el bloque; los botones de mantener presionado heredan el borde base de `.ghost`. Toda animación se apaga con `prefers-reduced-motion`.
-
-## Arreglos de las capturas (v0.39.0)
-Dos tokens nuevos: `--pista` (color de la pista de los anillos; las pantallas casi negras de dormir y bolsillo siguen con `--sf-2`) y `--ico-check` (no es un color: el trazo del tilde como imagen de máscara, para que ni el CSS lleve el carácter ✓). Los anillos de Hoy llevan un ícono en el centro (`--tx-2`, `--pos` al llegar a la meta).

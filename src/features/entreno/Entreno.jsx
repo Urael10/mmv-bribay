@@ -146,7 +146,7 @@ function Fila({t, tipo, v, set}) {
             aria-label={`Igual que la última vez: ${textoUltima(u)}`}
             onClick={() => set({...x, ...valoresDeUltima(u)})}
           >
-            <Icono n="check" tam={16} className="en-texto" /> Igual · {textoUltima(u)}
+            ✓ Igual · {textoUltima(u)}
           </button>
         )}
       </div>
@@ -179,7 +179,7 @@ function Fila({t, tipo, v, set}) {
         <summary className="tag">Más{extra ? ' · ' + extra : ''}</summary>
         <div className="row">
           <button className="ghost mini" onClick={() => p({uni: !x.uni})}>
-            {x.uni ? 'Volver a un solo lado' : <><Icono n="izq-der" tam={16} className="en-texto" /> Izquierda / derecha</>}
+            {x.uni ? 'Volver a un solo lado' : '↔ Izquierda / derecha'}
           </button>
         </div>
         <div className="row">
@@ -328,9 +328,9 @@ export default function Entreno() {
       M = marcarPorContexto(todos),
       nuevos = todos.filter(r => r.sesionId === sid && M[r.id]?.flags.length)
     setMsg(
-      'Sesión guardada.' +
+      '✅ Sesión guardada.' +
         (nuevos.length
-          ? ' Récords: ' +
+          ? ' 🏆 Récords: ' +
             nuevos
               .map(r => `${r.nombre.replace(/[*?]/g, '').trim()} (${M[r.id].flags.join(', ')})`)
               .join(' · ')
@@ -416,7 +416,7 @@ export default function Entreno() {
                       cargarEntradas()
                     }}
                   >
-                    <Icono n="cerrar" tam={18} />
+                    ✕
                   </button>
                 </div>
               </div>
@@ -507,11 +507,7 @@ export default function Entreno() {
             {R.bloques.length} {R.bloques.length === 1 ? 'bloque' : 'bloques'} · {R.nEjercicios}{' '}
             {R.nEjercicios === 1 ? 'ejercicio' : 'ejercicios'}
             {R.nDudas > 0 && ` · ${R.nDudas} con duda`}
-            {R.nVideos > 0 && (
-              <>
-                {' · '}{R.nVideos} con <Icono n="video" tam={16} etiqueta="video" className="en-texto" />
-              </>
-            )}
+            {R.nVideos > 0 && ` · ${R.nVideos} con 🎥`}
           </p>
         )}
         {R.bloques.map((b, i) => (
@@ -525,8 +521,8 @@ export default function Entreno() {
                 {b.ejercicios.map((e, j) => (
                   <li key={j} className={e.duda ? 'duda' : ''}>
                     {nombreEjercicio(e.texto)}
-                    {e.video && <> <Icono n="video" tam={16} etiqueta="con video" className="en-texto" /></>}
-                    {e.duda && <span> <Icono n="alerta" tam={16} className="en-texto" /> dudosa</span>}
+                    {e.video && ' 🎥'}
+                    {e.duda && <span> ⚠ dudosa</span>}
                   </li>
                 ))}
               </ul>
@@ -551,7 +547,7 @@ export default function Entreno() {
               save({...sinRevisar(s), bloques: confirmarLectura(s.bloques)})
             }}
           >
-            <Icono n="check" tam={16} className="en-texto" /> Está bien, entrenar
+            ✓ Está bien, entrenar
           </button>
         )}
         <div className="row">
@@ -609,7 +605,7 @@ export default function Entreno() {
     if (n) save({...s, bloques: bs})
     setAviso(
       n
-        ? `Completé ${n} ${n === 1 ? 'ejercicio' : 'ejercicios'} con tu última vez. Ajustá lo que cambió.`
+        ? `✓ Completé ${n} ${n === 1 ? 'ejercicio' : 'ejercicios'} con tu última vez. Ajustá lo que cambió.`
         : 'No encontré registros anteriores de estos ejercicios.'
     )
   }
@@ -619,7 +615,7 @@ export default function Entreno() {
         ya = await db.rutinas.where('clave').equals(nueva.clave).first()
       if (ya && !confirm(`Ya hay una plantilla «${ya.nombre}». ¿Reemplazarla con esta sesión?`)) return
       await db.rutinas.put(fusionarRutina(nueva, ya))
-      setMsg(ya ? `Plantilla «${nueva.nombre}» actualizada.` : `Plantilla «${nueva.nombre}» guardada.`)
+      setMsg(ya ? `✅ Plantilla «${nueva.nombre}» actualizada.` : `✅ Plantilla «${nueva.nombre}» guardada.`)
       setNomRutina('')
     } catch (err) {
       setMsg(err.message)
@@ -633,7 +629,7 @@ export default function Entreno() {
       {hayCargas && (
         <section>
           <button style={{width: '100%'}} onClick={igualSesion}>
-            <Icono n="check" tam={16} className="en-texto" /> Todo igual que la última vez
+            ✓ Todo igual que la última vez
             <small style={{display: 'block', fontWeight: 400}}>Completa solo lo que falta; después ajustás lo que cambió.</small>
           </button>
           {aviso && (
@@ -702,9 +698,7 @@ export default function Entreno() {
                 placeholder="min"
                 onChange={e => up(i, {minutos: +e.target.value})}
               />
-              {CON_RELOJ.includes(b.tipo) && <button aria-label="Iniciar el reloj de este bloque" onClick={() => lanzar(b, i)}>
-                  <Icono n="play" tam={18} />
-                </button>}
+              {CON_RELOJ.includes(b.tipo) && <button onClick={() => lanzar(b, i)}>▶</button>}
             </div>
             <details open={corregir}>
               <summary className="tag">Editar ejercicios</summary>
@@ -735,7 +729,7 @@ export default function Entreno() {
                             disabled={j === 0}
                             onClick={() => save({...s, bloques: s.bloques.map((x, k) => (k === i ? moverEjercicio(x, j, -1) : x))})}
                           >
-                            <Icono n="flecha-arriba" tam={18} />
+                            ↑
                           </button>
                           <button
                             className="ghost mini"
@@ -743,7 +737,7 @@ export default function Entreno() {
                             disabled={j === (b.ejercicios || []).length - 1}
                             onClick={() => save({...s, bloques: s.bloques.map((x, k) => (k === i ? moverEjercicio(x, j, 1) : x))})}
                           >
-                            <Icono n="flecha-abajo" tam={18} />
+                            ↓
                           </button>
                         </span>
                       </div>
@@ -751,8 +745,8 @@ export default function Entreno() {
                 )}
                 <small className="mu">
                   {b.tipo === 'emom'
-                    ? 'El reloj los va diciendo uno por minuto, en este orden; al llegar al último vuelve al primero. Cambialo antes de iniciar el reloj.'
-                    : 'Lo que ya cargaste viaja con su ejercicio. Cambialo antes de iniciar el reloj.'}
+                    ? 'El reloj los va diciendo uno por minuto, en este orden; al llegar al último vuelve al primero. Cambialo antes de tocar ▶.'
+                    : 'Lo que ya cargaste viaja con su ejercicio. Cambialo antes de tocar ▶.'}
                 </small>
               </details>
             )}
@@ -765,7 +759,7 @@ export default function Entreno() {
                 </ul>
                 {resumenReloj(b) && (
                   <small className="mu" style={{display: 'block'}}>
-                    <Icono n="reloj" tam={16} className="en-texto" /> {resumenReloj(b)} · tocá el botón de play para el reloj
+                    ⏱ {resumenReloj(b)} · tocá ▶ para el reloj
                   </small>
                 )}
                 {hayEj && (
@@ -778,18 +772,18 @@ export default function Entreno() {
             )}
             {b.tipo === 'emom' && hayEj && (
               <small className="mu" style={{display: 'block'}}>
-                <Icono n="reloj" tam={16} className="en-texto" /> {resumenReloj(b)} · los ejercicios rotan; el reloj dice cuál toca
+                ⏱ {resumenReloj(b)} · los ejercicios rotan; el reloj dice cuál toca
               </small>
             )}
             {b.tipo === 'tabata' && hayEj && (
               <small className="mu" style={{display: 'block'}}>
-                <Icono n="reloj" tam={16} className="en-texto" /> {resumenReloj(b)} · los ejercicios se alternan, uno por ronda
+                ⏱ {resumenReloj(b)} · los ejercicios se alternan, uno por ronda
               </small>
             )}
             {pideCargas(b) && hayEj && (
               <div className="row">
                 <button className="ghost mini" onClick={() => igualBloque(i)}>
-                  <Icono n="check" tam={16} className="en-texto" /> Igual que la última
+                  ✓ Igual que la última
                 </button>
                 {sinReg === i && <small className="mu">Sin registros anteriores.</small>}
               </div>
@@ -846,7 +840,7 @@ export default function Entreno() {
                   onChange={e => up(i, {video: e.target.checked})}
                   style={{width: 24, height: 24}}
                 />
-                <span><Icono n="video" tam={16} className="en-texto" /> Video grabado (los ejercicios con * piden grabar en clase)</span>
+                <span>🎥 Video grabado (los ejercicios con * piden grabar en clase)</span>
               </label>
             )}
             <details>

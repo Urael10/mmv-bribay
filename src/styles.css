@@ -887,7 +887,7 @@ nav button.on {
 .igual {
   background: var(--ac-soft);
 }
-/* Chips: normal / presionado / seleccionado (el seleccionado lleva un ícono de tilde además del color) */
+/* Chips: normal / presionado / seleccionado (el seleccionado lleva ✓ además del color) */
 .chip {
   background: var(--sf-2);
   color: var(--tx);
@@ -916,15 +916,9 @@ nav button.on {
 }
 .chip.on::before,
 .chip[aria-pressed='true']::before {
-  content: '';
-  display: inline-block;
-  width: 14px;
-  height: 14px;
+  content: '✓';
   margin-right: 6px;
-  vertical-align: -2px;
-  background: currentColor;
-  -webkit-mask: var(--ico-check) center / contain no-repeat;
-  mask: var(--ico-check) center / contain no-repeat;
+  font-weight: 700;
 }
 .escala button {
   border: 1.5px solid var(--bd);
@@ -959,20 +953,12 @@ nav button.on {
 .delta.neutra.baja::before {
   content: '▼ ';
 }
-/* Estado confirmado (ícono de tilde + texto) */
+/* Estado confirmado (✓) */
 .ok-msg {
   color: var(--pos);
 }
 .ok-msg::before {
-  content: '';
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  margin-right: 6px;
-  vertical-align: -2px;
-  background: currentColor;
-  -webkit-mask: var(--ico-check) center / contain no-repeat;
-  mask: var(--ico-check) center / contain no-repeat;
+  content: '✓ ';
 }
 /* Rótulos de estado: chip con ícono y color semántico */
 .estado {
@@ -1120,6 +1106,26 @@ main {
   line-height: 1.35;
   margin: 2px 0 8px;
 }
+.ck-sueno {
+  display: grid;
+  grid-template-columns: 74px 64px minmax(40px, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+.ck-sueno input[type='number'] {
+  width: 100%;
+  min-width: 0;
+}
+.ck-sueno input[type='range'] {
+  width: 100%;
+  min-width: 0;
+}
+.ck-sueno output {
+  min-width: 2.2em;
+  text-align: right;
+  font-size: 14px;
+}
+
 /* Estados vacíos plegables (una línea con ícono; se expanden al tocar) */
 section.vacio {
   padding: 4px 14px;
@@ -1711,7 +1717,7 @@ button.ruta-fila:active:not(:disabled) {
   stroke-width: 3.6;
 }
 .anillo-pista {
-  stroke: var(--pista);
+  stroke: var(--sf-2);
 }
 .anillo-arco {
   stroke: var(--info);
@@ -2195,137 +2201,4 @@ button.ruta-fila:active:not(:disabled) {
 .sueno-suma {
   margin: 0;
   color: var(--tx);
-}
-
-/* Entrega 37: avisos flotantes sobre la barra inferior (solo tokens, sin tokens nuevos) */
-.avisos {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: calc(84px + env(safe-area-inset-bottom));
-  max-width: var(--ancho-app);
-  margin: auto;
-  padding: 0 var(--sp-4);
-  display: grid;
-  gap: var(--sp-2);
-  z-index: 8;
-  pointer-events: none;
-}
-.avisos .upd {
-  pointer-events: auto;
-  margin: 0;
-  border-radius: var(--r-tile);
-  box-shadow: var(--sombra-1);
-}
-
-/* Entrega 38: arreglos de las capturas del celular (solo tokens; el único token nuevo es --pista, y --ico-check es un ícono) */
-/* Macros: «Proteína» ya se muestra aparte con su meta, así que quedan dos columnas */
-.macros.dos {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.prot-lin {
-  margin-top: var(--sp-3);
-}
-/* Anillos: pista visible en 0 y un ícono en el centro (comida, agua, pasos) */
-.anillo-c .ico {
-  color: var(--tx-2);
-}
-.anillo.ok .anillo-c .ico {
-  color: var(--pos);
-}
-/* Las pantallas casi negras (dormir y bolsillo) conservan su pista tenue para no encandilar */
-.sueno-ov .anillo-pista,
-.bolsillo-ov .anillo-pista {
-  stroke: var(--sf-2);
-}
-/* Rótulo sobre un campo (usado en el registro de sueño) */
-.ck-c {
-  display: grid;
-  gap: var(--sp-1);
-  min-width: 0;
-}
-.ck-c > span {
-  font-size: 12px;
-  line-height: 1;
-}
-/* Resumen de las filas plegables: si no entra en una línea, baja a otra en vez de cortarse con «…» */
-.pleg-r {
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
-  line-height: 1.25;
-}
-/* Preparación sin datos: pide la acción en vez de mostrar una línea con «i» */
-.prep-vacia .prep-t {
-  margin: var(--sp-2) 0 var(--sp-1);
-}
-.prep-vacia .prep-r {
-  margin: 0 0 var(--sp-3);
-}
-.prot-lin ~ .macros {
-  margin-top: var(--sp-3);
-}
-
-/* Entrega 39: registro de sueño (solo tokens; sin tokens nuevos) */
-.sq {
-  display: grid;
-  gap: var(--sp-3);
-  margin-top: var(--sp-3);
-  outline: none;
-}
-.sq-cab {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sp-3);
-}
-.sq-total {
-  font-size: 18px;
-  color: var(--tx);
-}
-.sq-igual {
-  justify-self: start;
-  min-height: 44px;
-}
-.sq-horas {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--sp-3);
-}
-.sq-horas input,
-.sq-tot input[type='number'] {
-  width: 100%;
-  min-width: 0;
-}
-.sq-extra {
-  display: block;
-}
-.sq-tot {
-  display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
-  gap: var(--sp-3);
-  align-items: end;
-}
-.sq-chips {
-  display: flex;
-  gap: var(--sp-1);
-}
-.sq-chip {
-  flex: 1;
-  min-width: 0;
-  min-height: 44px;
-  padding-inline: 0;
-}
-.sq-ext {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-}
-.sueno-res .ck {
-  display: grid;
-  gap: var(--sp-2);
-}
-/* En el check-in la fila de calidad es la de siempre (rótulo + botones); los extremos quedan bajo los botones */
-.sq .sq-ext {
-  grid-column: 2;
 }

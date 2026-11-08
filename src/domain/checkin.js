@@ -10,29 +10,3 @@ export function constanciaSemanal(habitos, hasta, sumaDias) {
   const d0 = sumaDias(hasta, -6)
   return habitos.filter(x => x.fecha >= d0 && x.fecha <= hasta && checkinHecho(x)).length
 }
-
-// Entrega 38 · Qué decirle a la persona cuando la preparación todavía no se puede calcular.
-// Sin check-in: «Hacé el check-in…». Con el check-in hecho pero sin horas de sueño: pide el sueño.
-// En ambos casos la acción es la misma (abrir el check-in de Hoy, donde está todo). Lógica pura, sin pantalla.
-export function pedidoPreparacion(h) {
-  const hayHoras = +h?.sueno > 0
-  if (!checkinHecho(h))
-    return {
-      titulo: 'Hacé el check-in para ver tu preparación',
-      detalle:
-        'Son tres toques y las horas de sueño. Con los días se suman tus comidas, el agua y tus entrenos.',
-      boton: 'Hacer el check-in'
-    }
-  if (!hayHoras)
-    return {
-      titulo: 'Cargá tus horas de sueño para ver tu preparación',
-      detalle:
-        'Ya hiciste el check-in; falta cuánto dormiste. Con los días se suman tus comidas, el agua y tus entrenos.',
-      boton: 'Cargar el sueño'
-    }
-  return {
-    titulo: 'Todavía faltan datos para calcular tu preparación',
-    detalle: 'Con los días se suman tus comidas, el agua y tus entrenos.',
-    boton: 'Abrir el check-in'
-  }
-}

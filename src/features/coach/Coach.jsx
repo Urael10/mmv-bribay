@@ -14,7 +14,6 @@ import {
   cuerpoCoach,
   limpiarCoach
 } from '../../domain/informe'
-import Icono from '../../ui/Icono'
 
 const fFecha = f => {
   const [y, m, d] = f.split('-')
@@ -104,7 +103,7 @@ export function Informe({ses, reg, manual}) {
   const copiar = async () => {
     try {
       await navigator.clipboard.writeText(texto())
-      setMsg('Informe copiado.')
+      setMsg('✅ Informe copiado.')
     } catch {
       setMsg('No pude copiarlo en este navegador.')
     }
@@ -184,7 +183,7 @@ export function Informe({ses, reg, manual}) {
             )}
             {e.records.length > 0 && (
               <div className="lin">
-                <span><Icono n="trofeo" tam={16} className="en-texto" /> Récords</span>
+                <span>🏆 Récords</span>
                 <span style={{textAlign: 'right'}}>{e.records.join(', ')}</span>
               </div>
             )}
@@ -268,7 +267,7 @@ export function Informe({ses, reg, manual}) {
             {coach ? (
               <div className="coach">
                 {coach.resumen && <p style={{marginTop: 0}}>{coach.resumen}</p>}
-                {coach.alerta && <p className="warn"><Icono n="alerta" tam={16} className="en-texto" /> {coach.alerta}</p>}
+                {coach.alerta && <p className="warn">⚠ {coach.alerta}</p>}
                 {[
                   ['Lo que salió bien', coach.logros],
                   ['A mejorar', coach.mejoras],

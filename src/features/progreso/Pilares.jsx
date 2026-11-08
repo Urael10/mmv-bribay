@@ -288,7 +288,7 @@ export function VistaTests() {
           ) : (
             <div className="row" style={{marginTop: 8}}>
               <button className="ghost mini" onClick={() => { setAb(x.k); setV(''); setErr('') }}>Registrar resultado</button>
-              {x.ultimo && <button className="ghost mini" onClick={() => borrar(x.ultimo.id)} aria-label="Borrar el último resultado"><Icono n="cerrar" tam={18} /></button>}
+              {x.ultimo && <button className="ghost mini" onClick={() => borrar(x.ultimo.id)} aria-label="Borrar el último resultado">✕</button>}
             </div>
           )}
           {ab === x.k && err && <small className="warn">{err}</small>}

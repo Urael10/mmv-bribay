@@ -63,11 +63,9 @@ export default function App() {
           <Icono n={tab === 'ajustes' || tab === 'priv' ? 'cerrar' : 'ajustes'} tam={22} />
         </button>
       </header>
-      {/* Entrega 37: los avisos flotan sobre la barra inferior y ya no empujan el contenido hacia abajo */}
-      <div className="avisos">
       {nueva && (
         <button className="upd" onClick={actualizarAhora}>
-          <Icono n="flecha-arriba" tam={18} className="en-texto" /> Hay una versión nueva · tocá para actualizar
+          ⬆ Hay una versión nueva · tocá para actualizar
         </button>
       )}
       {bk && !oculto && (
@@ -92,7 +90,6 @@ export default function App() {
           </div>
         </div>
       )}
-      </div>
       {tab !== 'entreno' && <BarraReloj onAbrir={() => ir('entreno')} />}
       <main className={tab === 'hoy' || tab === 'entreno' || tab === 'progreso' ? 'plano' : undefined}>
         <div hidden={tab !== 'hoy'}>
