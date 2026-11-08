@@ -1,4 +1,4 @@
-# Mi Mejor Versión (MMV) · Entrega 36 (v0.37.0)
+# Mi Mejor Versión (MMV) · Entrega 37 (v0.38.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 
@@ -40,6 +40,11 @@ Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.z
 - Hoy va en el paquete principal; Entreno, Comidas, Progreso (con Rutas), Ajustes y el menú oculto se bajan aparte al abrirlos (`React.lazy` + `Suspense`). Mientras bajan se ve «Cargando…».
 - Unos segundos después de abrir, la app baja las demás pantallas en segundo plano (no lo hace sin conexión, con «ahorro de datos» ni con red 2G) y `public/sw.js` las guarda, así andan sin conexión. Si una pantalla no se puede bajar aparece «No se pudo abrir…» con **Reintentar** y **Actualizar la app**; tus datos no se tocan.
 - Regla para el código: nadie fuera de `src/ui/pantallas.js` importa esas pantallas de forma estática (una prueba lo vigila); una pantalla nueva se agrega ahí y a `ORDEN_PRECARGA`.
+
+## Íconos y avisos (v0.38.0)
+- Los emojis y símbolos de texto de la interfaz (✔ ⚠ 🏆 🎥 🌐 ⭐ 🔒 ↶ …) se reemplazaron por el set de íconos propio (`src/ui/Icono.jsx`, trazo de 2 px). Los mensajes de confirmación («Backup compartido.», «Comida guardada.») ya no llevan símbolo: el texto dice el estado.
+- La barra de actualización y el aviso de backup ahora flotan sobre la barra inferior (`.avisos`) y no empujan el contenido.
+- «Reiniciar» el agua de hoy ya no usa el `confirm()` del navegador: reinicia y ofrece **Deshacer reinicio**.
 
 ## Dormir con alarma: total del día (v0.37.0)
 - «Dormir con alarma» (Hoy) ya no pisa las horas de sueño del día: al apagar la alarma propone el **total del día** (lo que ya estaba guardado en el check-in + esta sesión) para que lo confirmes o lo corrijas. Una siesta se suma a la noche; con varias siestas el total va creciendo.

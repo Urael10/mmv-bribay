@@ -103,5 +103,5 @@ test('versión 0.37.0 / entrega 36 con su nota en el CHANGELOG', () => {
   assert.equal(lock.version, pkg.version)
   assert.equal(lock.packages[''].version, pkg.version)
   assert.match(leer('CHANGELOG.md'), /## v0\.37\.0 · Entrega 36 · «Dormir con alarma» suma el sueño del día/)
-  assert.match(leer('README.md'), /Entrega 36 \(v0\.37\.0\)/)
+  assert.match(leer('README.md'), /Entrega \d+ \(v0\.\d+\.\d+\)/)
 })

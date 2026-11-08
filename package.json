@@ -1,7 +1,7 @@
 {
  "name": "mmv",
  "private": true,
- "version": "0.37.0",
+ "version": "0.38.0",
  "type": "module",
  "scripts": {
   "dev": "vite --host",
@@ -22,7 +22,7 @@
   "fake-indexeddb": "^6.2.7",
   "vite": "^8.3.5"
  },
- "entrega": "36",
+ "entrega": "37",
  "engines": {
   "node": ">=20.19"
  }

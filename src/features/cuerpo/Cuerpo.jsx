@@ -12,6 +12,7 @@ import {
   objetivo,
   promedioVentana
 } from '../../domain/cuerpo'
+import Icono from '../../ui/Icono'
 
 const c1 = n => (n === null || n === undefined ? '–' : String(n).replace('.', ','))
 const sg = n => (n > 0 ? '+' : '') + c1(n)
@@ -292,7 +293,7 @@ export function VistaCuerpo() {
                 {obj.ritmoActual === null ? 'sin datos' : `${sg(obj.ritmoActual)} kg/semana`}
               </span>
             </div>
-            {obj.alcanzado && <small className="tag">🏁 Estás en el objetivo.</small>}
+            {obj.alcanzado && <small className="tag"><Icono n="bandera" tam={16} className="en-texto" /> Estás en el objetivo.</small>}
             {obj.vencido && (
               <small className="warn">
                 La fecha del objetivo ya pasó: actualizala en Ajustes → Perfil y objetivo.
@@ -325,10 +326,10 @@ export function VistaCuerpo() {
                 <span className="mono" style={{textAlign: 'right'}}>
                   {c1(m.peso)} kg{m.grasa ? ` · ${c1(m.grasa)} %` : ''}{' '}
                   <button className="ghost mini" onClick={() => setForm(m)} aria-label="Editar">
-                    ✎
+                    <Icono n="lapiz" tam={18} />
                   </button>{' '}
                   <button className="ghost mini" onClick={() => borrar(m)} aria-label="Borrar">
-                    ✕
+                    <Icono n="cerrar" tam={18} />
                   </button>
                 </span>
               </div>

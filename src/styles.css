@@ -2202,3 +2202,24 @@ button.ruta-fila:active:not(:disabled) {
   margin: 0;
   color: var(--tx);
 }
+
+/* Entrega 37: avisos flotantes sobre la barra inferior (solo tokens, sin tokens nuevos) */
+.avisos {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(84px + env(safe-area-inset-bottom));
+  max-width: var(--ancho-app);
+  margin: auto;
+  padding: 0 var(--sp-4);
+  display: grid;
+  gap: var(--sp-2);
+  z-index: 8;
+  pointer-events: none;
+}
+.avisos .upd {
+  pointer-events: auto;
+  margin: 0;
+  border-radius: var(--r-tile);
+  box-shadow: var(--sombra-1);
+}

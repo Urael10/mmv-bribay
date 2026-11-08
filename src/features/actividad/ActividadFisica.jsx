@@ -61,7 +61,7 @@ const relojDeHoy = () => {
 }
 
 const MSG_SIN_PERMISO_SENSOR =
-  'No se concedió permiso al sensor de movimiento. Para dárselo, cerrá MMV por completo, abrilo de nuevo, tocá ▶ y elegí «Permitir».'
+  'No se concedió permiso al sensor de movimiento. Para dárselo, cerrá MMV por completo, abrilo de nuevo, tocá «Contar con el teléfono» y elegí «Permitir».'
 
 // Modo bolsillo: pantalla casi negra mientras se camina. La página sigue visible (el sensor web solo cuenta así),
 // y para salir hay que mantener presionado 1 s, así un roce dentro del bolsillo no hace nada.
@@ -657,10 +657,15 @@ function ConteoPasos({total, fecha, activo, promedio, onActivoChange, onGuardar,
       <div className="row" style={{marginTop: 8}}>
         {activo ? (
           <button className="ghost" disabled={guardando} onClick={detener}>
-            {guardando ? 'Guardando…' : `■ Terminar conteo · ${sesionVivo.toLocaleString('es-AR')}`}
+            {guardando ? 'Guardando…' : <>
+                <Icono n="detener" tam={16} className="en-texto" /> Terminar conteo · {sesionVivo.toLocaleString('es-AR')}
+              </>
+            }
           </button>
         ) : (
-          <button disabled={cargando || recuperando || fecha !== hoy()} onClick={iniciar}>▶ Contar con el teléfono</button>
+          <button disabled={cargando || recuperando || fecha !== hoy()} onClick={iniciar}>
+            <Icono n="play" tam={16} className="en-texto" /> Contar con el teléfono
+          </button>
         )}
         {activo && (
           <button className="ghost" disabled={guardando} onClick={alternarPausa}>
@@ -870,7 +875,7 @@ export default function ActividadFisica({onVerRutas}) {
       </div>
       <div className="row">
         <input className="fx" type="text" maxLength="100" placeholder="Nota (opcional)" aria-label="Nota de la actividad" value={nota} disabled={cargando} onChange={e => setNota(e.target.value)} />
-        <button onClick={agregar} disabled={cargando || !minutos || +minutos < 1}>＋ Registrar</button>
+        <button onClick={agregar} disabled={cargando || !minutos || +minutos < 1}><Icono n="mas" tam={16} className="en-texto" /> Registrar</button>
       </div>
       {actividades.length ? <>
         <small className="mu">

@@ -98,6 +98,71 @@ const RUTAS = {
       <path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" />
     </>
   ),
+  // Entrega 37: reemplazan a los emojis y símbolos de texto de la interfaz
+  candado: (
+    <>
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </>
+  ),
+  lupa: (
+    <>
+      <circle cx="11" cy="11" r="6" />
+      <path d="M20 20l-4-4" />
+    </>
+  ),
+  estrella: <path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9l-5.2 2.8 1-5.9-4.3-4.1 5.9-.8L12 3.5Z" />,
+  trofeo: (
+    <>
+      <path d="M8 4h8v5a4 4 0 0 1-8 0V4Z" />
+      <path d="M8 6H4v1a3 3 0 0 0 3 3M16 6h4v1a3 3 0 0 1-3 3" />
+      <path d="M12 13v4M8.5 20h7" />
+    </>
+  ),
+  video: (
+    <>
+      <rect x="3" y="6" width="12" height="12" rx="2" />
+      <path d="M15 10.5l6-3v9l-6-3" />
+    </>
+  ),
+  web: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18" />
+      <path d="M12 3c2.5 2.7 3.5 5.7 3.5 9s-1 6.3-3.5 9c-2.5-2.7-3.5-5.7-3.5-9s1-6.3 3.5-9Z" />
+    </>
+  ),
+  rayo: <path d="M13 3L5 13.5h6L10 21l8-10.5h-6L13 3Z" />,
+  bandera: <path d="M6 21V4M6 5h11l-2 4 2 4H6" />,
+  deshacer: (
+    <>
+      <path d="M9 6L4 11l5 5" />
+      <path d="M4 11h9a5 5 0 0 1 0 10h-3" />
+    </>
+  ),
+  mas: <path d="M12 5v14M5 12h14" />,
+  plato: (
+    <>
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="3.5" />
+    </>
+  ),
+  etiqueta: (
+    <>
+      <path d="M3 12V4h8l10 10-8 8L3 12Z" />
+      <path d="M7.5 8.5v.1" />
+    </>
+  ),
+  'chevron-izq': <path d="M15 6l-6 6 6 6" />,
+  'chevron-der': <path d="M9 6l6 6-6 6" />,
+  detener: <rect x="6" y="6" width="12" height="12" rx="2" />,
+  reloj: (
+    <>
+      <circle cx="12" cy="13" r="8" />
+      <path d="M12 9v4l2.5 2M9.5 3h5" />
+    </>
+  ),
+  'izq-der': <path d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4" />,
   cerrar: <path d="M6 6l12 12M18 6L6 18" />,
   'chevron-abajo': <path d="M6 9l6 6 6-6" />,
   luna: <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />,

@@ -106,6 +106,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
     [aguaAb, setAguaAb] = useState(false),
     [suAb, setSuAb] = useState(false),
     [masAb, setMasAb] = useState(false),
+    [reinicio, setReinicio] = useState(null), // lo que había antes de «Reiniciar», para deshacerlo sin preguntar
     meta = +cfg('meta', 2500),
     enCurso = haySesionEnCurso(localStorage.getItem('mv_sesion'))
   useEffect(() => {
@@ -146,6 +147,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
   const sumar = ml => {
     ml = Math.round(+ml)
     if (!(ml > 0) || ml > 5000) return
+    setReinicio(null)
     g({agua: (+h.agua || 0) + ml, aguaLog: [...log, ml]})
   }
   const deshacer = () => {
@@ -153,7 +155,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
     const ml = log[log.length - 1]
     g({agua: Math.max(0, (+h.agua || 0) - ml), aguaLog: log.slice(0, -1)})
   }
-  const resumenCk = checkinHecho(h) ? 'Hecho ✓' : '20 segundos'
+  const resumenCk = checkinHecho(h) ? 'Hecho' : '20 segundos'
   return (
     <div className="bento hoy">
       <Preparacion h={h} />
@@ -188,7 +190,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
         </div>
         {enCurso && <small className="mu hoy-nota">Tenés una sesión sin terminar.</small>}
         {videos.length > 0 && (
-          <small className="mu hoy-nota">🎥 Videos sin marcar como grabados (14 días): {videos.length}</small>
+          <small className="mu hoy-nota"><Icono n="video" tam={16} className="en-texto" /> Videos sin marcar como grabados (14 días): {videos.length}</small>
         )}
       </div>
       <AvisoDescarga />
@@ -223,7 +225,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
               </button>
             ))}
             <button className="ghost" disabled={!log.length} onClick={deshacer}>
-              ↶ Deshacer{log.length ? ` ${log[log.length - 1]}` : ''}
+              <Icono n="deshacer" tam={16} className="en-texto" /> Deshacer{log.length ? ` ${log[log.length - 1]}` : ''}
             </button>
           </div>
           <div className="row" style={{marginTop: 8}}>
@@ -245,13 +247,28 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
             >
               + Sumar
             </button>
-            <button
-              className="ghost"
-              disabled={!h.agua}
-              onClick={() => confirm('¿Poner el agua de hoy en 0?') && g({agua: 0, aguaLog: []})}
-            >
-              Reiniciar
-            </button>
+            {reinicio && !h.agua ? (
+              <button
+                className="ghost"
+                onClick={() => {
+                  g(reinicio)
+                  setReinicio(null)
+                }}
+              >
+                <Icono n="deshacer" tam={16} className="en-texto" /> Deshacer reinicio
+              </button>
+            ) : (
+              <button
+                className="ghost"
+                disabled={!h.agua}
+                onClick={() => {
+                  setReinicio({agua: h.agua, aguaLog: log})
+                  g({agua: 0, aguaLog: []})
+                }}
+              >
+                Reiniciar
+              </button>
+            )}
           </div>
         </section>
       )}

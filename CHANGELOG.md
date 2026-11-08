@@ -1,5 +1,17 @@
 # Historial de versiones de MMV
 
+## v0.38.0 · Entrega 37 · Íconos coherentes, avisos flotantes y reinicio de agua sin confirm (08/11/2026)
+- **Íconos en lugar de emojis:** ✔ ✓ ✅ ⚠ ✕ ✎ ↑ ↓ ↶ ⬆ ＋ ↔ ⏸ ▶ 🏆 🎥 🌐 ⭐ ⚡ 🏁 🔎 🔒 🍽 🏷 se reemplazaron por `Icono` (check, alerta, cerrar, lapiz, flecha-arriba/abajo, deshacer, mas, izq-der, pausa, play, trofeo, video, web, estrella, rayo, bandera, lupa, candado, plato, etiqueta, chevron-izq/der, detener, reloj). También ◀ ▶ del navegador de fecha, ■ y ▶ del conteo de pasos y ▶ y ⏱ de los bloques del entreno; los textos que decían «tocá ▶» ahora nombran el botón. 17 trazos nuevos en `src/ui/Icono.jsx`, todos de 2 px sobre 24×24. Los que dicen algo importante llevan `etiqueta` accesible («copiado de la web», «con video», «récord»).
+- **Mensajes de confirmación sin símbolo:** «✔ Backup compartido.» → «Backup compartido.» (idem GPX, informe, comida, plantilla, sesión). El texto ya dice el estado.
+- **Botón de pausa del reloj (barra superior):** ahora es un ícono con `aria-label` («Pausar», «Reanudar», «Terminado»); antes era solo un símbolo.
+- **Avisos flotantes:** la barra «Hay una versión nueva» y el aviso de backup van en `.avisos` (posición fija sobre la barra inferior, solo tokens) y ya no empujan el contenido hacia abajo.
+- **Agua de hoy:** «Reiniciar» no pregunta con `confirm()`: pone en 0 y muestra «Deshacer reinicio» hasta que sumes agua.
+- **Se mantienen** las flechas de texto «→» en frases de navegación («Ajustes → Perfil y objetivo») y «≈» (estimado).
+- **Sin cambios** en Dexie (v11), backup, service worker ni carga diferida. Sin tokens nuevos.
+- **Pruebas:** `tests/entrega38.test.js`; se relajó a propósito la aserción de README de `tests/entrega37.test.js`.
+- **No probado:** celular real (posición de los avisos con la barra inferior y el modo bolsillo, lectura de los íconos nuevos a tamaño 16).
+- **Queda para próximas entregas** (de la revisión de diseño): tesela de Sueño y color por métrica en Hoy, Comidas en estilo plano, panel inferior del agua, barra inferior con píldora.
+
 ## v0.37.0 · Entrega 36 · «Dormir con alarma» suma el sueño del día (06/11/2026)
 - **Total del día, a confirmar:** al apagar la alarma, «Tu noche» ya no propone solo las horas de esa sesión: propone el **total del día** = horas que ya había guardadas ese día en el check-in + esta sesión. Ejemplo: noche de 7 h, siesta de 1 h 30 min → propone **8,5 h**. La línea «Ya tenías 7 h hoy + esta sesión 1,5 h = 8,5 h en el día» muestra la cuenta; el campo (ahora «Total de sueño de hoy») se puede corregir antes de «Guardar en mi check-in». Sin horas previas se ve igual que antes.
 - **Dos atajos:** «Solo esta sesión (1,5 h)» pone en el campo solo lo de esta sesión (por si lo anterior estaba mal o era de otro día) y «Volver al total» restituye la suma.

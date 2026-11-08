@@ -6,6 +6,7 @@ import {edadDe, proteinaObjetivo, ultima, PROT_KG} from '../../domain/cuerpo'
 import {probarIA} from '../../services/ia'
 import {CLAVE_MAPA} from '../../domain/mapa'
 import {INFO, fechaBuild, buscarActualizacion, actualizarAhora} from '../../version'
+import Icono from '../../ui/Icono'
 
 function Version({onVersion}) {
   const [r, setR] = useState(null),
@@ -93,9 +94,9 @@ function Respaldo() {
     setUlt(ultimoBackup())
     setMsg(
       r === 'compartido'
-        ? '✔ Backup compartido.'
+        ? 'Backup compartido.'
         : r === 'descargado'
-          ? '✔ Backup descargado (revisá la carpeta Descargas).'
+          ? 'Backup descargado (revisá la carpeta Descargas).'
           : 'Cancelado.'
     )
   }
@@ -233,7 +234,7 @@ function ProbarIA({modelo, onModelo}) {
             setOcupado(false)
           }}
         >
-          {ocupado ? 'Probando…' : '🔎 Probar la IA'}
+          {ocupado ? 'Probando…' : <><Icono n="lupa" tam={16} className="en-texto" /> Probar la IA</>}
         </button>
       </div>
       {r && (

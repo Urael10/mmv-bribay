@@ -177,7 +177,7 @@ function Borrador({b, setB, base, fecha, guardar, cancelar, guardarEnBase, guard
               <span className="mu">g</span>
               <b className="mono">{it.kcal} kcal</b>
               <button className="ghost mini" aria-label="Quitar" onClick={() => quitar(i)}>
-                ✕
+                <Icono n="cerrar" tam={18} />
               </button>
             </div>
             <div
@@ -202,12 +202,12 @@ function Borrador({b, setB, base, fecha, guardar, cancelar, guardarEnBase, guard
             <Macros t={it} compacto />
             {it.origen === 'base' && (
               <small className="tag" style={{display: 'block'}}>
-                ✔ valores de tu base
+                <Icono n="check" tam={16} className="en-texto" /> valores de tu base
               </small>
             )}
             {al?.fuente && (
               <small className="warn">
-                🌐 {al.fuente}: datos de la comunidad, revisalos si algo no te cierra
+                <Icono n="web" tam={16} className="en-texto" /> {al.fuente}: datos de la comunidad, revisalos si algo no te cierra
               </small>
             )}
             {it.origen === 'ia' && (
@@ -218,12 +218,12 @@ function Borrador({b, setB, base, fecha, guardar, cancelar, guardarEnBase, guard
             )}
             {it.origen === 'manual' && (
               <small className="mu" style={{display: 'block'}}>
-                ✎ valores cargados por vos
+                <Icono n="lapiz" tam={16} className="en-texto" /> valores cargados por vos
               </small>
             )}
             {!coherente(it.b) && (
               <small className="warn">
-                ⚠ Las calorías no cuadran con los macros (4·P + 4·C + 9·G): revisá los valores.
+                <Icono n="alerta" tam={16} className="en-texto" /> Las calorías no cuadran con los macros (4·P + 4·C + 9·G): revisá los valores.
               </small>
             )}
             <details open={!!it.libre}>
@@ -259,7 +259,7 @@ function Borrador({b, setB, base, fecha, guardar, cancelar, guardarEnBase, guard
                 style={{marginTop: 6}}
                 onClick={() => guardarEnBase(i)}
               >
-                ＋ Guardar en mi base
+                <Icono n="mas" tam={16} className="en-texto" /> Guardar en mi base
               </button>
             )}
           </div>
@@ -276,7 +276,7 @@ function Borrador({b, setB, base, fecha, guardar, cancelar, guardarEnBase, guard
         </button>
         {b.items.length > 0 && (
           <button className="ghost" onClick={() => guardarPlantilla(b.items, b.momento)}>
-            ⭐ Guardar como habitual
+            <Icono n="estrella" tam={16} className="en-texto" /> Guardar como habitual
           </button>
         )}
         <button className="ghost" onClick={cancelar}>
@@ -412,7 +412,7 @@ function Agregar({base, atajos, plant, usarComida, agregar, libre, nuevo, usarPl
   }
   return (
     <section>
-      <h3>＋ Agregar</h3>
+      <h3><Icono n="mas" tam={16} className="en-texto" /> Agregar</h3>
       <div className="row">
         <input
           className="fx"
@@ -465,15 +465,15 @@ function Agregar({base, atajos, plant, usarComida, agregar, libre, nuevo, usarPl
       {esc && <Escaner alLeer={alLeerCodigo} cerrar={() => setEsc(false)} />}
       {cam && (
         <div className="row" style={{marginTop: 8}}>
-          {foto('plato', '🍽 Foto del plato')}
-          {foto('etiqueta', '🏷 Foto de etiqueta', true)}
+          {foto('plato', <><Icono n="plato" tam={18} className="en-texto" /> Foto del plato</>)}
+          {foto('etiqueta', <><Icono n="etiqueta" tam={18} className="en-texto" /> Foto de etiqueta</>, true)}
         </div>
       )}
       {!texto && (
         <>
           {plant.length > 0 && (
             <div style={{marginTop: 10}}>
-              <small className="tag">⭐ Comidas guardadas</small>
+              <small className="tag"><Icono n="estrella" tam={16} className="en-texto" /> Comidas guardadas</small>
               <div className="row" style={{marginTop: 4}}>
                 {plant.slice(0, 6).map(p => (
                   <button key={p.id} className="chip" onClick={() => usarPlantilla(p)}>
@@ -484,7 +484,7 @@ function Agregar({base, atajos, plant, usarComida, agregar, libre, nuevo, usarPl
             </div>
           )}
           <details style={{marginTop: 10}}>
-            <summary className="tag">⚡ Estimar rápido (solo calorías y proteína)</summary>
+            <summary className="tag"><Icono n="rayo" tam={16} className="en-texto" /> Estimar rápido (solo calorías y proteína)</summary>
             <div className="row" style={{marginTop: 6}}>
               <input
                 style={{flex: 1, minWidth: 140}}
@@ -573,7 +573,7 @@ function Agregar({base, atajos, plant, usarComida, agregar, libre, nuevo, usarPl
           {res.map(a => (
             <button key={a.id} className="ghost sug" onClick={() => elegir(a)}>
               <span>
-                {a.fuente ? '🌐 ' : ''}
+                {a.fuente ? <><Icono n="web" tam={16} etiqueta="copiado de la web" className="en-texto" /> </> : null}
                 {a.nombre}
               </span>
               <small className="mu">
@@ -588,7 +588,7 @@ function Agregar({base, atajos, plant, usarComida, agregar, libre, nuevo, usarPl
                 disabled={web?.estado === 'cargando'}
                 onClick={() => buscarWeb()}
               >
-                🌐 {cod ? 'Buscar el código en la web' : 'Buscar en la web'}
+                <Icono n="web" tam={16} className="en-texto" /> {cod ? 'Buscar el código en la web' : 'Buscar en la web'}
               </button>
             )}
             <button
@@ -598,7 +598,7 @@ function Agregar({base, atajos, plant, usarComida, agregar, libre, nuevo, usarPl
                 limpiar()
               }}
             >
-              ＋ Libre
+              <Icono n="mas" tam={16} className="en-texto" /> Libre
             </button>
             <button
               className="ghost mini"
@@ -633,7 +633,7 @@ function Agregar({base, atajos, plant, usarComida, agregar, libre, nuevo, usarPl
                       limpiar()
                     }}
                   >
-                    <span>🌐 {r.alimento.nombre}</span>{' '}
+                    <span><Icono n="web" tam={16} className="en-texto" /> {r.alimento.nombre}</span>{' '}
                     <small className="mu">
                       {r.alimento.kcal100} kcal · Prot. {r.alimento.p100} · Carb. {r.alimento.c100} · Gras.{' '}
                       {r.alimento.g100} /100 g
@@ -641,7 +641,7 @@ function Agregar({base, atajos, plant, usarComida, agregar, libre, nuevo, usarPl
                   </button>
                   {r.avisos.map((a, j) => (
                     <small key={j} className="warn">
-                      ⚠ {a}
+                      <Icono n="alerta" tam={16} className="en-texto" /> {a}
                     </small>
                   ))}
                 </div>
@@ -687,7 +687,7 @@ function FormAlimento({f, setF, guardar, borrar, cancelar}) {
       </h3>
       {f.fuente && (
         <small className="warn" style={{display: 'block', marginBottom: 6}}>
-          🌐 {f.fuente}
+          <Icono n="web" tam={16} className="en-texto" /> {f.fuente}
           {f.fuenteId ? (
             <>
               {' '}
@@ -720,7 +720,7 @@ function FormAlimento({f, setF, guardar, borrar, cancelar}) {
       </div>
       {!coherente(f) && (
         <small className="warn">
-          ⚠ Las calorías no cuadran con los macros: revisá los valores.
+          <Icono n="alerta" tam={16} className="en-texto" /> Las calorías no cuadran con los macros: revisá los valores.
         </small>
       )}
       <div className="row" style={{marginTop: 10}}>
@@ -887,7 +887,7 @@ export default function Comidas() {
     else await db.comidas.add(reg)
     setBor(null)
     setFx(null)
-    setMsg('✅ Comida guardada.')
+    setMsg('Comida guardada.')
     cargarDia()
     cargarHist()
   }
@@ -910,7 +910,7 @@ export default function Comidas() {
       ...x,
       items: x.items.map((y, j) => (j === i ? {...y, alimentoId: id, origen: 'base'} : y))
     }))
-    setMsg('✅ Guardado en tu base.')
+    setMsg('Guardado en tu base.')
   }
   const borrarComida = async c => {
     if (confirm('¿Borrar esta comida?')) {
@@ -923,7 +923,7 @@ export default function Comidas() {
     const {id, ...r} = c
     await db.comidas.add({...r, fecha: hoy(), hora: horaAhora()})
     setFecha(hoy())
-    setMsg('✅ Repetida en hoy.')
+    setMsg('Repetida en hoy.')
     if (fecha === hoy()) cargarDia()
     cargarHist()
   }
@@ -955,7 +955,7 @@ export default function Comidas() {
         await db.plantillas.put({...pl, id: ex.id, usos: ex.usos || 0})
       } else await db.plantillas.add(pl)
       await cargarPlant()
-      setMsg('✅ Guardada como «' + pl.nombre + '». La vas a ver en los atajos de Agregar.')
+      setMsg('Guardada como «' + pl.nombre + '». La vas a ver en los atajos de Agregar.')
     } catch (e) {
       setMsg('No pude guardarla: ' + e.message)
     }
@@ -1007,7 +1007,7 @@ export default function Comidas() {
         const id = await db.alimentos.add(nuevo)
         ex = {...nuevo, id}
         await cargarBase()
-        setMsg('✅ Copiado a tu base desde ' + FUENTE + '. Revisá los valores.')
+        setMsg('Copiado a tu base desde ' + FUENTE + '. Revisá los valores.')
       } else setMsg('Ese producto ya estaba en tu base.')
       agregar(conPorcion(itemDesde(ex, ex.porcion || 100, 'base'), ex.porcion || 100))
     } catch (e) {
@@ -1040,7 +1040,7 @@ export default function Comidas() {
       id = await db.alimentos.add(al)
     }
     setForm(null)
-    setMsg('✅ Guardado.')
+    setMsg('Guardado.')
     await cargarBase()
     if (alAgregar && !form.id) {
       agregar(conPorcion(itemDesde({...al, id}, al.porcion, 'base'), al.porcion))
@@ -1228,7 +1228,7 @@ export default function Comidas() {
               {c.items.map((it, i) => (
                 <div className="lin alim" key={i}>
                   <span className="ic">
-                    {base.find(a => a.id === it.alimentoId)?.fuente ? '🌐' : ''}
+                    {base.find(a => a.id === it.alimentoId)?.fuente ? <Icono n="web" tam={16} etiqueta="copiado de la web" className="en-texto" /> : null}
                     {it.origen === 'ia' ? '≈' : ''}
                   </span>
                   <span>
@@ -1249,7 +1249,7 @@ export default function Comidas() {
                   className="ghost mini"
                   onClick={() => guardarPlantilla(c.items, c.momento, c.momento)}
                 >
-                  ⭐ Guardar
+                  <Icono n="estrella" tam={16} className="en-texto" /> Guardar
                 </button>
                 <button className="ghost mini" onClick={() => borrarComida(c)}>
                   Borrar
@@ -1262,7 +1262,7 @@ export default function Comidas() {
           )}
           {cs.some(c => c.items.some(i => base.find(a => a.id === i.alimentoId)?.fuente)) && (
             <small className="mu" style={{display: 'block'}}>
-              🌐 = alimento copiado de {FUENTE}.
+              <Icono n="web" tam={16} className="en-texto" /> = alimento copiado de {FUENTE}.
             </small>
           )}
         </>
@@ -1285,11 +1285,11 @@ export default function Comidas() {
                   setMsg('')
                 }}
               >
-                ＋ Nuevo alimento
+                <Icono n="mas" tam={16} className="en-texto" /> Nuevo alimento
               </button>
             </div>
             <small className="mu" style={{display: 'block', marginTop: 8}}>
-              Acá corregís valores. Para cargar comidas usá “＋ Agregar” en el Diario.
+              Acá corregís valores. Para cargar comidas usá «Agregar» en el Diario.
             </small>
             <input
               style={{width: '100%', marginTop: 10}}
@@ -1311,7 +1311,7 @@ export default function Comidas() {
               ))}
             </div>
             <small className="mu leyenda">
-              <span>🌐 copiado de la web</span>
+              <span><Icono n="web" tam={16} className="en-texto" /> copiado de la web</span>
               <span>≈ estimado por IA o etiqueta</span>
               <span>Valores cada 100 g · ordenados por uso reciente</span>
             </small>
@@ -1320,7 +1320,7 @@ export default function Comidas() {
           {reintento()}
           {plant.length > 0 && (
             <section>
-              <h3>⭐ Comidas guardadas</h3>
+              <h3><Icono n="estrella" tam={16} className="en-texto" /> Comidas guardadas</h3>
               {plant.map(p => {
                 const its = itemsDePlantilla(p, base),
                   k = totales(its).kcal
@@ -1358,7 +1358,7 @@ export default function Comidas() {
                 style={{cursor: 'pointer'}}
               >
                 <span className="ic">
-                  {a.fuente ? '🌐' : ''}
+                  {a.fuente ? <Icono n="web" tam={16} etiqueta="copiado de la web" className="en-texto" /> : null}
                   {a.origen === 'ia' || a.origen === 'etiqueta' ? '≈' : ''}
                 </span>
                 <span>{a.nombre}</span>
