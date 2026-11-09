@@ -364,8 +364,6 @@ test('ningún servicio toca mapa ni GPX; no hay fetch de teselas ni librería de
     assert.doesNotMatch(leer(f), /domain\/(mapa|gpx)|data\/rutas|MapaOsm|\.gpx/, f)
   const pkg = JSON.parse(leer('package.json'))
   assert.deepEqual(Object.keys(pkg.dependencies).sort(), [
-    '@capacitor/android', // Entrega 37 (v0.38.0): contenedor Android (Capacitor); sigue sin haber librería de mapas
-    '@capacitor/core',
     '@fontsource/bebas-neue',
     '@fontsource/chakra-petch',
     '@fontsource/inter',

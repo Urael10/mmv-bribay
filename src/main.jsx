@@ -9,7 +9,6 @@ import '@fontsource/inter/latin-400.css'
 import '@fontsource/inter/latin-500.css'
 import '@fontsource/inter/latin-600.css'
 import App from './App.jsx'
-import {permiteServiceWorker} from './platform/plataforma.js'
 import './tokens.css'
 import './styles.css'
 class Fallo extends Component {
@@ -34,8 +33,7 @@ createRoot(document.getElementById('root')).render(
     <App />
   </Fallo>
 )
-// El service worker es solo de la PWA: dentro del APK (Capacitor) no se registra.
-if (permiteServiceWorker())
+if ('serviceWorker' in navigator)
   addEventListener('load', () => navigator.serviceWorker.register('./sw.js'))
 // Pide que el navegador no borre tus datos locales si falta espacio (sin esto Android/Chrome puede limpiarlos).
 navigator.storage?.persist?.().catch(() => {})
