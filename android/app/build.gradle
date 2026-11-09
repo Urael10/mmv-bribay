@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 
-// Versión de la app Android = la de package.json (0.38.0 -> versionName "0.38.0", versionCode 3800).
+// Versión de la app Android = la de package.json (0.41.0 -> versionName "0.41.0", versionCode 4100).
 // Así cada entrega actualiza al APK anterior sin tocar este archivo.
 def pkgVersion = new groovy.json.JsonSlurper().parse(rootProject.file('../package.json')).version
 def partesVersion = pkgVersion.tokenize('.')

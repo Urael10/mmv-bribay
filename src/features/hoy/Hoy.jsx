@@ -10,10 +10,12 @@ import {AvisoDescarga} from '../progreso/AvisoDescarga'
 import {videosPendientes, haySesionEnCurso} from '../../domain/entreno'
 import {sumaDias} from '../../domain/stats'
 import {ultima} from '../../domain/cuerpo'
-import {fmtVal, hayDato} from '../../domain/formato'
+import {fmtVal} from '../../domain/formato'
 import {dejarFoto} from '../../services/pendiente'
 import ActividadFisica from '../actividad/ActividadFisica'
 import ModoSueno from '../sueno/ModoSueno'
+import RegistroSueno from '../sueno/RegistroSueno'
+import {habitualNoche, duracionHM, duracionCorta, OBJETIVO_SUENO_H, fraccionSueno} from '../../domain/sueno'
 import Icono from '../../ui/Icono'
 import {parsearMeta, promedioPasos, metaEfectiva, textoMetaPasos, PROMEDIO_DIAS} from '../../domain/metaPasos'
 
@@ -70,10 +72,37 @@ function TeselaPasos({abierto, onAbrir}) {
       onClick={onAbrir}
       aria-label={ef.valor ? textoAnillo('Pasos', d.pasos, ef.valor) + ': abrir conteo' : `Pasos: ${d.pasos}. Abrir conteo`}
     >
-      <Anillo valor={d.pasos} meta={ef.valor} clase={claseAnillo(d.pasos, ef.valor)} />
+      <Anillo valor={d.pasos} meta={ef.valor} clase={claseAnillo(d.pasos, ef.valor)}>
+        <Icono n="pasos" tam={20} />
+      </Anillo>
       <span className="eti">Pasos</span>
       <b className="mono tesela-v">{d.pasos ? d.pasos.toLocaleString('es-AR') : '—'}</b>
       <small className="mu">{d.pasos || ef.valor ? textoMetaPasos(ef) : 'tocá para contar'}</small>
+    </button>
+  )
+}
+
+// Sueño: horas del día contra una referencia de 8 h, con la calidad. Al tocarla se abre el check-in en el bloque de sueño.
+function TeselaSueno({h, onAbrir}) {
+  const horas = +String(h.sueno ?? '').replace(',', '.') > 0 ? +String(h.sueno).replace(',', '.') : 0,
+    cal = +h.calidad >= 1 ? +h.calidad : null
+  return (
+    <button
+      type="button"
+      className="tesela"
+      onClick={onAbrir}
+      aria-label={
+        horas
+          ? `Sueño: ${duracionHM(horas)} de ${OBJETIVO_SUENO_H} h (${Math.round(fraccionSueno(horas) * 100)} %)${cal ? `, calidad ${cal} de 5` : ''}: abrir el registro`
+          : 'Sueño: sin registrar. Abrir el registro'
+      }
+    >
+      <Anillo valor={horas} meta={OBJETIVO_SUENO_H} clase={claseAnillo(horas, OBJETIVO_SUENO_H)}>
+        <Icono n="luna" tam={20} />
+      </Anillo>
+      <span className="eti">Sueño</span>
+      <b className="mono tesela-v">{horas ? duracionCorta(horas) : '—'}</b>
+      <small className="mu">{horas ? `de ${OBJETIVO_SUENO_H} h${cal ? ` · calidad ${cal}/5` : ''}` : 'tocá para registrar'}</small>
     </button>
   )
 }
@@ -99,13 +128,16 @@ function TeselaPeso({onAbrir}) {
 }
 
 export default function Hoy({onEmpezar, onComidas, onRutas}) {
-  const [h, setH] = useState({fecha: hoy(), agua: 0, sueno: '', calidad: 3}),
+  const [h, setH] = useState({fecha: hoy(), agua: 0, sueno: '', calidad: null}),
     [otro, setOtro] = useState(''),
     [videos, setVideos] = useState([]),
     [ckAb, setCkAb] = useState(false),
     [aguaAb, setAguaAb] = useState(false),
     [suAb, setSuAb] = useState(false),
     [masAb, setMasAb] = useState(false),
+    [reinicio, setReinicio] = useState(null), // lo que había antes de «Reiniciar», para deshacerlo sin preguntar
+    [pedir, setPedir] = useState({id: '', n: 0}), // a qué bloque del check-in llevar (sube con cada pedido)
+    [habitual, setHabitual] = useState(null), // hora habitual de acostarse y levantarse (últimos días)
     meta = +cfg('meta', 2500),
     enCurso = haySesionEnCurso(localStorage.getItem('mv_sesion'))
   useEffect(() => {
@@ -113,12 +145,32 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
       if (x) setH(x)
       setCkAb(!checkinHecho(x)) // el check-in se abre solo si todavía no lo hiciste hoy
     })
+    db.habitos
+      .where('fecha')
+      .between(sumaDias(hoy(), -8), hoy(), true, false)
+      .toArray()
+      .then(hs => setHabitual(habitualNoche(hs, hoy())))
+      .catch(() => {})
     db.sesiones
       .where('fecha')
       .aboveOrEqual(sumaDias(hoy(), -13))
       .toArray()
       .then(a => setVideos(videosPendientes(a, hoy())))
   }, [])
+  // «Preparación» sin datos y la tesela de Sueño piden el check-in: se abre, se trae a la vista el bloque pedido
+  // (el check-in entero o el registro de sueño) y se enfoca, sin animación con «reducir movimiento».
+  const abrirCk = id => {
+    setCkAb(true)
+    setPedir(p => ({id, n: p.n + 1}))
+  }
+  useEffect(() => {
+    if (!pedir.n) return
+    const el = document.getElementById(pedir.id)
+    if (!el) return
+    const quieto = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    el.scrollIntoView({block: 'center', behavior: quieto ? 'auto' : 'smooth'})
+    ;(el.matches('[tabindex]') ? el : el.querySelector('button'))?.focus({preventScroll: true})
+  }, [pedir])
   // Se guarda sobre la fila que hay en la base (no sobre la copia de esta pantalla): los pasos los escribe
   // «Actividad y cuerpo» por su lado y una copia vieja los pisaría. La transacción ordena los toques seguidos.
   const g = p => {
@@ -132,20 +184,25 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
   // «Dormir con alarma»: lee y escribe el sueño del día en que te despertás (puede no ser el de esta pantalla si
   // quedó abierta de la noche anterior). Lo que llega a `guardarSueno` ya es el total confirmado (lo previo + la sesión).
   const leerSueno = async f => (await db.habitos.get(f))?.sueno
-  const guardarSueno = async (horas, f) => {
+  // `extra`: {noche: {acosto, desperto}, calidad}. Las horas de la noche se anotan solo si ese día no tenía ya las suyas
+  // (una siesta no pisa la hora de acostarse); la calidad solo si la persona la eligió.
+  const guardarSueno = async (horas, f, extra = {}) => {
     const dia = f || h.fecha
     const fila = await db.transaction('rw', db.habitos, async () => {
       const actual = await db.habitos.get(dia)
-      const nueva = {...(actual || {agua: 0, calidad: 3}), sueno: horas, fecha: dia}
+      const nueva = {...(actual || {agua: 0}), sueno: horas, fecha: dia}
+      if (extra.noche && !(actual?.acosto && actual?.desperto)) Object.assign(nueva, extra.noche)
+      if (+extra.calidad >= 1) nueva.calidad = +extra.calidad
       await db.habitos.put(nueva)
       return nueva
     })
-    setH(prev => (prev.fecha === dia ? {...prev, sueno: horas} : fila))
+    setH(fila)
   }
   const log = h.aguaLog || []
   const sumar = ml => {
     ml = Math.round(+ml)
     if (!(ml > 0) || ml > 5000) return
+    setReinicio(null)
     g({agua: (+h.agua || 0) + ml, aguaLog: [...log, ml]})
   }
   const deshacer = () => {
@@ -153,10 +210,13 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
     const ml = log[log.length - 1]
     g({agua: Math.max(0, (+h.agua || 0) - ml), aguaLog: log.slice(0, -1)})
   }
-  const resumenCk = checkinHecho(h) ? 'Hecho ✓' : '20 segundos'
+  const resumenCk = checkinHecho(h) ? 'Hecho' : '20 segundos'
   return (
     <div className="bento hoy">
-      <Preparacion h={h} />
+      <Preparacion
+        h={h}
+        onCheckin={() => abrirCk('hoy-checkin')}
+      />
       <div className="hoy-cta">
         <div className="ctafila">
           <button className="cta" onClick={onEmpezar}>
@@ -188,7 +248,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
         </div>
         {enCurso && <small className="mu hoy-nota">Tenés una sesión sin terminar.</small>}
         {videos.length > 0 && (
-          <small className="mu hoy-nota">🎥 Videos sin marcar como grabados (14 días): {videos.length}</small>
+          <small className="mu hoy-nota"><Icono n="video" tam={16} className="en-texto" /> Videos sin marcar como grabados (14 días): {videos.length}</small>
         )}
       </div>
       <AvisoDescarga />
@@ -202,11 +262,14 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
           aria-label={textoAnillo('Agua', h.agua, meta, 'ml')}
           onClick={() => setAguaAb(v => !v)}
         >
-          <Anillo valor={h.agua} meta={meta} clase={claseAnillo(h.agua, meta)} />
+          <Anillo valor={h.agua} meta={meta} clase={claseAnillo(h.agua, meta)}>
+            <Icono n="gota" tam={20} />
+          </Anillo>
           <span className="eti">Agua</span>
           <b className="mono tesela-v">{fmtVal(h.agua, {dec: 0})}</b>
           <small className="mu">de {meta} ml</small>
         </button>
+        <TeselaSueno h={h} onAbrir={() => abrirCk('hoy-sueno-reg')} />
         <TeselaPasos abierto={masAb} onAbrir={() => setMasAb(true)} />
         <TeselaPeso onAbrir={() => setMasAb(true)} />
       </div>
@@ -223,7 +286,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
               </button>
             ))}
             <button className="ghost" disabled={!log.length} onClick={deshacer}>
-              ↶ Deshacer{log.length ? ` ${log[log.length - 1]}` : ''}
+              <Icono n="deshacer" tam={16} className="en-texto" /> Deshacer{log.length ? ` ${log[log.length - 1]}` : ''}
             </button>
           </div>
           <div className="row" style={{marginTop: 8}}>
@@ -245,13 +308,28 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
             >
               + Sumar
             </button>
-            <button
-              className="ghost"
-              disabled={!h.agua}
-              onClick={() => confirm('¿Poner el agua de hoy en 0?') && g({agua: 0, aguaLog: []})}
-            >
-              Reiniciar
-            </button>
+            {reinicio && !h.agua ? (
+              <button
+                className="ghost"
+                onClick={() => {
+                  g(reinicio)
+                  setReinicio(null)
+                }}
+              >
+                <Icono n="deshacer" tam={16} className="en-texto" /> Deshacer reinicio
+              </button>
+            ) : (
+              <button
+                className="ghost"
+                disabled={!h.agua}
+                onClick={() => {
+                  setReinicio({agua: h.agua, aguaLog: log})
+                  g({agua: 0, aguaLog: []})
+                }}
+              >
+                Reiniciar
+              </button>
+            )}
           </div>
         </section>
       )}
@@ -284,36 +362,13 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
           <small className="mu ck-leyenda">
             {CHECKIN.map(c => `${c.n}: 1 ${c.bajo} · 5 ${c.alto}`).join(' — ')}
           </small>
-          <div className="ck-sueno">
-            <b className="ck-n">Sueño</b>
-            <input
-              className="fx"
-              type="number"
-              inputMode="decimal"
-              step="0.5"
-              placeholder="horas"
-              aria-label="Horas de sueño de hoy (total del día)"
-              value={h.sueno}
-              onChange={e => g({sueno: e.target.value})}
-            />
-            <input
-              type="range"
-              min="1"
-              max="5"
-              value={hayDato(h.calidad) ? h.calidad : 3}
-              aria-label="Calidad del sueño"
-              onChange={e => g({calidad: +e.target.value})}
-            />
-            <output className="mono" aria-live="polite">
-              {fmtVal(h.calidad, {dec: 0})}/5
-            </output>
-          </div>
+          <RegistroSueno h={h} g={g} habitual={habitual} />
         </section>
       </Pleg>
       <Pleg
         id="hoy-sueno"
         titulo="Dormir con alarma"
-        resumen={+h.sueno > 0 ? `${String(h.sueno).replace('.', ',')} h hoy` : 'Calcula tus horas'}
+        resumen={+h.sueno > 0 ? `${String(h.sueno).replace('.', ',')} h hoy` : 'Alarma y horas'}
         abierto={suAb}
         onCambio={setSuAb}
       >
@@ -321,7 +376,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
           <ModoSueno previoDe={leerSueno} onGuardar={guardarSueno} />
         </section>
       </Pleg>
-      <Pleg id="hoy-mas" titulo="Actividad y cuerpo" resumen="Pasos, rutas, medidas" abierto={masAb} onCambio={setMasAb}>
+      <Pleg id="hoy-mas" titulo="Actividad y cuerpo" resumen="Pasos y rutas" abierto={masAb} onCambio={setMasAb}>
         <ActividadFisica onVerRutas={onRutas} />
         <TarjetaCuerpo />
       </Pleg>

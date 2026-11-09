@@ -6,7 +6,7 @@ import {cfg, setCfg} from '../../data/db'
 import {
   ALARMA_INICIAL, parseHora, proximaAlarma, horasDormidas, parseHoras, textoHoras, textoDuracion,
   volumenAlarma, nuevaSesion, sesionParaGuardar, sesionDesdeGuardado, faseSueno, finPropuesto,
-  alternativaFin, propuestaDia, fechaDeMs, horasPrevias, HORAS_MAX_DIA
+  alternativaFin, propuestaDia, fechaDeMs, horasPrevias, nocheDeSesion, HORAS_MAX_DIA
 } from '../../domain/sueno'
 
 const CLAVE = 'mv_sueno_sesion'
@@ -21,7 +21,8 @@ const enCampo = h => (h == null ? '' : String(h).replace('.', ','))
 // un contador), así que salen bien aunque el teléfono haya frenado el reloj de la página.
 // Entrega 36: la propuesta es el TOTAL DEL DÍA (lo ya guardado ese día + esta sesión), para que una siesta
 // se sume a la noche en vez de pisarla. `previoDe(fecha)` devuelve las horas ya guardadas de ese día y
-// `onGuardar(total, fecha)` escribe el total confirmado en la fila de ese día.
+// `onGuardar(total, fecha, {noche, calidad})` escribe el total confirmado en la fila de ese día. `noche` lleva la hora de
+// acostarse y de levantarse (solo si la sesión fue de noche, no una siesta) y `calidad` lo que eligió la persona.
 export default function ModoSueno({onGuardar, previoDe}) {
   const [sesion, setSesion] = useState(() => sesionDesdeGuardado(leer(CLAVE))),
     [ahora, setAhora] = useState(() => Date.now()),
@@ -31,6 +32,7 @@ export default function ModoSueno({onGuardar, previoDe}) {
     }),
     [horasTxt, setHorasTxt] = useState(''),
     [aviso, setAviso] = useState(''),
+    [calidad, setCalidad] = useState(null), // opcional: cómo dormiste (1–5), se guarda junto con las horas
     [ultimo, setUltimo] = useState(null),
     [previo, setPrevio] = useState({fecha: null, horas: 0}),
     ctx = useRef(null),
@@ -158,6 +160,7 @@ export default function ModoSueno({onGuardar, previoDe}) {
     sono.current = false
     setAviso('')
     setUltimo(null)
+    setCalidad(null)
     setPrevio({fecha: null, horas: 0})
     setAhora(t)
     setSesion(s)
@@ -178,17 +181,19 @@ export default function ModoSueno({onGuardar, previoDe}) {
     sono.current = false
     setSesion(null)
     setAviso('')
+    setCalidad(null)
     setPrevio({fecha: null, horas: 0})
   }
   const confirmar = () => {
     const h = parseHoras(horasTxt, HORAS_MAX_DIA)
     if (!h) return setAviso(`Escribí las horas de sueño, entre 0,3 y ${HORAS_MAX_DIA} (por ejemplo 7,5).`)
-    onGuardar(h, fecha)
+    onGuardar(h, fecha, {noche: nocheDeSesion(sesion.inicio, fin), calidad})
     borrar(CLAVE)
     sono.current = false
     setSesion(null)
     setAviso('')
     setUltimo({horas: h, suma: previoListo && previo.horas > 0})
+    setCalidad(null)
     setPrevio({fecha: null, horas: 0})
   }
 
@@ -321,6 +326,26 @@ export default function ModoSueno({onGuardar, previoDe}) {
                   Usar las {hhmm(alt)} ({textoHoras(horasDormidas(sesion.inicio, alt))} de esta sesión)
                 </button>
               )}
+              <div className="ck">
+                <b className="ck-n" id="sueno-cal">Calidad (opcional)</b>
+                <div className="escala" role="group" aria-labelledby="sueno-cal" aria-description="1 mala, 5 excelente">
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <button
+                      key={n}
+                      type="button"
+                      className={calidad === n ? 'on' : ''}
+                      aria-pressed={calidad === n}
+                      onClick={() => setCalidad(calidad === n ? null : n)}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+                <small className="mu sq-ext">
+                  <span>1 · mala</span>
+                  <span>5 · excelente</span>
+                </small>
+              </div>
               <small className="mu">
                 {suma
                   ? 'Es lo que ya tenías ese día más el tiempo desde que te acostaste: si tardaste en dormirte, te despertaste antes o lo anterior estaba mal, corregilo.'

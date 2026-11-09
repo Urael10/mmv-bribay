@@ -24,6 +24,7 @@ import {
   sg,
   EPLEY_MAX
 } from '../../domain/stats'
+import Icono from '../../ui/Icono'
 
 const T = {
   movilidad: 'Movilidad',
@@ -212,7 +213,7 @@ function Historial({ses, reg, marcas, recargar}) {
                             <span className="mono">
                               {kg(r.kg)} kg × {r.uni ? `${r.repsL}/${r.repsR}` : r.reps}
                               {(marcas[r.id]?.flags || []).length > 0 && (
-                                <span title={marcas[r.id].flags.join(', ')}> 🏆</span>
+                                <span title={marcas[r.id].flags.join(', ')}> <Icono n="trofeo" tam={16} etiqueta="récord" className="en-texto" /></span>
                               )}
                               {(() => {
                                 const u = marcas[r.id]?.ult
@@ -253,7 +254,7 @@ function Historial({ses, reg, marcas, recargar}) {
         )
       })}
       <small className="mu">
-        🏆 = superaste una marca anterior de ese ejercicio. El % compara el volumen (kg × reps) con
+        <Icono n="trofeo" tam={16} className="en-texto" /> = superaste una marca anterior de ese ejercicio. El % compara el volumen (kg × reps) con
         la vez anterior.
       </small>
     </>

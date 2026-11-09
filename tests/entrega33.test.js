@@ -180,7 +180,7 @@ test('modo sueño: pantalla que se queda encendida, diálogo accesible y límite
   assert.match(m, /createPortal/)
   assert.match(m, /no puede sonar con la pantalla bloqueada/)
   assert.match(m, /tiempo en cama, no sueño medido/)
-  assert.match(m, /onGuardar\(h, fecha\)/) // entrega 36: se guarda el total del día de despertar
+  assert.match(m, /onGuardar\(h, fecha, \{noche: nocheDeSesion\(sesion\.inicio, fin\), calidad\}\)/) // entrega 39: además de la hora de acostarse y la calidad
 })
 test('sin cambios de datos: Dexie sigue en v11 y la sesión de sueño vive en localStorage', () => {
   assert.match(leer('src/data/db.js'), /db\.version\(11\)/)

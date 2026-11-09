@@ -21,7 +21,7 @@ function Fila({e, claves, onCambio, setMsg}) {
     try {
       const r = await renombrar(e.clave, texto, {fusionar: v.fusiona})
       setMsg(
-        `✔ «${e.nombre}» ahora es «${r.nombre}»: ${r.registros} ${r.registros === 1 ? 'registro' : 'registros'}, ${r.sesiones} ${r.sesiones === 1 ? 'sesión' : 'sesiones'}, ${r.plantillas} ${r.plantillas === 1 ? 'plantilla' : 'plantillas'}${r.enCurso ? ' y la sesión en curso' : ''}.`
+        `«${e.nombre}» ahora es «${r.nombre}»: ${r.registros} ${r.registros === 1 ? 'registro' : 'registros'}, ${r.sesiones} ${r.sesiones === 1 ? 'sesión' : 'sesiones'}, ${r.plantillas} ${r.plantillas === 1 ? 'plantilla' : 'plantillas'}${r.enCurso ? ' y la sesión en curso' : ''}.`
       )
       onCambio(true)
     } catch (err) {
@@ -116,7 +116,7 @@ export default function Biblioteca({modo = 'gestion', onCerrar, onElegir, onCamb
   const crear = async () => {
     try {
       const f = await agregar({nombre: nuevo.nombre, patron: nuevo.patron, uni: nuevo.uni})
-      setMsg(`✔ «${f.nombre}» agregado a la biblioteca.`)
+      setMsg(`«${f.nombre}» agregado a la biblioteca.`)
       setNuevo({nombre: '', patron: 'auto', uni: false})
       if (elegir) poner(f.nombre)
       await cargar()
@@ -149,7 +149,7 @@ export default function Biblioteca({modo = 'gestion', onCerrar, onElegir, onCamb
         )}
       </section>
       <section>
-        <h3>＋ Ejercicio nuevo</h3>
+        <h3><Icono n="mas" tam={16} className="en-texto" /> Ejercicio nuevo</h3>
         <label className="mu">
           Nombre
           <input
@@ -205,7 +205,15 @@ export default function Biblioteca({modo = 'gestion', onCerrar, onElegir, onCamb
                 <small className="mu"> · {e.patron || patronAuto(e.nombre, '', undefined)}</small>
               </span>
               <button className={puestos.has(e.nombre) ? 'ghost mini' : 'mini'} onClick={() => poner(e.nombre)}>
-                {puestos.has(e.nombre) ? '✓ Otra vez' : '＋ Agregar'}
+                {puestos.has(e.nombre) ? (
+                  <>
+                    <Icono n="check" tam={16} className="en-texto" /> Otra vez
+                  </>
+                ) : (
+                  <>
+                    <Icono n="mas" tam={16} className="en-texto" /> Agregar
+                  </>
+                )}
               </button>
             </div>
           ) : (
