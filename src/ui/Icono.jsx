@@ -99,7 +99,17 @@ const RUTAS = {
     </>
   ),
   cerrar: <path d="M6 6l12 12M18 6L6 18" />,
-  'chevron-abajo': <path d="M6 9l6 6 6-6" />
+  'chevron-abajo': <path d="M6 9l6 6 6-6" />,
+  luna: <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />,
+  pausa: <path d="M9 6v12M15 6v12" />,
+  play: <path d="M8 5.5v13l11-6.5-11-6.5Z" />,
+  punto: <circle cx="12" cy="12" r="4" />,
+  ubicacion: (
+    <>
+      <path d="M12 21s6-5.2 6-10a6 6 0 0 0-12 0c0 4.8 6 10 6 10Z" />
+      <circle cx="12" cy="11" r="2" />
+    </>
+  )
 }
 
 export default function Icono({n, tam = 20, etiqueta, className = ''}) {

@@ -29,7 +29,7 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
 }
 .app {
-  max-width: 520px;
+  max-width: var(--ancho-app);
   margin: auto;
   min-height: 100dvh;
   display: flex;
@@ -59,10 +59,11 @@ main {
 }
 section {
   background: var(--sf);
-  border: 1px solid var(--ln);
-  border-radius: 22px;
-  padding: 14px;
-  margin-bottom: 12px;
+  border: 0;
+  border-radius: var(--r-card);
+  box-shadow: var(--sombra-1);
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-3);
 }
 h3 {
   margin: 0 0 8px;
@@ -149,7 +150,7 @@ nav {
   bottom: 0;
   left: 0;
   right: 0;
-  max-width: 520px;
+  max-width: var(--ancho-app);
   margin: auto;
   display: flex;
   background: var(--sf);
@@ -1176,63 +1177,6 @@ section.vacio > .vacio:first-of-type {
   border-top: 0;
 }
 
-/* Hoy: fila compacta de alimentación (lleva a Comidas) */
-.bento > .filahoy {
-  grid-column: span 2;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto 18px;
-  grid-template-areas:
-    'tit val ch'
-    'bar bar bar'
-    'pro pro pro';
-  align-items: center;
-  gap: 2px 8px;
-  width: 100%;
-  min-height: 64px;
-  padding: 10px 14px;
-  text-align: left;
-  color: var(--tx);
-  background: var(--sf);
-  border: 1.5px solid var(--bd);
-  border-radius: 22px;
-  font-weight: 400;
-}
-.filahoy-t {
-  grid-area: tit;
-  font-family: 'Chakra Petch', sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--tx-2);
-  font-weight: 600;
-}
-.filahoy-v {
-  grid-area: val;
-  white-space: nowrap;
-}
-.filahoy-v b {
-  font-size: 20px;
-}
-.filahoy .bar {
-  grid-area: bar;
-  display: block;
-  margin: 4px 0;
-  height: 6px;
-}
-.filahoy-p {
-  grid-area: pro;
-  font-size: 13px;
-}
-.filahoy-ch {
-  grid-area: ch;
-  transform: rotate(-90deg);
-  color: var(--ac);
-}
-@media (hover: hover) {
-  .bento > .filahoy:hover {
-    background: var(--sf-2);
-  }
-}
 
 /* Comidas: lista única de recientes y frecuentes */
 .atajos {
@@ -1346,4 +1290,915 @@ details.avanzado > summary {
   .tabs-wrap::after {
     transition: none;
   }
+}
+
+/* ===== v0.27.0 · Entrega 26: rutas GPS (trazo SVG e historial) ===== */
+.trazo {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 240px;
+  background: var(--bg);
+  border-radius: 14px;
+}
+.trazo-linea {
+  fill: none;
+  stroke: var(--ac);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.trazo-ini {
+  fill: var(--bg);
+  stroke: var(--tx);
+  stroke-width: 2.5;
+}
+.trazo-fin {
+  fill: var(--tx);
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+.trazo-vivo {
+  max-height: 160px;
+  margin-top: 8px;
+}
+.ruta-mes {
+  margin-top: 10px;
+}
+.ruta-item {
+  border-top: 1px solid var(--ln);
+}
+button.ruta-fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 64px;
+  padding: 8px 4px;
+  text-align: left;
+  color: var(--tx);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+button.ruta-fila[aria-expanded='true'] {
+  background: var(--ac-soft);
+}
+button.ruta-fila:active:not(:disabled) {
+  background: var(--ac-press);
+}
+.ruta-mini {
+  flex: 0 0 96px;
+}
+.ruta-mini .trazo {
+  border-radius: 10px;
+}
+.ruta-mini .trazo-linea {
+  stroke-width: 2;
+}
+.ruta-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ruta-txt small {
+  color: var(--tx-2);
+  font-weight: 400;
+}
+.ruta-det {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 4px 12px;
+}
+.ruta-datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 14px;
+  color: var(--tx-2);
+}
+.ruta-datos b {
+  color: var(--tx);
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 16px;
+}
+
+/* ===== v0.28.0 · Entrega 27: mapa OSM opcional y GPX ===== */
+.mapa-caja {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mapa {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  border-radius: 14px;
+}
+.mapa-tesela {
+  position: absolute;
+  display: block;
+  max-width: none;
+  user-select: none;
+}
+.mapa-trazo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.mapa-borde {
+  fill: none;
+  stroke: var(--bg);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.mapa-linea {
+  fill: none;
+  stroke: var(--ac);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.mapa-caja a {
+  color: var(--ac);
+}
+
+/* Pantallas con carga diferida (Entrega 28): aviso mientras se baja y cuando no se pudo bajar. */
+.pantalla-carga {
+  min-height: 40vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+.pantalla-carga p {
+  margin: 0;
+}
+
+/* Entrega 30: Hoy simplificado (propuesta A, foco único) y tarjetas sin borde. Solo tokens. */
+.bento {
+  gap: var(--sp-3);
+}
+.hoy {
+  gap: var(--sp-4);
+}
+.hoy .prep {
+  padding: var(--sp-5);
+}
+.prep-n {
+  font-family: 'Chakra Petch', ui-monospace, monospace;
+  font-size: 72px;
+  font-weight: 600;
+  line-height: 1.05;
+  margin: var(--sp-2) 0 var(--sp-1);
+}
+.prep-n small {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--tx-2);
+}
+.prep .bar {
+  height: 6px;
+  margin: var(--sp-2) 0 var(--sp-4);
+}
+.prep-t {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+.prep-r {
+  margin: 2px 0 0;
+  font-size: 14px;
+}
+.prep-d {
+  margin-top: var(--sp-3);
+}
+.hoy-cta {
+  grid-column: span 2;
+}
+.hoy-cta .ctafila {
+  margin-bottom: 0;
+}
+.hoy-cta .cta {
+  min-height: 60px;
+  border-radius: var(--r-ctl);
+}
+.hoy-cta .ctafoto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 60px;
+  width: 60px;
+  min-height: 60px;
+  border-radius: var(--r-ctl);
+  background: var(--sf-2);
+  color: var(--ac);
+}
+.hoy-nota {
+  display: block;
+  margin-top: var(--sp-2);
+}
+.teselas {
+  grid-column: span 2;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+.tesela {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
+  min-height: 96px;
+  padding: var(--sp-4) var(--sp-3);
+  text-align: left;
+  color: var(--tx);
+  background: var(--sf);
+  border: 0;
+  border-radius: var(--r-tile);
+  box-shadow: var(--sombra-1);
+  font-weight: 400;
+}
+.tesela .eti {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tx-2);
+  font-weight: 600;
+}
+.tesela-v {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+.tesela small {
+  font-size: 12px;
+  line-height: 1.3;
+}
+.pleg {
+  grid-column: span 2;
+}
+.pleg-b {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 56px;
+  padding: var(--sp-3) var(--sp-4);
+  text-align: left;
+  color: var(--tx);
+  background: var(--sf);
+  border: 0;
+  border-radius: var(--r-tile);
+  box-shadow: var(--sombra-1);
+  font-weight: 400;
+  font-size: 15px;
+}
+.pleg-b b {
+  font-weight: 600;
+}
+.pleg-r {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pleg-b .vacio-ch {
+  color: var(--ac);
+}
+.pleg-c {
+  margin-top: var(--sp-3);
+}
+.pleg-c > section:last-child {
+  margin-bottom: 0;
+}
+.mas-opc {
+  margin-top: var(--sp-3);
+}
+@media (hover: hover) {
+  .tesela:hover:not(:disabled),
+  .pleg-b:hover:not(:disabled) {
+    background-color: var(--sf-2);
+  }
+}
+
+/* Entrega 31: lenguaje B (lista limpia) en Hoy, Entreno y Progreso/Informe. Solo tokens.
+   Se activa con la clase .plano en <main>; Comidas y Ajustes siguen con tarjetas.
+   Sin cajas ni líneas: el ritmo vertical (--sp-5, --sp-6) separa los bloques.
+   Se mantienen las cajas de lo que avisa (.warn) y los bordes de todo control tocable. */
+.plano section:not(.warn) {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: var(--sp-6);
+}
+.plano h3 {
+  margin: 0 0 var(--sp-3);
+}
+.plano .lin {
+  border-top: 0;
+  padding: var(--sp-2) 0;
+  font-size: 15px;
+}
+.plano .fila {
+  border-top: 0;
+  padding: var(--sp-3) 0;
+}
+.plano section.vacio .vacio,
+.plano .vacio .vacio + .vacio {
+  border-top: 0;
+}
+.plano .tabs-wrap {
+  margin-bottom: var(--sp-5);
+}
+
+/* Hoy: preparación y botón sin caja, teselas como lista (rótulo a la izquierda, valor a la derecha) */
+.plano .hoy {
+  gap: 0 var(--sp-6);
+}
+.plano .hoy .prep .bar {
+  height: var(--sp-1);
+  margin: var(--sp-3) 0 var(--sp-4);
+}
+.plano .hoy-cta,
+.plano .teselas {
+  margin-bottom: var(--sp-6);
+}
+.plano .hoy > .warn {
+  margin-bottom: var(--sp-6);
+}
+.plano .teselas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+.plano .tesela {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--sp-3);
+  row-gap: var(--sp-1);
+  min-height: 0;
+  padding: var(--sp-2) 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+.plano .tesela > * {
+  grid-column: 1;
+}
+.plano .tesela .tesela-v {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  font-size: 26px;
+  text-align: right;
+}
+.plano .pleg-b {
+  min-height: 52px;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+.plano .pleg-c {
+  margin-top: var(--sp-3);
+}
+@media (hover: hover) {
+  .plano .tesela:hover:not(:disabled),
+  .plano .pleg-b:hover:not(:disabled) {
+    background-color: transparent;
+  }
+}
+
+/* Pantalla ancha: preparación y botón a la izquierda, lista a la derecha; lo plegable queda debajo a todo el ancho */
+@media (min-width: 840px) {
+  .plano .hoy > .prep,
+  .plano .hoy > .vacio {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .plano .hoy > .hoy-cta {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .plano .hoy > .teselas {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: start;
+  }
+}
+
+/* ===== v0.33.0 · Entrega 32: anillos de progreso (preparación, comida y agua) ===== */
+.anillo {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+.anillo svg {
+  display: block;
+}
+.anillo-pista,
+.anillo-arco {
+  fill: none;
+  stroke-width: 3.6;
+}
+.anillo-pista {
+  stroke: var(--sf-2);
+}
+.anillo-arco {
+  stroke: var(--info);
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.4s;
+}
+.anillo.ok .anillo-arco {
+  stroke: var(--pos);
+}
+.anillo.bajo .anillo-arco {
+  stroke: var(--neg);
+}
+.anillo-c {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+/* Preparación: anillo con el puntaje a la izquierda, el texto a la derecha */
+.prep-cab {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  margin: var(--sp-3) 0 var(--sp-3);
+}
+.prep-cab .prep-n {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 40px;
+  line-height: 1;
+  margin: 0;
+}
+.prep-cab .prep-n small {
+  font-size: 12px;
+  margin-top: var(--sp-1);
+}
+.prep-cuerpo {
+  min-width: 0;
+}
+
+/* Hoy: en la lista, el anillo de Comida y Agua va a la izquierda (Peso no tiene meta y deja el hueco vacío) */
+.plano .tesela {
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  column-gap: var(--sp-4);
+}
+.plano .tesela > * {
+  grid-column: 2;
+}
+.plano .tesela > .anillo {
+  grid-column: 1;
+  grid-row: 1 / span 3;
+}
+.plano .tesela .tesela-v {
+  grid-column: 3;
+}
+
+/* ===== v0.34.0 · Entrega 33: anillo del contador de pasos y modo sueño con alarma ===== */
+.pasos-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  margin: var(--sp-3) 0 var(--sp-4);
+}
+.pasos-n {
+  font-size: 28px;
+  line-height: 1;
+}
+.pasos-cuerpo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.pasos-est {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: 13px;
+  color: var(--tx);
+  background: var(--sf-2);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-ctl);
+}
+.pasos-est.contando .ico {
+  color: var(--pos);
+  animation: pasos-latido 1.4s ease-in-out infinite;
+}
+.pasos-est.buscando .ico,
+.pasos-est.pausa .ico {
+  color: var(--warn);
+}
+@keyframes pasos-latido {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pasos-est.contando .ico {
+    animation: none;
+  }
+}
+
+/* Dormir con alarma: la pantalla completa es casi negra (fondo del tema, textos y anillo atenuados) */
+.sueno {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.sueno-ov {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--bg);
+  color: var(--tx-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-5);
+  padding: var(--sp-5);
+  text-align: center;
+  overflow-y: auto;
+}
+.sueno-ov .anillo {
+  opacity: 0.6;
+}
+.sueno-ov .anillo.ok {
+  opacity: 1;
+}
+.sueno-hora {
+  font-size: 44px;
+  color: var(--tx-2);
+}
+.sueno-est {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  color: var(--tx-2);
+}
+.sueno-falta {
+  margin: 0;
+  font-size: 18px;
+  color: var(--tx-2);
+}
+.sueno-nota {
+  max-width: 320px;
+}
+.sueno-bot {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.sueno-apagar {
+  min-width: 240px;
+  min-height: 64px;
+  font-size: 20px;
+}
+.sueno-res {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  text-align: left;
+}
+.sueno-res h3 {
+  margin: 0;
+}
+.sueno-linea {
+  margin: 0;
+  color: var(--tx);
+}
+
+/* Anillos grandes (pasos y noche): trazo más fino que el de los anillos chicos */
+.pasos-hero .anillo-pista,
+.pasos-hero .anillo-arco,
+.sueno-ov .anillo-pista,
+.sueno-ov .anillo-arco {
+  stroke-width: 2.2;
+}
+
+/* Entrega 34: modo bolsillo (pantalla casi negra mientras se camina) */
+.bolsillo-ov {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--bg);
+  color: var(--tx-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  text-align: center;
+  touch-action: none;
+  user-select: none;
+}
+.bolsillo-n {
+  font-size: 64px;
+  line-height: 1;
+  color: var(--tx-2);
+}
+.bolsillo-sal {
+  position: relative;
+  overflow: hidden;
+  min-height: 64px;
+  min-width: 260px;
+}
+.bolsillo-sal span {
+  position: relative;
+}
+.bolsillo-sal i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: var(--sf-2);
+}
+.bolsillo-sal.on i {
+  width: 100%;
+  transition: width 1s linear;
+}
+
+/* ===== v0.36.0 · Entrega 35: modo bolsillo con datos, señal de GPS, pausa y animación ===== */
+.bolsillo-ov {
+  overflow-y: auto;
+  justify-content: flex-start;
+  gap: var(--sp-3);
+}
+.bols {
+  margin-block: auto;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+}
+.bols-top {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+.bols-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 32px;
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-ctl);
+  background: var(--sf-2);
+  color: var(--tx);
+  font-size: 13px;
+}
+.bols-chip.contando .ico {
+  color: var(--pos);
+  animation: bols-respira 1.6s ease-in-out infinite;
+}
+.bols-chip.buscando .ico,
+.bols-chip.pausa .ico {
+  color: var(--warn);
+}
+.bols-chip.pausa {
+  border: 1px solid var(--warn);
+}
+@keyframes bols-respira {
+  50% {
+    opacity: 0.3;
+    transform: scale(0.7);
+  }
+}
+
+/* Barras de señal de GPS: cuántas están llenas depende de la precisión; el texto dice lo mismo */
+.barras {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: var(--sp-1);
+  height: 16px;
+}
+.barras i {
+  width: 4px;
+  background: var(--sf-2);
+  border: 1px solid var(--tx-dis);
+}
+.barras i:nth-child(1) {
+  height: 5px;
+}
+.barras i:nth-child(2) {
+  height: 8px;
+}
+.barras i:nth-child(3) {
+  height: 12px;
+}
+.barras i:nth-child(4) {
+  height: 16px;
+}
+.barras i.on {
+  background: var(--pos);
+  border: 1px solid var(--pos);
+}
+.barras.debil i.on,
+.barras.buscando i.on {
+  background: var(--warn);
+  border: 1px solid var(--warn);
+}
+.bols.pausada .barras i.on {
+  background: var(--tx-dis);
+  border: 1px solid var(--tx-dis);
+}
+.gps-linea {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* Anillo del día con una onda fina por cada paso detectado */
+.bols-hero {
+  position: relative;
+  width: 208px;
+  height: 208px;
+  display: grid;
+  place-items: center;
+}
+.bols-hero .anillo-pista,
+.bols-hero .anillo-arco {
+  stroke-width: 2.2;
+}
+.bols-hero .anillo-arco {
+  transition: stroke-dasharray 0.5s ease;
+}
+.bols.pausada .anillo-arco {
+  stroke: var(--warn);
+}
+.bols-centro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+}
+.bols-n {
+  font-size: 52px;
+  line-height: 1;
+}
+.bols.pausada .bols-n {
+  color: var(--tx-2);
+}
+.bols-onda {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  fill: none;
+  stroke: var(--info);
+  stroke-width: 0.4;
+  transform-origin: center;
+  animation: bols-onda 0.9s ease-out forwards;
+}
+@keyframes bols-onda {
+  from {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.14);
+  }
+}
+
+.bols-cam {
+  margin: 0;
+  font-size: 15px;
+  color: var(--tx);
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+.bols-cam b {
+  font-size: 20px;
+}
+.bols.pausada .bols-cam {
+  opacity: 0.6;
+}
+.bols-pausa {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--warn);
+  border-radius: var(--r-ctl);
+  background: var(--sf-2);
+  color: var(--tx);
+  font-size: 14px;
+}
+.bols-datos {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-2);
+}
+.bols-datos div {
+  background: var(--sf);
+  border-radius: var(--r-tile);
+  padding: var(--sp-3) var(--sp-2);
+  text-align: center;
+}
+.bols-datos b {
+  display: block;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.bols-datos small {
+  color: var(--tx-2);
+  font-size: 12px;
+}
+.bols.pausada .bols-datos b {
+  color: var(--tx-2);
+}
+
+/* Pausar y Salir: se activan manteniendo presionado (relleno de progreso) */
+.bols-acc {
+  width: 100%;
+  max-width: 380px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+}
+.mant {
+  position: relative;
+  overflow: hidden;
+  min-height: 64px;
+  min-width: 0;
+  width: 100%;
+  touch-action: none;
+  user-select: none;
+}
+.mant span,
+.mant small {
+  position: relative;
+  display: block;
+}
+.mant small {
+  font-size: 11px;
+  color: var(--tx-2);
+}
+.mant i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: var(--sf-2);
+}
+.mant.on i {
+  width: 100%;
+  transition: width var(--t) linear;
+}
+.bols-pie {
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bols-chip.contando .ico {
+    animation: none;
+  }
+  .bols-onda {
+    display: none;
+  }
+  .bols-hero .anillo-arco,
+  .mant.on i {
+    transition: none;
+  }
+}
+
+/* Entrega 36: total del día en «Dormir con alarma» (solo tokens, sin tokens nuevos) */
+.sueno-suma {
+  margin: 0;
+  color: var(--tx);
 }

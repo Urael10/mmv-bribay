@@ -1,0 +1,66 @@
+# Compila el APK de depuración de MMV (Android) en los servidores de GitHub: tu PC no compila nada.
+# Corre al subir cambios a la rama «prueba» y a mano (Actions → «APK Android (depuración)» → Run workflow).
+# El APK queda como artefacto de esa ejecución (al final de su página). No publica nada en Cloudflare.
+# Si una prueba falla, no se arma el APK.
+name: APK Android (depuración)
+
+on:
+  push:
+    branches: [prueba]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apk-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22 # el CLI de Capacitor 8 exige Node 22 o superior
+          cache: npm
+      # Capacitor 8 genera código para Java 21 (android/app/capacitor.build.gradle): con JDK 17 no compila.
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: npm ci
+      - run: npm test
+      - name: Compilar la web y sincronizarla con el proyecto Android
+        run: npm run cap:sync
+      - name: Compilar el APK de depuración
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+      - name: Nombrar el APK con la versión
+        id: apk
+        run: |
+          version=$(node -p "require('./package.json').version")
+          nombre="mmv-v${version}-debug.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "$nombre"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "nombre=$nombre" >> "$GITHUB_OUTPUT"
+          {
+            echo "### APK de depuración de MMV v${version}"
+            echo ""
+            echo "Archivo: ${nombre} ($(du -h "$nombre" | cut -f1))"
+            echo ""
+            echo "SHA-256: $(sha256sum "$nombre" | cut -d' ' -f1)"
+            echo ""
+            echo "Descargalo en la sección **Artifacts**, al final de esta página (baja como .zip con el .apk adentro)."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: mmv-apk-debug-v${{ steps.apk.outputs.version }}
+          path: ${{ steps.apk.outputs.nombre }}
+          if-no-files-found: error
+          retention-days: 30

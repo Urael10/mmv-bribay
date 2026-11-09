@@ -4,6 +4,7 @@ import {exportar, restaurar, puedeCompartir, ultimoBackup} from '../../data/back
 import {diasDesde} from '../../domain/backup'
 import {edadDe, proteinaObjetivo, ultima, PROT_KG} from '../../domain/cuerpo'
 import {probarIA} from '../../services/ia'
+import {CLAVE_MAPA} from '../../domain/mapa'
 import {INFO, fechaBuild, buscarActualizacion, actualizarAhora} from '../../version'
 
 function Version({onVersion}) {
@@ -260,6 +261,35 @@ function ProbarIA({modelo, onModelo}) {
   )
 }
 
+function MapaRutas() {
+  const [on, setOn] = useState(cfg(CLAVE_MAPA) === '1')
+  return (
+    <section>
+      <h3>Mapa de las rutas</h3>
+      <p>
+        Por defecto tus rutas se ven como un trazo dibujado en el teléfono, sin conexión. Si lo activás,
+        cada ruta tendrá un botón «Ver sobre el mapa» con OpenStreetMap de fondo.
+      </p>
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={on}
+          onChange={e => {
+            setOn(e.target.checked)
+            setCfg(CLAVE_MAPA, e.target.checked ? '1' : '0')
+          }}
+        />
+        <span>Permitir el mapa de OpenStreetMap</span>
+      </label>
+      <small className="mu">
+        Al abrir el mapa, el teléfono le pide a los servidores de OpenStreetMap las imágenes de la zona
+        visible: ellos reciben esa zona y tu dirección de internet. No reciben tu nombre ni el resto de tus
+        datos, y la IA nunca recibe coordenadas ni trazos (solo totales como km y minutos). Con el mapa apagado no se contacta a nadie.
+      </small>
+    </section>
+  )
+}
+
 export default function Ajustes({onVersion}) {
   const [k, setK] = useState(cfg('key')),
     [m, setM] = useState(cfg('modelo', 'gemini-3.8-flash')),
@@ -271,6 +301,7 @@ export default function Ajustes({onVersion}) {
       <Version onVersion={onVersion} />
       <Respaldo />
       <Perfil />
+      <MapaRutas />
       <UsoIA />
       <section>
         <h3>Ajustes</h3>

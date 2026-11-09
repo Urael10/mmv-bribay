@@ -9,22 +9,23 @@ const css = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8')
 
 const claves = [...prog.matchAll(/^\s*\['(\w+)', '([^']+)'\]/gm)].map(m => m[1])
 
-test('Progreso mantiene las 7 pestañas, mismo orden y nombres', () => {
+test('Progreso tiene 8 pestañas (D5: «Rutas» después de Historial), mismo orden y nombres', () => {
   const bloque = prog.slice(prog.indexOf('export const PESTANAS'), prog.indexOf('export default function Progreso'))
   const pares = [...bloque.matchAll(/\['(\w+)', '([^']+)'\]/g)].map(m => m.slice(1))
   assert.deepEqual(pares, [
     ['pilares', 'Pilares'],
     ['semana', 'Semana'],
     ['historial', 'Historial'],
+    ['rutas', 'Rutas'],
     ['records', 'Récords'],
     ['tests', 'Tests'],
     ['cuerpo', 'Cuerpo'],
     ['informe', 'Informe']
   ])
-  assert.ok(claves.length >= 7)
+  assert.ok(claves.length >= 8)
 })
 test('cada pestaña de Progreso tiene su vista', () => {
-  for (const k of ['pilares', 'semana', 'historial', 'records', 'tests', 'cuerpo', 'informe'])
+  for (const k of ['pilares', 'semana', 'historial', 'rutas', 'records', 'tests', 'cuerpo', 'informe'])
     assert.ok(prog.includes(`sub === '${k}'`), 'falta la vista de ' + k)
 })
 test('Progreso usa las tabs deslizables y no la fila de chips que se partía en dos', () => {

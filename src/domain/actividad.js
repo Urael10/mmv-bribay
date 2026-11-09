@@ -29,14 +29,26 @@ export function sumarPasos(actual, suma) {
 
 // ---------- Acelerómetro ----------
 
-export const UMBRAL_SUBE = 1.0 // m/s² sobre el nivel estable para marcar un paso
-export const UMBRAL_BAJA = 0.3 // m/s² por debajo del cual se rearma el detector
+export const UMBRAL_SUBE = 0.6 // m/s² sobre el nivel estable para marcar un paso (en el bolsillo el movimiento es más suave que en la mano)
+export const UMBRAL_BAJA = 0.2 // m/s² por debajo del cual se rearma el detector
 export const INTERVALO_MIN_MS = 280 // ningún humano da dos pasos en menos de esto
 
 // Magnitud de la aceleración de un evento devicemotion. Prefiere la lineal (sin gravedad).
 export function magnitudAceleracion(ev) {
   const completo = a => a && [a.x, a.y, a.z].every(v => v != null && Number.isFinite(+v))
   const a = completo(ev?.acceleration) ? ev.acceleration : ev?.accelerationIncludingGravity
+  if (!completo(a)) return null
+  return Math.hypot(+a.x, +a.y, +a.z)
+}
+
+// Magnitud que usa el contador de pasos. Prefiere la aceleración CON gravedad: su módulo es ~9,8 más la
+// componente vertical del golpe del paso, así que sube y baja alrededor de un nivel estable. El módulo de la
+// aceleración lineal, en cambio, es siempre positivo (rectificado): el golpe queda aplastado contra su promedio
+// y, con el teléfono en el bolsillo (movimiento suave), no llegaba al umbral y el contador quedaba en 0.
+// Cae a la lineal si el equipo no entrega la que incluye gravedad.
+export function magnitudParaPasos(ev) {
+  const completo = a => a && [a.x, a.y, a.z].every(v => v != null && Number.isFinite(+v))
+  const a = completo(ev?.accelerationIncludingGravity) ? ev.accelerationIncludingGravity : ev?.acceleration
   if (!completo(a)) return null
   return Math.hypot(+a.x, +a.y, +a.z)
 }
@@ -188,7 +200,8 @@ export function cerrarConteo({sensor = 0, distM = 0, seg = 0, largo = LARGO_PASO
 // ---------- Actividades registradas ----------
 
 // Valida y arma el registro. Devuelve null si algo no es válido.
-export function armarActividad({fecha, tipo, minutos, km, nota}) {
+// `rutaId` (opcional) enlaza la actividad con la ruta GPS de la que salió, para no contar dos veces.
+export function armarActividad({fecha, tipo, minutos, km, nota, rutaId}) {
   const duracion = Math.floor(+minutos || 0),
     distancia = +km || 0
   if (!fecha || duracion < 1 || duracion > 1440 || distancia < 0 || distancia > 1000) return null
@@ -198,7 +211,8 @@ export function armarActividad({fecha, tipo, minutos, km, nota}) {
     tipo: tipo in TIPOS ? tipo : 'otro',
     minutos: duracion,
     ...(distancia > 0 ? {km: +distancia.toFixed(2)} : {}),
-    ...(texto ? {nota: texto} : {})
+    ...(texto ? {nota: texto} : {}),
+    ...(Number.isInteger(+rutaId) && +rutaId > 0 ? {rutaId: +rutaId} : {})
   }
 }
 

@@ -1,4 +1,4 @@
-# Tokens de diseño de MMV (v0.24.0)
+# Tokens de diseño de MMV (v0.36.0)
 
 Todos los colores viven en `src/tokens.css`. Ni `styles.css` ni los componentes llevan hex/rgb (una prueba lo vigila). Única excepción: `theme-color` en `index.html` y `manifest.webmanifest` repite `--bg` (otra prueba comprueba que coincidan).
 
@@ -33,3 +33,26 @@ Normal (`--sf-2` + borde `--bd`) · presionado (`:active`) · seleccionado (`.on
 
 ## Cambiar un color
 Edita solo `src/tokens.css` y corré `npm test`: las pruebas recalculan los contrastes.
+
+## Forma, espacio y elevación (v0.31.0)
+Radios, espacios y sombras también viven solo en `src/tokens.css`. `styles.css` y los componentes usan `var(--…)`.
+
+| Token | Valor | Uso |
+|---|---|---|
+| `--r-card` | 24px | tarjetas grandes (`section`, preparación) |
+| `--r-tile` | 18px | teselas y filas plegables de Hoy |
+| `--r-ctl` | 14px | botón principal de Hoy |
+| `--sp-1` … `--sp-6` | 4 · 8 · 12 · 16 · 24 · 32 px | separaciones |
+| `--sombra-1` | dos capas suaves | elevación de tarjetas y teselas (reemplaza el borde) |
+| `--ancho-app` | 520px (760px desde 840px de ancho) | ancho máximo de la app y de la barra inferior |
+
+Las tarjetas ya no llevan borde: se separan del fondo con `--sf` y `--sombra-1`. El borde `--bd` sigue siendo obligatorio en los controles tocables.
+
+## Lista limpia (v0.32.0)
+Sin tokens nuevos. En Hoy, Entreno y Progreso (clase `plano` en `<main>`) las secciones pierden fondo, sombra, radio y relleno; el ritmo lo dan `--sp-5` entre filas y `--sp-6` entre bloques. Siguen con caja las de aviso (`.warn`) y con borde `--bd` todos los controles tocables. El lima sigue siendo uno por pantalla (botón de entrenar).
+
+## Anillo de pasos y modo sueño (v0.34.0)
+Sin tokens nuevos. El anillo de pasos usa `Anillo` (`--info`, `--pos` al llegar a la meta, `--sf-2` de pista); el estado del conteo va siempre con ícono + texto (`--pos` contando, `--warn` buscando o en pausa). La pantalla de dormir usa `--bg` y `--tx-2`, con el anillo a opacidad 0,6 para no encandilar. Cian = tocable y lima = destacado no se usan en los bloques nuevos (los botones heredan el estilo base).
+
+## Modo bolsillo (v0.36.0)
+Sin tokens nuevos. Total del día en `Anillo` (`--info`; `--pos` al llegar a la meta; `--warn` en pausa); estado con ícono + texto (`--pos` contando, `--warn` buscando o en pausa); barras de señal de GPS (`--pos` buena, `--warn` débil, `--tx-dis` apagadas o en pausa) siempre con el texto al lado. La onda por paso usa `--info`. Cian = tocable y lima = destacado no se usan en el bloque; los botones de mantener presionado heredan el borde base de `.ghost`. Toda animación se apaga con `prefers-reduced-motion`.

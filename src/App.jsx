@@ -1,11 +1,8 @@
 import {useState, useEffect, useRef} from 'react'
 import Hoy from './features/hoy/Hoy'
-import Entreno from './features/entreno/Entreno'
 import {BarraReloj} from './features/entreno/Timer'
-import Comidas from './features/comidas/Comidas'
-import Progreso from './features/progreso/Progreso'
-import Ajustes from './features/ajustes/Ajustes'
-import Bienestar from './features/bienestar/Bienestar'
+import Pantalla from './ui/Pantalla'
+import {precargarEnSegundoPlano} from './ui/pantallas'
 import {registrarToque} from './domain/privado'
 import {buscarActualizacion, actualizarAhora} from './version'
 import {exportar, hayDatos, ultimoBackup} from './data/backup'
@@ -24,12 +21,18 @@ export default function App() {
     [previa, setPrevia] = useState('hoy'),
     [nueva, setNueva] = useState(false),
     [bk, setBk] = useState(null),
-    [oculto, setOculto] = useState(false)
+    [oculto, setOculto] = useState(false),
+    [subProgreso, setSubProgreso] = useState(undefined)
   useEffect(() => {
     buscarActualizacion().then(r => r?.nueva && setNueva(true))
   }, [])
-  const ir = t => {
+  // Entrega 28: las pantallas pesadas se bajan aparte; unos segundos después de abrir se precargan
+  // en segundo plano para que anden sin conexión (ver src/ui/pantallas.js).
+  useEffect(() => precargarEnSegundoPlano(), [])
+  // `sub`: pestaña de Progreso a la que se quiere llegar (ej. «rutas» desde Hoy).
+  const ir = (t, sub) => {
     if (t !== 'ajustes' && t !== 'priv') setPrevia(t)
+    setSubProgreso(sub)
     setTab(t)
   }
   // Acceso oculto al menú privado: 5 toques seguidos en la línea «Versión» de Ajustes (antes: la versión de la cabecera).
@@ -88,15 +91,21 @@ export default function App() {
         </div>
       )}
       {tab !== 'entreno' && <BarraReloj onAbrir={() => ir('entreno')} />}
-      <main>
+      <main className={tab === 'hoy' || tab === 'entreno' || tab === 'progreso' ? 'plano' : undefined}>
         <div hidden={tab !== 'hoy'}>
-          <Hoy onEmpezar={() => ir('entreno')} onComidas={() => ir('comidas')} />
+          <Hoy
+            onEmpezar={() => ir('entreno')}
+            onComidas={() => ir('comidas')}
+            onRutas={() => ir('progreso', 'rutas')}
+          />
         </div>
-        {tab === 'entreno' && <Entreno />}
-        {tab === 'comidas' && <Comidas />}
-        {tab === 'progreso' && <Progreso />}
-        {tab === 'ajustes' && <Ajustes onVersion={tocarVersion} />}
-        {tab === 'priv' && <Bienestar onSalir={() => setTab(previa)} />}
+        {tab === 'entreno' && <Pantalla clave="entreno" nombre="Entreno" />}
+        {tab === 'comidas' && <Pantalla clave="comidas" nombre="Comidas" />}
+        {tab === 'progreso' && <Pantalla clave="progreso" nombre="Progreso" subInicial={subProgreso} />}
+        {tab === 'ajustes' && <Pantalla clave="ajustes" nombre="Ajustes" onVersion={tocarVersion} />}
+        {tab === 'priv' && (
+          <Pantalla clave="priv" nombre="esta pantalla" onSalir={() => setTab(previa)} />
+        )}
       </main>
       <nav>
         {TABS.map(([k, n, ic]) => (
