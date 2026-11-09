@@ -366,6 +366,7 @@ test('ningún servicio toca mapa ni GPX; no hay fetch de teselas ni librería de
   assert.deepEqual(Object.keys(pkg.dependencies).sort(), [
     '@capacitor/android', // Entrega 40 (v0.41.0): contenedor Android (Capacitor); sigue sin haber librería de mapas
     '@capacitor/core',
+    '@capacitor/local-notifications', // Entrega 41 (v0.42.0): recordatorios; solo lo importa src/platform/notificaciones.js
     '@fontsource/bebas-neue',
     '@fontsource/chakra-petch',
     '@fontsource/inter',

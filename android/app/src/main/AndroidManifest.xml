@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:allowBackup="true"
@@ -38,4 +39,14 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Entrega 41 · GPS de «Pasos y rutas»: sin esto el WebView no puede pedir la ubicación («GPS sin permiso»). -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Entrega 41 · recordatorios (@capacitor/local-notifications). El plugin aporta por su cuenta POST_NOTIFICATIONS
+         (Android 13+; se pide solo al activar un recordatorio), RECEIVE_BOOT_COMPLETED (reprograma al reiniciar) y
+         WAKE_LOCK. Se quita SCHEDULE_EXACT_ALARM a propósito: los avisos usan alarmas inexactas, así Android no manda a
+         la persona a la pantalla «Alarmas y recordatorios». -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" tools:node="remove" />
 </manifest>

@@ -20,6 +20,12 @@ const config: CapacitorConfig = {
       initialViewportFitValueHint: 'cover',
       // La app es siempre oscura: íconos claros en la barra de estado y la de navegación (aunque el teléfono esté en modo claro).
       style: 'DARK'
+    },
+    // Recordatorios (Entrega 41): silueta de un solo color en la barra de estado (res/drawable/ic_stat_mmv.xml) y el
+    // celeste de la app (--ac) para el acento de la notificación.
+    LocalNotifications: {
+      smallIcon: 'ic_stat_mmv',
+      iconColor: '#22D3EE'
     }
   }
 }

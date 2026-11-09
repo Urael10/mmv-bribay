@@ -8,6 +8,7 @@ import {buscarActualizacion, actualizarAhora} from './version'
 import {exportar, hayDatos, ultimoBackup} from './data/backup'
 import {avisoBackup} from './domain/backup'
 import Icono from './ui/Icono'
+import useRecordatorios from './features/recordatorios/useRecordatorios'
 
 const TABS = [
   ['hoy', 'Hoy', 'hoy'],
@@ -17,6 +18,7 @@ const TABS = [
 ]
 
 export default function App() {
+  useRecordatorios() // Entrega 41: en el APK mantiene al día los avisos programados
   const [tab, setTab] = useState('hoy'),
     [previa, setPrevia] = useState('hoy'),
     [nueva, setNueva] = useState(false),

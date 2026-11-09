@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ícono de la barra de estado para los recordatorios (Entrega 41). Android exige una silueta de un solo color
+     (el color y la transparencia los pone el sistema); con el ícono de la app saldría un cuadrado gris. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,3C8.7,3 6,5.7 6,9L6,14L4,17L20,17L18,14L18,9C18,5.7 15.3,3 12,3ZM10,19A2,2 0 0 0 14,19Z" />
+</vector>
