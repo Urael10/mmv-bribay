@@ -1,11 +1,11 @@
 import {useState, useEffect} from 'react'
 import {hoy} from '../../data/db'
 import {notificaciones} from '../../platform/notificaciones'
-import {INTERVALOS_AGUA, estadoAcostarte} from '../../domain/recordatorios'
+import {INTERVALOS_AGUA, DIAS_SEMANA, estadoAcostarte} from '../../domain/recordatorios'
 import {leerConfig, guardarConfig, reprogramar, habitosRecientes} from './servicio'
 
 // Entrega 41 (v0.42.0) · Ajustes › Recordatorios. Avisos del teléfono (solo en la app de Android) para el check-in, la
-// hora de acostarte y el agua. El permiso de notificaciones se pide acá, al activar el primero; no antes.
+// hora de acostarte y el agua (Entrega 42: y un backup semanal; tocar un aviso abre la pantalla que corresponde). El permiso de notificaciones se pide acá, al activar el primero; no antes.
 const AYUDA_PERMISO =
   'Android no dejó mostrar avisos. Activalos en Ajustes del teléfono › Aplicaciones › Mi Mejor Versión › Notificaciones y volvé a probar.'
 
@@ -28,7 +28,7 @@ export default function Recordatorios() {
       <section>
         <h3>Recordatorios</h3>
         <p>
-          Los recordatorios del check-in, de la hora de acostarte y del agua funcionan en la app de Android. En el
+          Los recordatorios del check-in, de la hora de acostarte, del agua y del backup funcionan en la app de Android. En el
           navegador no se pueden mostrar avisos con la app cerrada.
         </p>
       </section>
@@ -49,7 +49,14 @@ export default function Recordatorios() {
     setC(nueva)
     guardarConfig(nueva)
     const r = await reprogramar()
-    if (r.ok) setMsg(r.n ? `Listo: ${r.n} avisos programados para los próximos 7 días.` : 'Sin avisos programados.')
+    if (r.ok)
+      setMsg(
+        r.n === 1
+          ? 'Listo: 1 aviso programado para los próximos 7 días.'
+          : r.n
+            ? `Listo: ${r.n} avisos programados para los próximos 7 días.`
+            : 'Sin avisos programados.'
+      )
     else if (r.motivo === 'sin-permiso') {
       setPermiso('denied')
       setMsg(AYUDA_PERMISO)
@@ -62,9 +69,10 @@ export default function Recordatorios() {
       <h3>Recordatorios</h3>
       <p>
         Avisos del teléfono. Se recalculan cada vez que abrís la app o cambian tus datos: si ya hiciste el check-in o
-        llegaste a la meta de agua, hoy no te insisten.
+        llegaste a la meta de agua, hoy no te insisten (ni con el backup, si ya lo hiciste ese día). Tocar un aviso abre la
+        pantalla que corresponde.
       </p>
-      {permiso === 'denied' && (c.checkin.on || c.acostarte.on || c.agua.on) && (
+      {permiso === 'denied' && (c.checkin.on || c.acostarte.on || c.agua.on || c.backup.on) && (
         <small className="mu" role="alert">
           {AYUDA_PERMISO}
         </small>
@@ -138,6 +146,39 @@ export default function Recordatorios() {
                 </option>
               ))}
             </select>
+          </label>
+        </div>
+      )}
+
+      <p>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={c.backup.on}
+            onChange={e => cambia('backup', {on: e.target.checked}, e.target.checked)}
+          />
+          <span>Backup semanal</span>
+        </label>
+      </p>
+      {c.backup.on && (
+        <div className="row">
+          <label className="ck-c">
+            <span className="mu">Día</span>
+            <select value={c.backup.dia} onChange={e => cambia('backup', {dia: Number(e.target.value)})}>
+              {DIAS_SEMANA.map((d, i) => (
+                <option key={d} value={i}>
+                  {d}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="ck-c">
+            <span className="mu">Hora del aviso</span>
+            <input
+              type="time"
+              value={c.backup.hora}
+              onChange={e => e.target.value && cambia('backup', {hora: e.target.value})}
+            />
           </label>
         </div>
       )}

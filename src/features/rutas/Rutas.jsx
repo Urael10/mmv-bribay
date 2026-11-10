@@ -44,14 +44,18 @@ function Detalle({ruta, onBorrar, onAviso}) {
   const [confirmar, setConfirmar] = useState(false),
     [verMapa, setVerMapa] = useState(false)
   const exportar = async () => {
-    const r = await entregarArchivo(nombreArchivoGpx([ruta], hoy()), rutasAGpx([ruta]))
-    onAviso(
-      r === 'cancelado'
-        ? ''
-        : r === 'compartido'
-          ? 'GPX compartido.'
-          : 'GPX descargado (revisá Descargas).'
-    )
+    try {
+      const r = await entregarArchivo(nombreArchivoGpx([ruta], hoy()), rutasAGpx([ruta]))
+      onAviso(
+        r === 'cancelado'
+          ? ''
+          : r === 'compartido'
+            ? 'GPX compartido.'
+            : 'GPX descargado (revisá Descargas).'
+      )
+    } catch {
+      onAviso('No se pudo exportar. Intentá de nuevo.')
+    }
   }
   return (
     <div className="ruta-det">

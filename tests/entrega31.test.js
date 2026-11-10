@@ -17,8 +17,9 @@ test('el bloque de la entrega 31 es el último de styles.css y usa solo tokens',
   for (const m of bloque.matchAll(/\b(?:padding|gap|margin)[a-z-]*:\s*([^;]+);/g))
     for (const v of m[1].split(/\s+/)) assert.ok(/^(var\(--sp-\d\)|0|auto)$/.test(v), m[0])
 })
-test('el lenguaje plano solo se activa en Hoy, Entreno y Progreso (Comidas y Ajustes siguen con tarjetas)', () => {
-  assert.match(app, /<main className=\{tab === 'hoy' \|\| tab === 'entreno' \|\| tab === 'progreso' \? 'plano' : undefined\}>/)
+// Entrega 42 (v0.43.0): Comidas pasa a estilo plano a propósito; solo Ajustes (y su pantalla oculta) siguen con tarjetas.
+test('el lenguaje plano solo se activa en Hoy, Entreno, Comidas y Progreso (Ajustes sigue con tarjetas)', () => {
+  assert.match(app, /<main className=\{tab === 'hoy' \|\| tab === 'entreno' \|\| tab === 'comidas' \|\| tab === 'progreso' \? 'plano' : undefined\}>/)
   assert.doesNotMatch(bloque, /(^|\n)section\s*\{/) // nada global: todo cuelga de .plano
   const base = css.slice(css.indexOf('\nsection {'), css.indexOf('}', css.indexOf('\nsection {')))
   assert.match(base, /box-shadow:\s*var\(--sombra-1\)/) // la base con tarjeta no cambia

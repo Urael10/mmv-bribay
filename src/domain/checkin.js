@@ -1,8 +1,10 @@
 // Check-in de 20 segundos: tres toques (energía, ánimo, dolor muscular) + sueño. Se guarda en la fila de hábitos del día.
 export const CHECKIN = [
-  {k: 'energia', n: 'Energía', bajo: 'muy baja', alto: 'muy alta'},
-  {k: 'animo', n: 'Ánimo', bajo: 'muy bajo', alto: 'muy alto'},
-  {k: 'dolor', n: 'Dolor muscular', bajo: 'nada', alto: 'mucho'}
+  // `bajo` / `alto`: descripción completa del 1 y del 5 (la lee el lector de pantalla). `ext1` / `ext5`: la palabra corta
+  // que se ve en los extremos de cada fila de botones (Entrega 42; antes era una sola línea larga bajo los tres).
+  {k: 'energia', n: 'Energía', bajo: 'muy baja', alto: 'muy alta', ext1: 'baja', ext5: 'alta'},
+  {k: 'animo', n: 'Ánimo', bajo: 'muy bajo', alto: 'muy alto', ext1: 'bajo', ext5: 'alto'},
+  {k: 'dolor', n: 'Dolor muscular', bajo: 'nada', alto: 'mucho', ext1: 'nada', ext5: 'mucho'}
 ]
 export const checkinHecho = h => CHECKIN.every(c => +h?.[c.k] >= 1 && +h?.[c.k] <= 5)
 // Días con check-in completo en los 7 que terminan en `hasta` (para medir constancia semanal, no rachas).

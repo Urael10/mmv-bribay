@@ -9,6 +9,10 @@ import {exportar, hayDatos, ultimoBackup} from './data/backup'
 import {avisoBackup} from './domain/backup'
 import Icono from './ui/Icono'
 import useRecordatorios from './features/recordatorios/useRecordatorios'
+import {atras} from './platform/atras'
+import {notificaciones} from './platform/notificaciones'
+import {destinoDeAviso} from './domain/recordatorios'
+import {accionAtras, OVERLAYS_QUE_BLOQUEAN} from './domain/navegacion'
 
 const TABS = [
   ['hoy', 'Hoy', 'hoy'],
@@ -24,7 +28,9 @@ export default function App() {
     [nueva, setNueva] = useState(false),
     [bk, setBk] = useState(null),
     [oculto, setOculto] = useState(false),
-    [subProgreso, setSubProgreso] = useState(undefined)
+    [subProgreso, setSubProgreso] = useState(undefined),
+    [pedido, setPedido] = useState({accion: null, n: 0}), // qué abrir en Hoy al tocar un aviso (sube con cada toque)
+    [aAjustes, setAAjustes] = useState(null) // qué mostrar en Ajustes al tocar un aviso («backup»)
   useEffect(() => {
     buscarActualizacion().then(r => r?.nueva && setNueva(true))
   }, [])
@@ -34,9 +40,49 @@ export default function App() {
   // `sub`: pestaña de Progreso a la que se quiere llegar (ej. «rutas» desde Hoy).
   const ir = (t, sub) => {
     if (t !== 'ajustes' && t !== 'priv') setPrevia(t)
+    if (t !== 'ajustes') setAAjustes(null)
     setSubProgreso(sub)
     setTab(t)
   }
+  // Entrega 42 · en el APK: el botón atrás y el toque en un aviso. Los listeners se registran una vez y leen lo último
+  // de `estado` y `irRef` (no cierran sobre el render en que nacieron). En la PWA los dos adaptadores no hacen nada.
+  const estado = useRef({tab, previa}),
+    irRef = useRef(ir)
+  estado.current = {tab, previa}
+  irRef.current = ir
+  useEffect(() => {
+    let fin = false,
+      quitar = () => {}
+    atras
+      .alAtras(() => {
+        if (document.querySelector(OVERLAYS_QUE_BLOQUEAN)) return
+        const a = accionAtras(estado.current)
+        if (a.tipo === 'ir') irRef.current(a.tab)
+        else atras.salir()
+      })
+      .then(q => (fin ? q() : (quitar = q)))
+    return () => {
+      fin = true
+      quitar()
+    }
+  }, [])
+  useEffect(() => {
+    let fin = false,
+      quitar = () => {}
+    notificaciones
+      .alTocarAviso(tipo => {
+        const d = destinoDeAviso(tipo)
+        if (!d) return
+        irRef.current(d.tab)
+        if (d.tab === 'hoy') setPedido(p => ({accion: d.accion, n: p.n + 1}))
+        else setAAjustes(d.accion)
+      })
+      .then(q => (fin ? q() : (quitar = q)))
+    return () => {
+      fin = true
+      quitar()
+    }
+  }, [])
   // Acceso oculto al menú privado: 5 toques seguidos en la línea «Versión» de Ajustes (antes: la versión de la cabecera).
   const toques = useRef([])
   const tocarVersion = () => {
@@ -60,7 +106,13 @@ export default function App() {
         <button
           className={'gear' + (tab === 'ajustes' || tab === 'priv' ? ' on' : '')}
           aria-label={tab === 'ajustes' || tab === 'priv' ? 'Cerrar ajustes' : 'Ajustes'}
-          onClick={() => (tab === 'ajustes' || tab === 'priv' ? setTab(previa) : setTab('ajustes'))}
+          onClick={() => {
+            if (tab === 'ajustes' || tab === 'priv') setTab(previa)
+            else {
+              setAAjustes(null)
+              setTab('ajustes')
+            }
+          }}
         >
           <Icono n={tab === 'ajustes' || tab === 'priv' ? 'cerrar' : 'ajustes'} tam={22} />
         </button>
@@ -82,7 +134,11 @@ export default function App() {
           <div className="row" style={{marginTop: 6}}>
             <button
               onClick={async () => {
-                await exportar({compartir: true})
+                try {
+                  await exportar({compartir: true})
+                } catch {
+                  /* si no se pudo preparar, el aviso sigue ahí y se puede intentar de nuevo o desde Ajustes */
+                }
                 revisarBackup()
               }}
             >
@@ -96,18 +152,19 @@ export default function App() {
       )}
       </div>
       {tab !== 'entreno' && <BarraReloj onAbrir={() => ir('entreno')} />}
-      <main className={tab === 'hoy' || tab === 'entreno' || tab === 'progreso' ? 'plano' : undefined}>
+      <main className={tab === 'hoy' || tab === 'entreno' || tab === 'comidas' || tab === 'progreso' ? 'plano' : undefined}>
         <div hidden={tab !== 'hoy'}>
           <Hoy
             onEmpezar={() => ir('entreno')}
             onComidas={() => ir('comidas')}
             onRutas={() => ir('progreso', 'rutas')}
+            pedido={pedido}
           />
         </div>
         {tab === 'entreno' && <Pantalla clave="entreno" nombre="Entreno" />}
         {tab === 'comidas' && <Pantalla clave="comidas" nombre="Comidas" />}
         {tab === 'progreso' && <Pantalla clave="progreso" nombre="Progreso" subInicial={subProgreso} />}
-        {tab === 'ajustes' && <Pantalla clave="ajustes" nombre="Ajustes" onVersion={tocarVersion} />}
+        {tab === 'ajustes' && <Pantalla clave="ajustes" nombre="Ajustes" onVersion={tocarVersion} irA={aAjustes} />}
         {tab === 'priv' && (
           <Pantalla clave="priv" nombre="esta pantalla" onSalir={() => setTab(previa)} />
         )}

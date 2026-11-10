@@ -1114,11 +1114,33 @@ main {
   margin: 0;
   gap: 5px;
 }
-.ck-leyenda {
-  display: block;
+/* Entrega 42: cada fila del check-in dice sus extremos («baja … alta») bajo los botones; reemplaza la línea larga única */
+.checkin .ck {
+  align-items: start;
+}
+.checkin .ck-n {
+  padding-top: 13px; /* centra el nombre con los botones (44 px) y no con la fila entera */
+}
+.ck-esc {
+  min-width: 0;
+}
+.ck-ext {
+  display: flex;
+  justify-content: space-between;
   font-size: 12px;
-  line-height: 1.35;
-  margin: 2px 0 8px;
+  line-height: 1.2;
+  margin-top: 3px;
+}
+/* Peso no tiene meta: el círculo con el ícono ocupa el lugar del anillo y alinea la fila con las demás */
+.anillo-fijo {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  border: 4.4px solid var(--pista); /* mismo grosor que la pista de los anillos (3,6 de 36 sobre 44 px) */
+  border-radius: 50%;
+  color: var(--tx-2);
 }
 /* Estados vacíos plegables (una línea con ícono; se expanden al tocar) */
 section.vacio {

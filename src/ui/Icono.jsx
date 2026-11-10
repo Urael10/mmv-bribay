@@ -27,6 +27,13 @@ const RUTAS = {
       <path d="M20 20v-4.5h-4.5" />
     </>
   ),
+  balanza: (
+    <>
+      <path d="M5 6.5h14a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7.5a1 1 0 0 1 1-1Z" />
+      <path d="M8.5 11a4.5 4.5 0 0 1 7 0" />
+      <path d="M12 11.2l1.6-1.6" />
+    </>
+  ),
   check: <path d="M5 12.5l4.5 4.5L19 7.5" />,
   'flecha-arriba': (
     <>

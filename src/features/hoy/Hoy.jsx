@@ -120,6 +120,10 @@ function TeselaPeso({onAbrir}) {
   const dias = u ? Math.round((Date.now() - new Date(u.fecha + 'T12:00:00')) / 864e5) : null
   return (
     <button type="button" className="tesela" onClick={onAbrir} aria-label="Peso: abrir Cuerpo">
+      {/* Entrega 42: sin meta no hay anillo, pero el círculo con el ícono ocupa el mismo lugar y alinea la fila con las otras */}
+      <span className="anillo anillo-fijo" aria-hidden="true">
+        <Icono n="balanza" tam={20} />
+      </span>
       <span className="eti">Peso</span>
       <b className="mono tesela-v">{u ? fmtVal(u.peso) : '—'}</b>
       <small className="mu">{u ? `kg · ${dias <= 0 ? 'hoy' : `hace ${dias} d`}` : 'sin datos'}</small>
@@ -127,7 +131,7 @@ function TeselaPeso({onAbrir}) {
   )
 }
 
-export default function Hoy({onEmpezar, onComidas, onRutas}) {
+export default function Hoy({onEmpezar, onComidas, onRutas, pedido}) {
   const [h, setH] = useState({fecha: hoy(), agua: 0, sueno: '', calidad: null}),
     [otro, setOtro] = useState(''),
     [videos, setVideos] = useState([]),
@@ -171,6 +175,20 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
     el.scrollIntoView({block: 'center', behavior: quieto ? 'auto' : 'smooth'})
     ;(el.matches('[tabindex]') ? el : el.querySelector('button'))?.focus({preventScroll: true})
   }, [pedir])
+  // Entrega 42 · tocar un aviso del teléfono abre acá lo que corresponde: el check-in, el agua o «Dormir con alarma».
+  // `pedido.n` sube con cada toque (así el mismo aviso dos veces seguidas vuelve a abrirse). El bloque se abre y se trae
+  // a la vista con el mismo mecanismo de `abrirCk`.
+  useEffect(() => {
+    if (!pedido?.n) return
+    if (pedido.accion === 'checkin') abrirCk('hoy-checkin')
+    else if (pedido.accion === 'agua') {
+      setAguaAb(true)
+      setPedir(p => ({id: 'hoy-agua', n: p.n + 1}))
+    } else if (pedido.accion === 'sueno') {
+      setSuAb(true)
+      setPedir(p => ({id: 'hoy-sueno', n: p.n + 1}))
+    }
+  }, [pedido?.n]) // eslint-disable-line react-hooks/exhaustive-deps
   // Se guarda sobre la fila que hay en la base (no sobre la copia de esta pantalla): los pasos los escribe
   // «Actividad y cuerpo» por su lado y una copia vieja los pisaría. La transacción ordena los toques seguidos.
   const g = p => {
@@ -340,28 +358,32 @@ export default function Hoy({onEmpezar, onComidas, onRutas}) {
               <b className="ck-n" id={'ck-' + c.k}>
                 {c.n}
               </b>
-              <div
-                className="escala"
-                role="group"
-                aria-labelledby={'ck-' + c.k}
-                aria-description={`1 ${c.bajo}, 5 ${c.alto}`}
-              >
-                {[1, 2, 3, 4, 5].map(n => (
-                  <button
-                    key={n}
-                    className={+h[c.k] === n ? 'on' : ''}
-                    aria-pressed={+h[c.k] === n}
-                    onClick={() => g({[c.k]: +h[c.k] === n ? null : n})}
-                  >
-                    {n}
-                  </button>
-                ))}
+              <div className="ck-esc">
+                <div
+                  className="escala"
+                  role="group"
+                  aria-labelledby={'ck-' + c.k}
+                  aria-description={`1 ${c.bajo}, 5 ${c.alto}`}
+                >
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <button
+                      key={n}
+                      className={+h[c.k] === n ? 'on' : ''}
+                      aria-pressed={+h[c.k] === n}
+                      onClick={() => g({[c.k]: +h[c.k] === n ? null : n})}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+                {/* Entrega 42: cada fila dice sus extremos (el lector ya los tiene en `aria-description`) */}
+                <div className="ck-ext mu" aria-hidden="true">
+                  <span>{c.ext1}</span>
+                  <span>{c.ext5}</span>
+                </div>
               </div>
             </div>
           ))}
-          <small className="mu ck-leyenda">
-            {CHECKIN.map(c => `${c.n}: 1 ${c.bajo} · 5 ${c.alto}`).join(' — ')}
-          </small>
           <RegistroSueno h={h} g={g} habitual={habitual} />
         </section>
       </Pleg>
