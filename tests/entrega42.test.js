@@ -439,8 +439,9 @@ test('AndroidManifest: ubicación sí; SCHEDULE_EXACT_ALARM se quita; el plugin 
   // el manifiesto propio no declara a mano lo que ya trae el plugin (se fusiona al compilar)
   for (const p of ['POST_NOTIFICATIONS', 'RECEIVE_BOOT_COMPLETED', 'WAKE_LOCK', 'USE_EXACT_ALARM', 'USE_FULL_SCREEN_INTENT', 'FOREGROUND_SERVICE'])
     assert.doesNotMatch(m.replace(/<!--[\s\S]*?-->/g, ''), new RegExp(p), p)
-  // sin permisos de más: cámara, micrófono, contactos
-  assert.doesNotMatch(m, /CAMERA|RECORD_AUDIO|CONTACTS|BACKGROUND_LOCATION/)
+  // sin permisos de más: micrófono, contactos, ubicación en segundo plano.
+  // Entrega 42 (v0.43.0): la cámara (escáner y foto de la pizarra) y la vibración se permiten a propósito (ver entrega43.test.js).
+  assert.doesNotMatch(m, /RECORD_AUDIO|CONTACTS|BACKGROUND_LOCATION/)
 })
 
 test('Android: ícono monocromo de la barra de estado, canal y config de Capacitor; appId y esquema no cambian', () => {

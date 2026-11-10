@@ -1,7 +1,7 @@
 {
  "name": "mmv",
  "private": true,
- "version": "0.42.0",
+ "version": "0.43.0",
  "type": "module",
  "scripts": {
   "dev": "vite --host",
@@ -13,8 +13,11 @@
  },
  "dependencies": {
   "@capacitor/android": "^8.6.0",
+  "@capacitor/app": "^8.1.2",
   "@capacitor/core": "^8.6.0",
+  "@capacitor/filesystem": "^8.1.5",
   "@capacitor/local-notifications": "^8.3.1",
+  "@capacitor/share": "^8.0.3",
   "@fontsource/bebas-neue": "^5.3.0",
   "@fontsource/chakra-petch": "^5.3.0",
   "@fontsource/inter": "^5.3.0",
@@ -29,7 +32,7 @@
   "typescript": "^7.0.2",
   "vite": "^8.3.5"
  },
- "entrega": "41",
+ "entrega": "42",
  "engines": {
   "node": ">=20.19"
  }

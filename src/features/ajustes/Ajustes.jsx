@@ -1,6 +1,7 @@
 import {useState, useEffect} from 'react'
 import {db, hoy, cfg, setCfg} from '../../data/db'
 import {exportar, restaurar, puedeCompartir, ultimoBackup} from '../../data/backup'
+import {archivos} from '../../platform/archivos'
 import {diasDesde} from '../../domain/backup'
 import {edadDe, proteinaObjetivo, ultima, PROT_KG} from '../../domain/cuerpo'
 import {probarIA} from '../../services/ia'
@@ -87,19 +88,24 @@ function UsoIA() {
 }
 
 function Respaldo() {
-  const [msg, setMsg] = useState(''),
+  const nativo = archivos.disponible(),
+    [msg, setMsg] = useState(''),
     [ult, setUlt] = useState(ultimoBackup()),
     d = diasDesde(ult)
   const hacer = async compartir => {
-    const r = await exportar({compartir})
-    setUlt(ultimoBackup())
-    setMsg(
-      r === 'compartido'
-        ? 'Backup compartido.'
-        : r === 'descargado'
-          ? 'Backup descargado (revisá la carpeta Descargas).'
-          : 'Cancelado.'
-    )
+    try {
+      const r = await exportar({compartir})
+      setUlt(ultimoBackup())
+      setMsg(
+        r === 'compartido'
+          ? 'Backup compartido.'
+          : r === 'descargado'
+            ? 'Backup descargado (revisá la carpeta Descargas).'
+            : 'Cancelado.'
+      )
+    } catch (err) {
+      setMsg(err?.message || 'No pude hacer el backup. Probá de nuevo.')
+    }
   }
   const imp = async e => {
     const x = e.target.files[0]
@@ -113,7 +119,7 @@ function Respaldo() {
     }
   }
   return (
-    <section>
+    <section id="ajustes-backup">
       <h3>Backup</h3>
       <p>
         Tus datos viven solo en este dispositivo.{' '}
@@ -126,12 +132,15 @@ function Respaldo() {
       <div className="botonera">
         {puedeCompartir() && (
           <button className="pri" onClick={() => hacer(true)}>
-            Compartir backup
+            {nativo ? 'Guardar o compartir backup' : 'Compartir backup'}
           </button>
         )}
-        <button className={puedeCompartir() ? '' : 'pri'} onClick={() => hacer(false)}>
-          Descargar backup
-        </button>
+        {/* En el APK la hoja de compartir ya incluye «Guardar en Archivos / Drive»: un segundo botón haría lo mismo */}
+        {!nativo && (
+          <button className={puedeCompartir() ? '' : 'pri'} onClick={() => hacer(false)}>
+            Descargar backup
+          </button>
+        )}
         <button className="ghost" onClick={e => e.currentTarget.nextSibling.click()}>
           Importar backup
         </button>
@@ -292,12 +301,18 @@ function MapaRutas() {
   )
 }
 
-export default function Ajustes({onVersion}) {
+export default function Ajustes({onVersion, irA}) {
   const [k, setK] = useState(cfg('key')),
     [m, setM] = useState(cfg('modelo', 'gemini-3.8-flash')),
     [a, setA] = useState(cfg('meta', 2500)),
     [kc, setKc] = useState(cfg('metakcal', 2200)),
     [so, setSo] = useState(cfg('sonido', '1') !== '0')
+  // Entrega 42: tocar el aviso de backup abre Ajustes y trae «Backup» a la vista.
+  useEffect(() => {
+    if (irA !== 'backup') return
+    const quieto = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    document.getElementById('ajustes-backup')?.scrollIntoView({block: 'start', behavior: quieto ? 'auto' : 'smooth'})
+  }, [irA])
   return (
     <>
       <Version onVersion={onVersion} />

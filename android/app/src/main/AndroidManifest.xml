@@ -44,6 +44,13 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
+    <!-- Entrega 42 · vibración (reloj del entreno, «Dormir con alarma» y conteo de pasos usan navigator.vibrate) y cámara
+         (escáner de códigos de barras de Comidas y foto de la pizarra). La cámara se pide al usarla, no al instalar; el
+         hardware es opcional para que la app se pueda instalar también en equipos sin cámara. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <!-- Entrega 41 · recordatorios (@capacitor/local-notifications). El plugin aporta por su cuenta POST_NOTIFICATIONS
          (Android 13+; se pide solo al activar un recordatorio), RECEIVE_BOOT_COMPLETED (reprograma al reiniciar) y
          WAKE_LOCK. Se quita SCHEDULE_EXACT_ALARM a propósito: los avisos usan alarmas inexactas, así Android no manda a

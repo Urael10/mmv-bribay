@@ -3,8 +3,9 @@ import {db, hoy, cfg, setCfg} from '../../data/db.js'
 import {notificaciones} from '../../platform/notificaciones.js'
 import {CLAVE_CFG, normalizarConfig, hayActivos, planRecordatorios} from '../../domain/recordatorios.js'
 import {sumaDias} from '../../domain/stats.js'
+import {EVENTO_BACKUP} from '../../data/backup.js'
 
-// Entrega 41 (v0.42.0) · recordatorios: une la base (hábitos), la configuración (localStorage) y las notificaciones
+// Entrega 41 (v0.42.0) · recordatorios (Entrega 42: suma el backup semanal): une la base (hábitos), la configuración (localStorage) y las notificaciones
 // nativas (src/platform/notificaciones.js). La decisión de cuándo avisar vive en src/domain/recordatorios.js.
 
 const MARCA = 'rec_programado' // «hay avisos programados por esta app» (para no cargar el plugin si nunca se activó nada)
@@ -40,7 +41,8 @@ export const reprogramar = (notif = notificaciones) =>
       ahoraMs: Date.now(),
       hoy: hoy(),
       habitos: await habitosRecientes(),
-      metaAgua: +cfg('meta', 2500)
+      metaAgua: +cfg('meta', 2500),
+      ultimoBackup: cfg('backup') || null // el día en que hiciste el backup no se avisa de nuevo
     })
     const r = await notif.programar(plan)
     if (r.ok && r.n) setCfg(MARCA, '1')
@@ -61,9 +63,12 @@ export function vigilar(notif = notificaciones, {espera = 800} = {}) {
   const sub = liveQuery(habitosRecientes).subscribe({next: pedir, error: () => {}})
   const alVolver = () => document.visibilityState === 'visible' && pedir()
   document.addEventListener('visibilitychange', alVolver)
+  // Un backup recién hecho cambia el plan (el aviso de ese día sale), pero no vive en Dexie: data/backup.js lo anuncia.
+  window.addEventListener(EVENTO_BACKUP, pedir)
   return () => {
     clearTimeout(t)
     sub.unsubscribe()
     document.removeEventListener('visibilitychange', alVolver)
+    window.removeEventListener(EVENTO_BACKUP, pedir)
   }
 }

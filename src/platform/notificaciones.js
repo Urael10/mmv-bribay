@@ -14,7 +14,7 @@ import {esAndroid} from './plataforma.js'
 export const CANAL = {
   id: 'recordatorios',
   name: 'Recordatorios',
-  description: 'Avisos de check-in, de la hora de acostarte y de agua',
+  description: 'Avisos de check-in, de la hora de acostarte, de agua y de backup',
   importance: 3 // sonido por defecto, sin ventana emergente
 }
 
@@ -55,6 +55,34 @@ export function crearNotificaciones({cargar = cargarReal, android = esAndroid} =
         return estado(await con(p => p.requestPermissions()))
       } catch {
         return 'no-disponible'
+      }
+    },
+
+    /**
+     * Entrega 42 · avisa cuando la persona TOCA una notificación (`localNotificationActionPerformed`). `cb(tipo)` recibe el
+     * `extra.tipo` que se guardó al programarla ('checkin', 'agua', …). El plugin retiene el toque hasta que haya quien
+     * escuche, así que funciona aunque el listener se registre un instante después de abrir la app.
+     * Devuelve una función para dejar de escuchar (siempre, también si falla o no hay plugin). El handle va en `{h}`: igual
+     * que el plugin, nunca se devuelve suelto desde una función async.
+     */
+    async alTocarAviso(cb) {
+      if (!android()) return () => {}
+      try {
+        const {h} = await con(async p => ({
+          h: await p.addListener('localNotificationActionPerformed', ev => {
+            const tipo = ev?.notification?.extra?.tipo
+            if (typeof tipo === 'string') cb(tipo)
+          })
+        }))
+        return () => {
+          try {
+            h?.remove?.()
+          } catch {
+            /* ya estaba quitado */
+          }
+        }
+      } catch {
+        return () => {}
       }
     },
 

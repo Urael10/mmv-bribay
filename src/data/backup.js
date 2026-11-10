@@ -3,6 +3,7 @@ import {db, hoy, cfg, setCfg, TABLAS, importarTabla} from './db.js'
 import {INFO} from '../version.js'
 import {AJUSTES, ajustesDe, nombreBackup, validarBackup} from '../domain/backup.js'
 import {META, planRestaurarPrivado} from '../domain/privado.js'
+import {archivos} from '../platform/archivos.js'
 
 export async function armarBackup() {
   const d = {
@@ -29,9 +30,20 @@ export async function hayDatos() {
   return false
 }
 export const ultimoBackup = () => cfg('backup')
-const marcar = () => setCfg('backup', new Date().toISOString())
+// Nombre del evento con que se avisa (a quien escuche, p. ej. los recordatorios) que se acaba de hacer un backup.
+export const EVENTO_BACKUP = 'mmv:backup'
+const marcar = () => {
+  setCfg('backup', new Date().toISOString())
+  try {
+    globalThis.dispatchEvent?.(new Event(EVENTO_BACKUP))
+  } catch {
+    /* sin ventana (pruebas): no hay a quién avisar */
+  }
+}
 
+// En el APK de Android siempre se puede compartir (hoja nativa); en la web, solo si el navegador lo permite.
 export const puedeCompartir = () => {
+  if (archivos.disponible()) return true
   try {
     const f = new File(['{}'], 'x.json', {type: 'application/json'})
     return !!navigator.canShare?.({files: [f]})
@@ -41,10 +53,21 @@ export const puedeCompartir = () => {
 }
 
 // compartir=true intenta la hoja de compartir del celular (Drive, WhatsApp, correo…); si no se puede, descarga.
+// En el APK (Entrega 42) el WebView no baja archivos `blob:`: ahí SIEMPRE se usa la hoja de compartir nativa, también con
+// «Descargar» (desde esa hoja se puede guardar en Archivos o en Drive).
 // Devuelve 'compartido' | 'descargado' | 'cancelado'.
 export async function exportar({compartir = false} = {}) {
   const texto = JSON.stringify(await armarBackup(), null, 1)
   const nombre = nombreBackup(hoy())
+  if (archivos.disponible()) {
+    const r = await archivos.compartir(nombre, texto, 'Backup de MMV')
+    if (r === 'compartido') {
+      marcar()
+      return 'compartido'
+    }
+    if (r === 'cancelado') return 'cancelado'
+    throw new Error('No pude preparar el backup para compartirlo. Probá de nuevo.')
+  }
   if (compartir && puedeCompartir()) {
     try {
       const file = new File([texto], nombre, {type: 'application/json'})

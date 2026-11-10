@@ -365,8 +365,11 @@ test('ningún servicio toca mapa ni GPX; no hay fetch de teselas ni librería de
   const pkg = JSON.parse(leer('package.json'))
   assert.deepEqual(Object.keys(pkg.dependencies).sort(), [
     '@capacitor/android', // Entrega 40 (v0.41.0): contenedor Android (Capacitor); sigue sin haber librería de mapas
+    '@capacitor/app', // Entrega 42 (v0.43.0): botón atrás; solo lo importa src/platform/atras.js
     '@capacitor/core',
+    '@capacitor/filesystem', // Entrega 42: backup y GPX en el APK; solo lo importa src/platform/archivos.js
     '@capacitor/local-notifications', // Entrega 41 (v0.42.0): recordatorios; solo lo importa src/platform/notificaciones.js
+    '@capacitor/share', // Entrega 42: hoja de compartir del APK; solo lo importa src/platform/archivos.js
     '@fontsource/bebas-neue',
     '@fontsource/chakra-petch',
     '@fontsource/inter',
