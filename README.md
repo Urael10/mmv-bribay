@@ -1,29 +1,34 @@
-# Mi Mejor Versión (MMV) · Entrega 39 (v0.40.0)
+# Mi Mejor Versión (MMV) · Entrega 41 (v0.42.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 
 ## Estructura
 ```
-src/domain/    lógica pura con pruebas: actividad (pasos, GPS, actividades), metaPasos (meta, promedio y estado del conteo), sueno (alarma, horas de sueño y total del día), rutas (recorrido, trazo, parciales), mapa (teselas OSM), gpx (exportar/importar), alimentos, backup, biblioteca, checkin, cuerpo, entreno, informe, movimiento (pasos, actividades y rutas sin doble conteo), preparacion, privado (cifrado), progreso, registro, stats, temporizador
+src/domain/    lógica pura con pruebas: recordatorios (cuándo avisar: check-in, acostarte, agua), actividad (pasos, GPS, actividades), metaPasos (meta, promedio y estado del conteo), sueno (alarma, horas de sueño y total del día), rutas (recorrido, trazo, parciales), mapa (teselas OSM), gpx (exportar/importar), alimentos, backup, biblioteca, checkin, cuerpo, entreno, informe, movimiento (pasos, actividades y rutas sin doble conteo), preparacion, privado (cifrado), progreso, registro, stats, temporizador
 src/data/      base de datos (Dexie v11), backup, biblioteca, menú privado, semilla de alimentos
 src/services/  IA (Gemini), Open Food Facts, escáner de código de barras, imágenes, reloj del entrenamiento, pendientes
-src/features/  pantallas: hoy, actividad (pasos y actividades), rutas (historial GPS, dentro de Progreso), entreno, comidas, progreso, cuerpo, coach, ajustes, bienestar (menú privado), biblioteca (ejercicios)
-tests/         pruebas con `node --test` (`entrega20.test.js`: actividad física; `entrega26.test.js`: rutas GPS; `entrega27.test.js`: mapa y GPX; `entrega28.test.js`: carga diferida; `entrega29.test.js`: IA con actividad y rutas)
+src/features/  pantallas: hoy, recordatorios (servicio y bloque de Ajustes), actividad (pasos y actividades), rutas (historial GPS, dentro de Progreso), entreno, comidas, progreso, cuerpo, coach, ajustes, bienestar (menú privado), biblioteca (ejercicios)
+src/platform/  adaptadores finos a Capacitor (si la app corre en el APK o en el navegador; notificaciones locales); solo esta carpeta importa @capacitor/*
+android/       proyecto Android de Capacitor (versionado; lo que genera `cap sync` no): se compila en GitHub, no en tu PC
+capacitor.config.ts  identidad de la app Android (appId, nombre, carpeta web, esquema https, barras del sistema)
+tests/         pruebas con `node --test` (`tests/platform/`: plataforma nativo/web; `entrega42.test.js`: recordatorios, manifiesto y plugin; `entrega41.test.js`: base de Capacitor y workflow del APK; `entrega20.test.js`: actividad física; `entrega26.test.js`: rutas GPS; `entrega27.test.js`: mapa y GPX; `entrega28.test.js`: carga diferida; `entrega29.test.js`: IA con actividad y rutas)
 public/        manifest, íconos y service worker (`sw.js`)
 ```
 `src/ui/pantallas.js` es el registro de las pantallas con carga diferida (`React.lazy`); `src/domain/carga.js` tiene su lógica pura (reintento, cuándo precargar). Los componentes de `features/` solo muestran y guardan; las reglas y cálculos viven en `domain/` para poder probarlos.
 
 ## Comandos
-Requiere Node 20.19 o superior (ver `.node-version`).
+Requiere Node 20.19 o superior para compilar con Vite (ver `.node-version`). `npm test` y el CLI de Capacitor necesitan Node 22, el que usa el CI.
 ```
-npm ci          # instala exactamente lo del lockfile
-npm test        # pruebas
-npm run dev     # servidor local (accesible desde el celular en la misma red)
-npm run build   # compila a dist/ (agrega version.json con versión y fecha de compilación)
+npm ci               # instala exactamente lo del lockfile
+npm test             # pruebas (tests/**/*.test.js)
+npm run dev          # servidor local (accesible desde el celular en la misma red)
+npm run build        # compila a dist/ (agrega version.json con versión y fecha de compilación)
+npm run cap:sync     # build + copia la web al proyecto Android (cap sync android)
+npm run android:build  # cap:sync + ./gradlew assembleDebug (APK de depuración; lo normal es que lo haga el CI)
 ```
 
 ## Publicación
-Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.zip "texto del cambio" [rama]`. El script reemplaza el código por el del zip y lo sube a GitHub; `.github/workflows/publicar.yml` ejecuta `npm ci`, `npm test` y `npm run build`, y publica en Cloudflare Pages (proyecto `mmv-bribay`, https://mmv-bribay.pages.dev). Si una prueba falla, no se publica. La rama `main` es producción; la rama `prueba` publica en una dirección aparte.
+Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.zip "texto del cambio" [rama]`. El script reemplaza el código por el del zip y lo sube a GitHub; `.github/workflows/publicar.yml` ejecuta `npm ci`, `npm test` y `npm run build`, y publica en Cloudflare Pages (proyecto `mmv-bribay`, https://mmv-bribay.pages.dev). Si una prueba falla, no se publica. La rama `main` es producción; la rama `prueba` publica en una dirección aparte. El APK de Android lo arma otro flujo (ver «Android»).
 
 ## Actividad física (v0.22.0) y rutas (v0.27.0)
 - Pasos: se pueden cargar a mano o contar con el acelerómetro (solo con MMV abierto y visible; la pantalla se mantiene encendida mientras se cuenta).
@@ -40,6 +45,12 @@ Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.z
 - Hoy va en el paquete principal; Entreno, Comidas, Progreso (con Rutas), Ajustes y el menú oculto se bajan aparte al abrirlos (`React.lazy` + `Suspense`). Mientras bajan se ve «Cargando…».
 - Unos segundos después de abrir, la app baja las demás pantallas en segundo plano (no lo hace sin conexión, con «ahorro de datos» ni con red 2G) y `public/sw.js` las guarda, así andan sin conexión. Si una pantalla no se puede bajar aparece «No se pudo abrir…» con **Reintentar** y **Actualizar la app**; tus datos no se tocan.
 - Regla para el código: nadie fuera de `src/ui/pantallas.js` importa esas pantallas de forma estática (una prueba lo vigila); una pantalla nueva se agrega ahí y a `ORDEN_PRECARGA`.
+
+## Recordatorios (v0.42.0)
+- Ajustes › Recordatorios (solo en la app de Android): aviso del **check-in** a la hora que elijas, aviso de **acostarte** 30 min antes de tu hora habitual (necesita 2 días con las dos horas) y aviso de **agua** en una franja cada 2, 3 o 4 h. En el navegador / la PWA el bloque lo dice y no ofrece nada: una web no puede avisar con la app cerrada.
+- El permiso de notificaciones (Android 13+) se pide **al activar el primer recordatorio**, no antes. Los avisos son alarmas inexactas (pueden demorar unos minutos) y se recalculan a 7 días cada vez que abrís la app o cambian tus datos: lo que ya hiciste hoy no vuelve a avisar.
+- Código: `src/domain/recordatorios.js` (cuándo avisar, puro), `src/platform/notificaciones.js` (el plugin `@capacitor/local-notifications`, lo único que lo importa) y `src/features/recordatorios/` (servicio y pantalla). La configuración va en `localStorage` (`mv_recordatorios`); Dexie sigue en v11.
+- `AndroidManifest.xml`: ubicación (GPS de pasos y rutas) y sin `SCHEDULE_EXACT_ALARM`; el plugin trae `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED` y `WAKE_LOCK`. Verificación en el celular: ver el informe de la entrega.
 
 ## Registro de sueño (v0.40.0)
 - Check-in › Sueño: «Igual que siempre» (tu hora habitual de los últimos 7 días), «Me acosté» / «Me desperté» (el total se calcula solo) o solo la duración (chips de 5 a 9 h y campo). Calidad con botones 1–5. Si el total supera lo de la noche, el bloque lo explica como siestas.
@@ -84,6 +95,13 @@ Hoy muestra primero la preparación y el botón de entrenar; comida, agua y peso
 - Sin doble conteo: una ruta enlazada a una actividad (`rutaId`), o que coincide con una actividad sin enlace (mismo día y tipo, distancia o duración parecidas: ±15 % o 0,3 km), cuenta una sola vez. Las demás cuentan aparte («Rutas con GPS aparte»).
 - Preparación: la carga reciente (20 %) suma la actividad como RPE típico por tipo × minutos (caminata 2, bicicleta 5, carrera/natación/deporte 6, otro 4). Los pesos no cambian y, sin actividad, el puntaje es idéntico. Los pasos de ayer se muestran como dato, sin sumar al puntaje.
 - Privacidad: a Gemini solo llegan totales (cantidades, minutos, km, desnivel, ritmo medio). Nunca coordenadas, trazos, horas de inicio, parciales ni notas. `data/movimiento.js` lee las rutas ya sin trazo y `domain/movimiento.js` elige campo por campo qué puede salir; una prueba fija además la lista de archivos que pueden importar los módulos de rutas.
+
+## Android (Capacitor, v0.41.0)
+- MMV también se empaqueta como app Android con Capacitor 8: el APK lleva la misma web (`dist`) y corre en un WebView con el origen `https://localhost`. La PWA publicada no cambia. No hay funciones nativas nuevas.
+- Archivos: `capacitor.config.ts` (appId `online.bribayfitness.mmv`, nombre «Mi Mejor Versión», `webDir: dist`, esquema https, barras del sistema con íconos claros), `android/` (proyecto Gradle versionado; `build/`, los assets copiados y los plugins generados los recrea `cap sync` y están en `android/.gitignore`) y `src/platform/plataforma.js` (`esNativo`, `plataforma`, `esAndroid`, `permiteServiceWorker`; el service worker solo se registra en la PWA, nunca dentro del APK).
+- Compilación: la hace GitHub, no tu PC. `.github/workflows/android-debug.yml` corre al subir a la rama `prueba` (o a mano desde Actions): `npm ci`, `npm test`, `npm run cap:sync`, `./gradlew assembleDebug` y sube `mmv-vX.Y.Z-debug.apk` como artefacto. Necesita **JDK 21** (Capacitor 8 compila para Java 21; con JDK 17 falla) y Node 22.
+- Firma de depuración fija en `android/app/debug.keystore`: cada APK nuevo se instala encima del anterior sin perder los datos. Es solo de depuración (no sirve para publicar en Google Play). `versionName` y `versionCode` salen de `package.json` (0.41.0 → 4100).
+- Reglas: no cambiar `appId` ni `androidScheme` después de instalar el primer APK (cambia la identidad o el origen del WebView y los datos quedan inaccesibles); solo `src/platform/` importa `@capacitor/*`; `src/domain/` sigue sin conocer plugins ni UI. El registro de sueño y el resto de la app son los mismos que en la PWA: el APK no los toca. El paso a paso para instalar el APK está en el informe de la entrega.
 
 ## Formato
 `.prettierrc` (Prettier 3: sin punto y coma, comillas simples, 100 columnas).

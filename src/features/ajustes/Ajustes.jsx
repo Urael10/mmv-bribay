@@ -7,6 +7,7 @@ import {probarIA} from '../../services/ia'
 import {CLAVE_MAPA} from '../../domain/mapa'
 import {INFO, fechaBuild, buscarActualizacion, actualizarAhora} from '../../version'
 import Icono from '../../ui/Icono'
+import Recordatorios from '../recordatorios/Recordatorios'
 
 function Version({onVersion}) {
   const [r, setR] = useState(null),
@@ -302,6 +303,7 @@ export default function Ajustes({onVersion}) {
       <Version onVersion={onVersion} />
       <Respaldo />
       <Perfil />
+      <Recordatorios />
       <MapaRutas />
       <UsoIA />
       <section>
