@@ -15,6 +15,8 @@ import {
   limpiarCoach
 } from '../../domain/informe'
 import Icono from '../../ui/Icono'
+import {archivos} from '../../platform/archivos'
+import {textoKcal} from '../../domain/gasto'
 
 const fFecha = f => {
   const [y, m, d] = f.split('-')
@@ -50,10 +52,11 @@ export function Informe({ses, reg, manual}) {
       db.habitos.where('fecha').between(dAnt, d1, true, true).toArray(),
       db.comidas.where('fecha').between(d0, d1, true, true).toArray(),
       db.coach.get(w),
-      leerMovimiento(dAnt, d1)
-    ]).then(([habitos, comidas, c, mov]) => {
+      leerMovimiento(dAnt, d1),
+      db.medidas.toArray()
+    ]).then(([habitos, comidas, c, mov, medidas]) => {
       if (vivo) {
-        setEx({habitos, comidas, ...mov})
+        setEx({habitos, comidas, medidas: medidas.map(m => ({fecha: m.fecha, peso: m.peso})), ...mov})
         setCoach(c || null)
       }
     })
@@ -73,6 +76,7 @@ export function Informe({ses, reg, manual}) {
         comidas: ex.comidas,
         actividades: ex.actividades,
         rutas: ex.rutas,
+        medidas: ex.medidas,
         ...metas()
       }),
     [ex, ses, reg, manual, w]
@@ -109,7 +113,13 @@ export function Informe({ses, reg, manual}) {
       setMsg('No pude copiarlo en este navegador.')
     }
   }
+  // Entrega 43: en el APK el WebView no tiene navigator.share; ahí se usa la hoja de compartir nativa.
   const compartir = async () => {
+    if (archivos.disponible()) {
+      const r = await archivos.compartirTexto(texto(), 'Informe semanal MMV')
+      if (r === 'error') setMsg('No pude abrir la hoja de compartir. Probá con «Copiar informe».')
+      return
+    }
     try {
       await navigator.share({title: 'Informe semanal MMV', text: texto()})
     } catch {}
@@ -230,6 +240,34 @@ export function Informe({ses, reg, manual}) {
               </small>
             </section>
           )}
+          {inf.gasto && (inf.gasto.kcal > 0 || inf.gasto.haySesionesSinPeso) && (
+            <section>
+              <h3>Gasto estimado</h3>
+              {inf.gasto.sinPeso ? (
+                <p className="mu" style={{marginTop: 0}}>Cargá tu peso en Cuerpo para estimar el gasto de esta semana.</p>
+              ) : (
+                <>
+                  <div className="lin">
+                    <span>Total de la semana</span>
+                    <span className="mono">{textoKcal(inf.gasto.kcal)}</span>
+                  </div>
+                  <div className="lin">
+                    <span>Entreno</span>
+                    <span className="mono">{textoKcal(inf.gasto.entreno)}</span>
+                  </div>
+                  <div className="lin">
+                    <span>Actividades y rutas</span>
+                    <span className="mono">{textoKcal(inf.gasto.actividad)}</span>
+                  </div>
+                  <small className="mu">
+                    {textoKcal(inf.gasto.kcalPorDia)} por día con actividad ({inf.gasto.diasConGasto} d). Es una estimación
+                    (±30 %) de lo que gastás por encima del reposo; no incluye los pasos para no contar dos veces la misma
+                    caminata y no se envía a la IA.
+                  </small>
+                </>
+              )}
+            </section>
+          )}
           <section>
             <h3>Hábitos</h3>
             <div className="lin">
@@ -321,7 +359,7 @@ export function Informe({ses, reg, manual}) {
             <button className="ghost" onClick={copiar}>
               Copiar informe
             </button>
-            {navigator.share && (
+            {(archivos.disponible() || navigator.share) && (
               <button className="ghost" onClick={compartir}>
                 Compartir
               </button>

@@ -29,11 +29,11 @@ export default function FilaAlimentacion({onAbrir}) {
   return (
     <button
       type="button"
-      className="tesela"
+      className="tesela m-comida"
       onClick={onAbrir}
       aria-label={`${textoAnillo('Alimentación de hoy', t.kcal, meta, 'kcal')}: abrir Comidas`}
     >
-      <Anillo valor={t.kcal} meta={meta} clase={claseAnillo(t.kcal, meta)}>
+      <Anillo tam={40} valor={t.kcal} meta={meta} clase={claseAnillo(t.kcal, meta)}>
         <Icono n="cubiertos" tam={20} />
       </Anillo>
       <span className="eti">Comida</span>

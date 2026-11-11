@@ -26,6 +26,25 @@ export function crearArchivos({cargar = cargarReal, android = esAndroid} = {}) {
     disponible: () => android() === true,
 
     /**
+     * Entrega 43: manda un TEXTO a la hoja de compartir (sin archivo), p. ej. el informe semanal del Coach.
+     * Devuelve 'compartido' | 'cancelado' | 'no-disponible' | 'error' (nunca lanza).
+     */
+    async compartirTexto(texto, titulo = 'MMV') {
+      if (!android()) return 'no-disponible'
+      try {
+        const c = (caja ||= await cargar())
+        try {
+          await c.share.share({title: titulo, text: String(texto), dialogTitle: titulo})
+          return 'compartido'
+        } catch (e) {
+          return esCancelado(e) ? 'cancelado' : 'error'
+        }
+      } catch {
+        return 'error'
+      }
+    },
+
+    /**
      * Escribe `texto` en la caché con `nombre` y abre la hoja de compartir.
      * Devuelve 'compartido' | 'cancelado' | 'no-disponible' | 'error' (nunca lanza).
      */

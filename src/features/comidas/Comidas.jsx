@@ -15,7 +15,7 @@ import {
   ATRIBUCION,
   FUENTE
 } from '../../services/off'
-import {crearDetector, iniciarLectura, mensajeCamara, canonico} from '../../services/escaner'
+import {crearDetector, iniciarLectura, mensajeCamara, mensajePausa, canonico} from '../../services/escaner'
 import {
   MULTIPLOS,
   gramosPorcion,
@@ -299,6 +299,17 @@ function Escaner({alLeer, cerrar}) {
     let vivo = true,
       flujo = null,
       parar = null
+    // Entrega 43: al salir de la app se libera la cámara y se avisa (ver mensajePausa)
+    const alVisibilidad = () => {
+      const m = mensajePausa(document.visibilityState)
+      if (!m || !vivo) return
+      parar?.()
+      parar = null
+      flujo?.getTracks().forEach(t => t.stop())
+      flujo = null
+      setErr(m)
+    }
+    document.addEventListener('visibilitychange', alVisibilidad)
     ;(async () => {
       try {
         const detector = await crearDetector()
@@ -331,6 +342,7 @@ function Escaner({alLeer, cerrar}) {
     })()
     return () => {
       vivo = false
+      document.removeEventListener('visibilitychange', alVisibilidad)
       parar?.()
       flujo?.getTracks().forEach(t => t.stop())
     }

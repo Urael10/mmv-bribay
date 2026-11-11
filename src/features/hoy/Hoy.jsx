@@ -17,6 +17,8 @@ import ModoSueno from '../sueno/ModoSueno'
 import RegistroSueno from '../sueno/RegistroSueno'
 import {habitualNoche, duracionHM, duracionCorta, OBJETIVO_SUENO_H, fraccionSueno} from '../../domain/sueno'
 import Icono from '../../ui/Icono'
+import {leerGasto} from '../../data/gasto'
+import {gastoDia, textoKcal} from '../../domain/gasto'
 import {parsearMeta, promedioPasos, metaEfectiva, textoMetaPasos, PROMEDIO_DIAS} from '../../domain/metaPasos'
 
 // Fila plegable de Hoy (Entrega 30). El contenido queda montado aunque esté cerrado (solo se oculta),
@@ -45,10 +47,15 @@ function Pleg({id, titulo, resumen, abierto, onCambio, children}) {
 // Pasos: anillo contra tu meta (o tu promedio de 28 días). Al tocarla se abre «Actividad y cuerpo», donde está el conteo.
 // Lee los pasos de la base cada vez que se abre o se cierra ese plegable, así se pone al día después de contar.
 function TeselaPasos({abierto, onAbrir}) {
-  const [d, setD] = useState(null)
+  const [d, setD] = useState(null),
+    [gasto, setGasto] = useState(null)
   useEffect(() => {
     let vigente = true
     const f = hoy()
+    // Entrega 43: gasto estimado del día (entreno + actividades + rutas), solo si hay peso registrado
+    leerGasto(f, f)
+      .then(x => vigente && setGasto(gastoDia({fecha: f, ...x})))
+      .catch(() => vigente && setGasto(null))
     db.habitos
       .where('fecha')
       .aboveOrEqual(sumaDias(f, -PROMEDIO_DIAS))
@@ -68,16 +75,21 @@ function TeselaPasos({abierto, onAbrir}) {
   return (
     <button
       type="button"
-      className="tesela"
+      className="tesela m-pasos"
       onClick={onAbrir}
-      aria-label={ef.valor ? textoAnillo('Pasos', d.pasos, ef.valor) + ': abrir conteo' : `Pasos: ${d.pasos}. Abrir conteo`}
+      aria-label={
+        (ef.valor ? textoAnillo('Pasos', d.pasos, ef.valor) : `Pasos: ${d.pasos}`) +
+        (gasto?.kcal > 0 ? `. Gasto en actividad ${textoKcal(gasto.kcal)}` : '') +
+        ': abrir conteo'
+      }
     >
-      <Anillo valor={d.pasos} meta={ef.valor} clase={claseAnillo(d.pasos, ef.valor)}>
+      <Anillo tam={40} valor={d.pasos} meta={ef.valor} clase={claseAnillo(d.pasos, ef.valor)}>
         <Icono n="pasos" tam={20} />
       </Anillo>
       <span className="eti">Pasos</span>
       <b className="mono tesela-v">{d.pasos ? d.pasos.toLocaleString('es-AR') : '—'}</b>
       <small className="mu">{d.pasos || ef.valor ? textoMetaPasos(ef) : 'tocá para contar'}</small>
+      {gasto?.kcal > 0 && <small className="mu tesela-p">Actividad {textoKcal(gasto.kcal)}</small>}
     </button>
   )
 }
@@ -89,7 +101,7 @@ function TeselaSueno({h, onAbrir}) {
   return (
     <button
       type="button"
-      className="tesela"
+      className="tesela m-sueno"
       onClick={onAbrir}
       aria-label={
         horas
@@ -97,7 +109,7 @@ function TeselaSueno({h, onAbrir}) {
           : 'Sueño: sin registrar. Abrir el registro'
       }
     >
-      <Anillo valor={horas} meta={OBJETIVO_SUENO_H} clase={claseAnillo(horas, OBJETIVO_SUENO_H)}>
+      <Anillo tam={40} valor={horas} meta={OBJETIVO_SUENO_H} clase={claseAnillo(horas, OBJETIVO_SUENO_H)}>
         <Icono n="luna" tam={20} />
       </Anillo>
       <span className="eti">Sueño</span>
@@ -119,7 +131,7 @@ function TeselaPeso({onAbrir}) {
   if (u === undefined) return null
   const dias = u ? Math.round((Date.now() - new Date(u.fecha + 'T12:00:00')) / 864e5) : null
   return (
-    <button type="button" className="tesela" onClick={onAbrir} aria-label="Peso: abrir Cuerpo">
+    <button type="button" className="tesela m-peso" onClick={onAbrir} aria-label="Peso: abrir Cuerpo">
       {/* Entrega 42: sin meta no hay anillo, pero el círculo con el ícono ocupa el mismo lugar y alinea la fila con las otras */}
       <span className="anillo anillo-fijo" aria-hidden="true">
         <Icono n="balanza" tam={20} />
@@ -274,13 +286,13 @@ export default function Hoy({onEmpezar, onComidas, onRutas, pedido}) {
         <FilaAlimentacion onAbrir={onComidas} />
         <button
           type="button"
-          className="tesela"
+          className="tesela m-agua"
           aria-expanded={aguaAb}
           aria-controls="hoy-agua"
           aria-label={textoAnillo('Agua', h.agua, meta, 'ml')}
           onClick={() => setAguaAb(v => !v)}
         >
-          <Anillo valor={h.agua} meta={meta} clase={claseAnillo(h.agua, meta)}>
+          <Anillo tam={40} valor={h.agua} meta={meta} clase={claseAnillo(h.agua, meta)}>
             <Icono n="gota" tam={20} />
           </Anillo>
           <span className="eti">Agua</span>
