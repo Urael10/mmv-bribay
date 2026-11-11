@@ -373,6 +373,7 @@ test('ningún servicio toca mapa ni GPX; no hay fetch de teselas ni librería de
     '@fontsource/bebas-neue',
     '@fontsource/chakra-petch',
     '@fontsource/inter',
+    'barcode-detector', // Entrega 46 (v0.47.0): lector EAN/UPC en WebAssembly para el WebView; solo lo importa src/services/escanerWasm.js
     'dexie',
     'react',
     'react-dom'

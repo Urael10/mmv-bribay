@@ -1,7 +1,7 @@
 {
  "name": "mmv",
  "private": true,
- "version": "0.46.0",
+ "version": "0.47.0",
  "type": "module",
  "scripts": {
   "dev": "vite --host",
@@ -21,6 +21,7 @@
   "@fontsource/bebas-neue": "^5.3.0",
   "@fontsource/chakra-petch": "^5.3.0",
   "@fontsource/inter": "^5.3.0",
+  "barcode-detector": "^3.2.3",
   "dexie": "^4.4.7",
   "react": "^19.3.1",
   "react-dom": "^19.3.1"
@@ -32,7 +33,7 @@
   "typescript": "^7.0.2",
   "vite": "^8.3.5"
  },
- "entrega": "45",
+ "entrega": "46",
  "engines": {
   "node": ">=20.19"
  }

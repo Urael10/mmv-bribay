@@ -165,8 +165,8 @@ test('el escáner avisa y libera la cámara al salir de la app', () => {
   assert.match(c, /addEventListener\('visibilitychange'/)
   assert.match(c, /removeEventListener\('visibilitychange'/)
 })
-test('sin BarcodeDetector el mensaje menciona Google Play Services y el buscador', async () => {
-  await assert.rejects(crearDetector({}), /Google Play Services[\s\S]*Tipeá el número/)
+test('sin BarcodeDetector ni cámara el mensaje manda al buscador (Entrega 46: ya no depende de Google Play Services)', async () => {
+  await assert.rejects(crearDetector({}), /Tipeá el número/)
 })
 
 // ---------- Hoy: color por métrica ----------

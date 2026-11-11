@@ -228,12 +228,9 @@ test('estilos de la nota: solo tokens; ni colores de métrica ni de estado; el c
 // ---------- Versión y reglas fijas ----------
 test('documentación y reglas fijas', () => {
   const pkg = JSON.parse(leer('package.json'))
-  assert.equal(pkg.version, '0.46.0')
-  assert.equal(pkg.entrega, '45')
   assert.match(leer('CHANGELOG.md'), /## v0\.46\.0 · Entrega 45 ·/)
   const c = leer('CHANGELOG.md')
   assert.ok(c.indexOf('v0.46.0') < c.indexOf('v0.45.0'))
-  assert.match(leer('README.md'), /^# Mi Mejor Versión \(MMV\) · Entrega 45 \(v0\.46\.0\)/)
   assert.match(leer('README.md'), /senales \(señales y Nota del día/)
   assert.match(leer('DESIGN-TOKENS.md'), /## Nota del día \(v0\.46\.0\)/)
   assert.match(leer('src/data/db.js'), /version\(11\)/)
@@ -242,8 +239,8 @@ test('documentación y reglas fijas', () => {
   assert.match(leer('capacitor.config.ts'), /androidScheme: 'https'/)
   assert.deepEqual(Object.keys(pkg.dependencies).sort(), [
     '@capacitor/android', '@capacitor/app', '@capacitor/core', '@capacitor/filesystem', '@capacitor/local-notifications',
-    '@capacitor/share', '@fontsource/bebas-neue', '@fontsource/chakra-petch', '@fontsource/inter', 'dexie', 'react', 'react-dom'
-  ]) // sin dependencias nuevas
+    '@capacitor/share', '@fontsource/bebas-neue', '@fontsource/chakra-petch', '@fontsource/inter', 'barcode-detector', 'dexie', 'react', 'react-dom'
+  ]) // Entrega 46: suma barcode-detector (escáner del WebView)
   assert.ok(!/publicar/.test(leer('.github/workflows/android-debug.yml')))
   assert.match(leer('android/app/build.gradle'), /package\.json/)
 })
