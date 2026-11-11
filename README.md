@@ -1,10 +1,10 @@
-# Mi Mejor Versión (MMV) · Entrega 44 (v0.45.0)
+# Mi Mejor Versión (MMV) · Entrega 46 (v0.47.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 
 ## Estructura
 ```
-src/domain/    lógica pura con pruebas: recordatorios (cuándo avisar: check-in, acostarte, agua, backup; a dónde lleva cada aviso), navegacion (botón atrás), actividad (pasos, GPS, actividades), gasto (kcal estimadas por actividad, entreno y rutas), metaPasos (meta, promedio y estado del conteo), sueno (alarma, horas de sueño y total del día), rutas (recorrido, trazo, parciales), mapa (teselas OSM), gpx (exportar/importar), alimentos, backup, biblioteca, checkin, cuerpo, entreno, informe, movimiento (pasos, actividades y rutas sin doble conteo), preparacion, privado (cifrado), progreso, registro, stats, temporizador
+src/domain/    lógica pura con pruebas: senales (señales y Nota del día de Hoy), recordatorios (cuándo avisar: check-in, acostarte, agua, backup; a dónde lleva cada aviso), navegacion (botón atrás), actividad (pasos, GPS, actividades), gasto (kcal estimadas por actividad, entreno y rutas), metaPasos (meta, promedio y estado del conteo), sueno (alarma, horas de sueño y total del día), rutas (recorrido, trazo, parciales), mapa (teselas OSM), gpx (exportar/importar), alimentos, backup, biblioteca, checkin, cuerpo, entreno, informe, movimiento (pasos, actividades y rutas sin doble conteo), preparacion, privado (cifrado), progreso, registro, stats, temporizador
 src/data/      base de datos (Dexie v11), backup, biblioteca, menú privado, semilla de alimentos
 src/services/  IA (Gemini), Open Food Facts, escáner de código de barras, imágenes, reloj del entrenamiento, pendientes
 src/features/  pantallas: hoy, recordatorios (servicio y bloque de Ajustes), actividad (pasos y actividades), rutas (historial GPS, dentro de Progreso), entreno, comidas, progreso, cuerpo, coach, ajustes, bienestar (menú privado), biblioteca (ejercicios)
@@ -45,6 +45,11 @@ Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.z
 - Hoy va en el paquete principal; Entreno, Comidas, Progreso (con Rutas), Ajustes y el menú oculto se bajan aparte al abrirlos (`React.lazy` + `Suspense`). Mientras bajan se ve «Cargando…».
 - Unos segundos después de abrir, la app baja las demás pantallas en segundo plano (no lo hace sin conexión, con «ahorro de datos» ni con red 2G) y `public/sw.js` las guarda, así andan sin conexión. Si una pantalla no se puede bajar aparece «No se pudo abrir…» con **Reintentar** y **Actualizar la app**; tus datos no se tocan.
 - Regla para el código: nadie fuera de `src/ui/pantallas.js` importa esas pantallas de forma estática (una prueba lo vigila); una pantalla nueva se agrega ahí y a `ORDEN_PRECARGA`.
+
+## Nota del día (v0.46.0)
+- **Hoy:** una franja de una línea arriba de la rejilla (propuesta B) dice lo más importante del día y, al tocarla, lista hasta 3 señales. Mira sueño (noche corta o racha), agua (contra lo esperado a esa hora), comida (sin registros, falta de proteína, kcal pasadas o en tu meta), pasos, gasto estimado y carga de entreno (contra tu promedio de 28 días; hace falta historia de 2 semanas). Sin datos no se muestra; con datos y sin nada que decir dice «Sin novedades por ahora».
+- **Local y sin IA:** se calcula en el teléfono con tus propios datos. El gasto estimado y la nota **no viajan a la IA** (una prueba lo vigila). Los umbrales son una propuesta de diseño, no una recomendación médica; viven como constantes en `src/domain/senales.js`.
+- Código: `src/domain/senales.js` (puro), `src/data/senales.js` (lectura sin trazos ni notas) y `src/features/hoy/NotaDelDia.jsx` (se vuelve a leer con `liveQuery` cuando cambian los datos). Dexie sigue en v11.
 
 ## Hoy compacto y gasto calórico (v0.44.0)
 - **Hoy:** **rejilla de dos columnas** (Comida, Agua, Sueño y Pasos; Peso a todo el ancho) con **color por métrica** (agua, sueño, pasos, peso; comida en cian). Los estados siguen en verde/ámbar/rojo. La disposición actual es la propuesta C (v0.45.0).

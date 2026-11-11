@@ -1591,8 +1591,9 @@ button.ruta-fila:active:not(:disabled) {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.pleg-b .vacio-ch {
-  color: var(--ac);
+.pleg-b .vacio-ch,
+.nota-b .vacio-ch {
+  color: var(--ac); /* el chevron es lo tocable: cian (la franja de la Nota del día lo comparte) */
 }
 .pleg-c {
   margin-top: var(--sp-3);
@@ -2424,5 +2425,59 @@ button.ruta-fila:active:not(:disabled) {
 @media (hover: hover) {
   .plano .teselas .tesela:hover:not(:disabled) {
     background-color: var(--sf-2);
+  }
+}
+
+/* ===== v0.46.0 · Entrega 45: Nota del día (franja que se abre al tocarla, propuesta B) ===== */
+/* Texto en --tx y --tx-2: ni los colores de métrica ni los de estado. El cian del chevron (acción) se declara junto al de los plegables (`.pleg-b .vacio-ch`). */
+.nota {
+  grid-column: span 2;
+  margin-bottom: var(--sp-6);
+}
+.nota-b {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--sp-3) var(--sp-4);
+  text-align: left;
+  color: var(--tx);
+  background: var(--sf);
+  border: 0;
+  border-radius: var(--r-tile);
+  box-shadow: var(--sombra-1);
+}
+.nota-i {
+  flex-shrink: 0;
+  color: var(--tx-2);
+}
+.nota-t {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.nota-d {
+  margin-top: var(--sp-3);
+  padding: 0 var(--sp-4);
+}
+.nota-l {
+  margin: 0 0 var(--sp-3);
+  padding-left: var(--sp-4);
+  color: var(--tx);
+}
+.nota-l li + li {
+  margin-top: var(--sp-2);
+}
+@media (hover: hover) {
+  .nota-b:hover:not(:disabled) {
+    background-color: var(--sf-2);
+  }
+}
+@media (min-width: 840px) {
+  .plano .hoy > .nota {
+    grid-column: 1 / -1;
+    grid-row: 3;
   }
 }

@@ -32,11 +32,10 @@ test('el hover no deja el mosaico transparente (la regla de la lista plana ya no
   assert.match(bloque, /\.plano \.teselas \.tesela:hover:not\(:disabled\) \{[^}]*var\(--sf-2\)/)
 })
 test('documentación y reglas fijas', () => {
-  assert.equal(JSON.parse(leer('package.json')).version, '0.45.0')
-  assert.equal(JSON.parse(leer('package.json')).entrega, '44')
+  // Entrega 45: ya no se fija la versión actual acá (la fija entrega46.test.js); solo que la historia no se pierda.
   assert.match(leer('CHANGELOG.md'), /## v0\.45\.0 · Entrega 44 ·/)
   assert.ok(leer('CHANGELOG.md').indexOf('v0.45.0') < leer('CHANGELOG.md').indexOf('v0.44.0'))
-  assert.match(leer('README.md'), /^# Mi Mejor Versión \(MMV\) · Entrega 44 \(v0\.45\.0\)/)
+  assert.match(leer('README.md'), /^# Mi Mejor Versión \(MMV\) · Entrega \d+ \(v0\.\d+\.\d+\)/)
   assert.match(leer('DESIGN-TOKENS.md'), /## Hoy en rejilla \(v0\.45\.0\)/)
   assert.match(leer('src/data/db.js'), /version\(11\)/)
   assert.doesNotMatch(leer('src/data/db.js'), /version\(12\)/)

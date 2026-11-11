@@ -1,4 +1,4 @@
-# Tokens de diseño de MMV (v0.45.0)
+# Tokens de diseño de MMV (v0.46.0)
 
 Todos los colores viven en `src/tokens.css`. Ni `styles.css` ni los componentes llevan hex/rgb (una prueba lo vigila). Única excepción: `theme-color` en `index.html` y `manifest.webmanifest` repite `--bg` (otra prueba comprueba que coincidan).
 
@@ -67,3 +67,6 @@ Cinco tokens nuevos: `--m-comida` (= `--ac`, cian: así lo pediste), `--m-agua`,
 
 ## Hoy en rejilla (v0.45.0)
 Sin tokens nuevos. Los cuatro mosaicos con meta (Comida, Agua, Sueño, Pasos) van de a dos con `--sf`, `--sombra-1` y `--r-tile`, `--sp-3` de separación y de relleno; el anillo mide 40 px y el valor 22 px. Peso ocupa las dos columnas en una fila. Al pasar el cursor el mosaico pasa a `--sf-2`. El color de métrica sigue solo en el arco y el ícono.
+
+## Nota del día (v0.46.0)
+Sin tokens nuevos. Una franja de una línea arriba de la rejilla de Hoy (`--sf`, `--sombra-1`, `--r-tile`; al pasar el cursor `--sf-2`) que se abre al tocarla y muestra hasta 3 señales. El texto va en `--tx` y el ícono en `--tx-2`: **no usa** los colores de métrica (`--m-*`) ni los de estado (`--pos`, `--neg`, `--warn`, `--info`) ni el lima. El cian (`--ac`) está solo en el chevron, porque es lo único tocable. En pantalla ancha ocupa una fila propia debajo de la preparación y la rejilla.

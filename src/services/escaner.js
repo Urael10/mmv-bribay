@@ -14,15 +14,30 @@ export const canonico = c => {
 export const soportaEscaner = (g = globalThis) =>
   typeof g.BarcodeDetector === 'function' && !!g.navigator?.mediaDevices?.getUserMedia
 
+// Alternativa para los navegadores sin BarcodeDetector, sobre todo el WebView del APK de Android (Entrega 46): el
+// decodificador ZXing en WebAssembly (paquete `barcode-detector`), con el mismo contrato. Se baja recién al hacer falta
+// y el .wasm sale del propio paquete (sin CDN), así que anda sin conexión.
+const cargarAlternativa = async () => (await import('./escanerWasm.js')).BarcodeDetector
+const sinCamara = g => !g.navigator?.mediaDevices?.getUserMedia
+
 // Devuelve un detector listo, o lanza Error con un mensaje claro en español.
-export async function crearDetector(g = globalThis) {
-  if (typeof g.BarcodeDetector !== 'function')
+// `alternativa` (opcional): función async que devuelve la clase BarcodeDetector de reemplazo.
+export async function crearDetector(g = globalThis, alternativa = cargarAlternativa) {
+  let Clase = g.BarcodeDetector
+  if (typeof Clase !== 'function' && !sinCamara(g)) {
+    try {
+      Clase = await alternativa()
+    } catch {
+      Clase = undefined
+    }
+  }
+  if (typeof Clase !== 'function')
     throw new Error(
-      'Este navegador no puede leer códigos de barras con la cámara (en Android hace falta Google Play Services y WebView actualizado). Tipeá el número en el buscador.'
+      'Este navegador no puede leer códigos de barras con la cámara. Tipeá el número en el buscador.'
     )
   let formatos = FORMATOS
   try {
-    const ok = await g.BarcodeDetector.getSupportedFormats?.()
+    const ok = await Clase.getSupportedFormats?.()
     if (Array.isArray(ok)) {
       formatos = FORMATOS.filter(f => ok.includes(f))
       if (!formatos.length) throw new Error('x')
@@ -32,7 +47,7 @@ export async function crearDetector(g = globalThis) {
       'Este navegador no lee los códigos de barras de alimentos (EAN/UPC). Tipeá el número en el buscador.'
     )
   }
-  return new g.BarcodeDetector({formats: formatos})
+  return new Clase({formats: formatos})
 }
 
 // Mira un cuadro de video y devuelve el primer código válido (dígito de control correcto), o null.
