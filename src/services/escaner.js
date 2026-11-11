@@ -18,7 +18,7 @@ export const soportaEscaner = (g = globalThis) =>
 export async function crearDetector(g = globalThis) {
   if (typeof g.BarcodeDetector !== 'function')
     throw new Error(
-      'Este navegador no puede leer códigos de barras con la cámara. Tipeá el número en el buscador.'
+      'Este navegador no puede leer códigos de barras con la cámara (en Android hace falta Google Play Services y WebView actualizado). Tipeá el número en el buscador.'
     )
   let formatos = FORMATOS
   try {
@@ -49,6 +49,11 @@ export async function leerCuadro(detector, fuente) {
   }
   return null
 }
+
+// Entrega 43 · La cámara se corta cuando la app pasa a segundo plano (y en el APK, al abrir otra app): al volver el video
+// queda congelado y el bucle seguiría «mirando» un cuadro viejo. Devuelve el mensaje para mostrar, o null si hay que seguir.
+export const mensajePausa = visibilidad =>
+  visibilidad === 'hidden' ? 'La cámara se pausó al salir de la app. Cerrala y volvé a abrirla para escanear.' : null
 
 // Traduce los errores de getUserMedia a mensajes entendibles.
 export function mensajeCamara(e) {

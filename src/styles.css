@@ -2351,3 +2351,78 @@ button.ruta-fila:active:not(:disabled) {
 .sq .sq-ext {
   grid-column: 2;
 }
+
+/* ===== v0.44.0 · Entrega 43: color por métrica en Hoy ===== */
+.m-comida { --m: var(--m-comida); }
+.m-agua { --m: var(--m-agua); }
+.m-sueno { --m: var(--m-sueno); }
+.m-pasos { --m: var(--m-pasos); }
+.m-peso { --m: var(--m-peso); }
+/* El arco y el ícono llevan el color de su métrica; al llegar a la meta pasan a verde (estado) como siempre */
+.plano .tesela .anillo:not(.ok):not(.bajo) .anillo-arco {
+  stroke: var(--m, var(--info));
+}
+.plano .tesela .anillo:not(.ok) .anillo-c .ico,
+.plano .tesela .anillo-fijo .ico {
+  color: var(--m, var(--tx-2));
+}
+.anillo-fijo {
+  width: 40px;
+  height: 40px;
+}
+.plano .hoy-cta,
+.plano .teselas {
+  margin-bottom: var(--sp-5);
+}
+
+/* ===== v0.45.0 · Entrega 44: Hoy en rejilla de dos columnas (propuesta C) ===== */
+/* Comida, Agua, Sueño y Pasos son mosaicos de dos en dos; Peso (sin meta) ocupa todo el ancho en una sola fila. */
+.plano .teselas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+.plano .teselas .tesela {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
+  min-height: 0;
+  padding: var(--sp-3);
+  background: var(--sf);
+  box-shadow: var(--sombra-1);
+  border-radius: var(--r-tile);
+}
+.plano .teselas .tesela .tesela-v {
+  margin-top: var(--sp-1);
+  font-size: 22px;
+  text-align: left;
+}
+.plano .teselas .tesela small {
+  overflow-wrap: anywhere;
+}
+.plano .teselas .tesela.m-peso {
+  grid-column: span 2;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--sp-3);
+}
+.plano .teselas .tesela.m-peso > * {
+  grid-column: 2;
+}
+.plano .teselas .tesela.m-peso > .anillo {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+.plano .teselas .tesela.m-peso .tesela-v {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  margin-top: 0;
+  text-align: right;
+}
+@media (hover: hover) {
+  .plano .teselas .tesela:hover:not(:disabled) {
+    background-color: var(--sf-2);
+  }
+}

@@ -1,4 +1,4 @@
-# Tokens de diseño de MMV (v0.39.0)
+# Tokens de diseño de MMV (v0.45.0)
 
 Todos los colores viven en `src/tokens.css`. Ni `styles.css` ni los componentes llevan hex/rgb (una prueba lo vigila). Única excepción: `theme-color` en `index.html` y `manifest.webmanifest` repite `--bg` (otra prueba comprueba que coincidan).
 
@@ -15,6 +15,7 @@ Todos los colores viven en `src/tokens.css`. Ni `styles.css` ni los componentes 
 | `--pr` | #c6f432 | **un solo destacado por pantalla** (CTA o dato clave) | — |
 | `--pos` `--neg` `--warn` `--info` | #4ade80 · #ff7a7a · #ffb454 · #8fb4ff | estados; siempre con ícono o texto | ≥ 4,5:1 |
 | `--m-p` `--m-c` `--m-g` | cian · #8fb4ff · #c4a1ff | series de macros (con etiqueta de texto) | ≥ 3:1 |
+| `--m-comida` `--m-agua` `--m-sueno` `--m-pasos` `--m-peso` | cian · #5aa9ff · #b8a4ff · #ff9f7a · #f0abfc | color por métrica en Hoy: arco del anillo e ícono (nunca el valor ni el texto) | ≥ 3:1 sobre `--bg` y `--sf` |
 
 ## Botones
 - **Secundario (por defecto, `button`)**: borde y texto cian, fondo transparente.
@@ -60,3 +61,9 @@ Sin tokens nuevos. Total del día en `Anillo` (`--info`; `--pos` al llegar a la 
 
 ## Arreglos de las capturas (v0.39.0)
 Dos tokens nuevos: `--pista` (color de la pista de los anillos; las pantallas casi negras de dormir y bolsillo siguen con `--sf-2`) y `--ico-check` (no es un color: el trazo del tilde como imagen de máscara, para que ni el CSS lleve el carácter ✓). Los anillos de Hoy llevan un ícono en el centro (`--tx-2`, `--pos` al llegar a la meta).
+
+## Color por métrica en Hoy (v0.44.0)
+Cinco tokens nuevos: `--m-comida` (= `--ac`, cian: así lo pediste), `--m-agua`, `--m-sueno`, `--m-pasos` y `--m-peso`. Cada fila de Hoy declara su métrica con una clase (`m-agua`, …) que fija `--m`; el arco del anillo y el ícono usan `var(--m)`. **Verde, ámbar y rojo no son color de métrica**: al llegar a la meta el anillo pasa a `--pos` como siempre (una prueba exige que ningún `--m-*` coincida con `--pos`, `--neg` ni `--warn`). El valor y el texto siguen en `--tx` y `--tx-2`. El cian de la fila de Comida es dato, no acción: toda la fila sigue siendo lo tocable. Peso no tiene meta y mantiene su círculo fijo, con el ícono en `--m-peso`.
+
+## Hoy en rejilla (v0.45.0)
+Sin tokens nuevos. Los cuatro mosaicos con meta (Comida, Agua, Sueño, Pasos) van de a dos con `--sf`, `--sombra-1` y `--r-tile`, `--sp-3` de separación y de relleno; el anillo mide 40 px y el valor 22 px. Peso ocupa las dos columnas en una fila. Al pasar el cursor el mosaico pasa a `--sf-2`. El color de métrica sigue solo en el arco y el ícono.

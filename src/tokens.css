@@ -55,6 +55,14 @@
   --m-c: #8fb4ff;
   --m-g: #c4a1ff;
 
+  /* Color por métrica en Hoy (Entrega 43): arco del anillo e ícono. Nunca el valor ni el texto, y nunca verde/ámbar/rojo
+     (esos son estados). Comida sigue en cian; el cian del anillo es dato, no acción: la fila entera es la acción. */
+  --m-comida: var(--ac);
+  --m-agua: #5aa9ff;
+  --m-sueno: #b8a4ff;
+  --m-pasos: #ff9f7a;
+  --m-peso: #f0abfc;
+
   /* Ícono de tilde (el mismo trazo de Icono «check») para chips seleccionados y mensajes de estado: se pinta con
      el color del texto mediante máscara, así no hay un carácter ✓ en el CSS */
   --ico-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");

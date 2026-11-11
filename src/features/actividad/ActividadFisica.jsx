@@ -27,6 +27,8 @@ import {
   gpsNuevo, procesarPuntoGps, gpsParaGuardar, gpsDesdeGuardado,
   normalizarLargoPaso, cerrarConteo, armarActividad, resumenActividades
 } from '../../domain/actividad'
+import {leerGasto} from '../../data/gasto'
+import {gastoDia, kcalDeActividad, textoKcal, AVISO_GASTO} from '../../domain/gasto'
 
 const K = {
   activo: 'mv_pasos_activo',
@@ -776,7 +778,17 @@ export default function ActividadFisica({onVerRutas}) {
     [kmTxt, setKmTxt] = useState(''),
     [nota, setNota] = useState(''),
     [rutaId, setRutaId] = useState(null),
-    [promedio, setPromedio] = useState(null)
+    [promedio, setPromedio] = useState(null),
+    [baseGasto, setBaseGasto] = useState(null)
+
+  // Entrega 43: gasto estimado del día; se vuelve a leer al cambiar de día y al registrar o borrar una actividad.
+  useEffect(() => {
+    let vigente = true
+    leerGasto(fecha, fecha)
+      .then(x => vigente && setBaseGasto(x))
+      .catch(() => vigente && setBaseGasto(null))
+    return () => { vigente = false }
+  }, [fecha, actividades])
 
   useEffect(() => {
     let vigente = true
@@ -848,6 +860,7 @@ export default function ActividadFisica({onVerRutas}) {
   }
 
   const resumen = resumenActividades(actividades)
+  const gasto = baseGasto ? gastoDia({fecha, ...baseGasto}) : null
 
   return (
     <>
@@ -882,13 +895,29 @@ export default function ActividadFisica({onVerRutas}) {
           {resumen.minutos} min en {resumen.cantidad} {resumen.cantidad === 1 ? 'actividad' : 'actividades'}
           {resumen.km > 0 ? ` · ${resumen.km.toFixed(1).replace('.', ',')} km` : ''}
         </small>
+        {gasto?.sinPeso && <small className="mu" style={{display: 'block'}}>Cargá tu peso en Cuerpo para estimar las kcal.</small>}
         {actividades.map(a => (
           <div className="lin" key={a.id}>
-            <span>{TIPOS[a.tipo] || a.tipo} · {a.minutos} min{a.km ? ` · ${String(a.km).replace('.', ',')} km` : ''}{a.nota ? ` · ${a.nota}` : ''}</span>
+            <span>{TIPOS[a.tipo] || a.tipo} · {a.minutos} min{a.km ? ` · ${String(a.km).replace('.', ',')} km` : ''}{a.nota ? ` · ${a.nota}` : ''}{gasto && !gasto.sinPeso ? ` · ${textoKcal(kcalDeActividad(a, gasto.peso))}` : ''}</span>
             <button className="ghost mini" aria-label={`Borrar ${TIPOS[a.tipo] || 'actividad'}`} onClick={() => borrar(a.id)}>×</button>
           </div>
         ))}
       </> : <small className="mu">Todavía no registraste actividades hoy.</small>}
+      {gasto && gasto.kcal > 0 && (
+        <>
+          <div className="lin">
+            <span>Gasto estimado del día</span>
+            <span className="mono">{textoKcal(gasto.kcal)}</span>
+          </div>
+          <small className="mu" style={{display: 'block'}}>
+            {[
+              gasto.entreno.cantidad ? `entreno ${textoKcal(gasto.entreno.kcal)}` : null,
+              gasto.actividad.cantidad ? `actividades ${textoKcal(gasto.actividad.kcal)}` : null,
+              gasto.rutas.cantidad ? `rutas con GPS aparte ${textoKcal(gasto.rutas.kcal)}` : null
+            ].filter(Boolean).join(' · ')}. {AVISO_GASTO}
+          </small>
+        </>
+      )}
       {onVerRutas && (
         <div className="botonera">
           <button className="ghost" onClick={onVerRutas}>Ver mis rutas</button>

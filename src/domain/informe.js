@@ -3,6 +3,7 @@
 import {sumaDias, volumen, repsTot, marcarPorContexto, pct, patron} from './stats.js'
 import {checkinHecho} from './checkin.js'
 import {cargaSesion} from './preparacion.js'
+import {gastoSemana, textoKcal} from './gasto.js'
 import {movimientoSemana, movimientoParaIA, hayMovimiento} from './movimiento.js'
 
 const num = x => {
@@ -32,6 +33,7 @@ export function informeSemana({
   comidas = [],
   actividades = [],
   rutas = [],
+  medidas = [],
   manual = {},
   metaKcal = 2200,
   metaAgua = 2500
@@ -117,7 +119,9 @@ export function informeSemana({
       meta: metaKcal,
       diasEnRango: dk.filter(x => Math.abs(x.kcal - metaKcal) / metaKcal <= 0.15).length
     },
-    actividad: movimientoSemana({desde, habitos, actividades, rutas})
+    actividad: movimientoSemana({desde, habitos, actividades, rutas}),
+    // Entrega 43: gasto estimado por encima del reposo (solo se muestra; NO viaja a la IA)
+    gasto: gastoSemana({desde, medidas, sesiones, actividades, rutas})
   }
 }
 
@@ -155,6 +159,14 @@ export function textoActividad(a) {
   return 'Actividad: ' + partes.join(' · ')
 }
 
+// Línea del gasto estimado de la semana. Sin peso registrado no se inventa un número.
+export function textoGasto(g) {
+  if (!g) return 'Gasto en actividad: sin datos'
+  if (g.sinPeso) return g.haySesionesSinPeso ? 'Gasto en actividad: cargá tu peso para estimarlo' : 'Gasto en actividad: sin datos'
+  if (!(g.kcal > 0)) return 'Gasto en actividad: sin datos'
+  return `Gasto en actividad (estimado, sobre el reposo): ${textoKcal(g.kcal)} · entreno ${textoKcal(g.entreno)} · actividades y rutas ${textoKcal(g.actividad)} · ${textoKcal(g.kcalPorDia)} por día con actividad`
+}
+
 // Texto plano para copiar o compartir.
 export function textoInforme(i, coach) {
   const e = i.entreno,
@@ -175,6 +187,7 @@ export function textoInforme(i, coach) {
     `Agua: ${i.agua.diasConDato ? i.agua.mlMedios + ' ml de media · meta cumplida ' + i.agua.diasMeta + ' de ' + i.agua.diasConDato + ' días' : 'sin datos'}`
   )
   L.push(textoActividad(i.actividad))
+  L.push(textoGasto(i.gasto))
   L.push(
     `Comida: ${i.comida.diasConDato ? i.comida.kcalMedias + ' kcal de media (meta ' + i.comida.meta + ') · proteína ' + i.comida.proteinaMedia + ' g · ' + i.comida.diasEnRango + ' de ' + i.comida.diasConDato + ' días en rango' : 'sin datos'}`
   )
@@ -193,7 +206,8 @@ export const P_COACH =
   'Sos un coach de entrenamiento y hábitos, cercano y concreto, en español rioplatense (vos). Recibís el resumen numérico de UNA semana de una persona que entrena fuerza/funcional y, si está, su puntaje de preparación de hoy. Devolvé SOLO JSON: {"resumen":"2 frases como máximo","logros":["hasta 3 cosas que salieron bien, con el dato"],"mejoras":["hasta 3 cosas a mejorar, con el dato"],"plan":["hasta 3 acciones concretas y chicas para la semana próxima"],"alerta":""}. Reglas: basate SOLO en los números recibidos y no inventes datos ni cifras; si algo viene en null o con pocos días, decí que falta información en vez de suponer; no des diagnósticos ni consejos médicos ni de suplementos, ni pautas de dieta con cifras (calorías o macros) más allá de comparar con la meta que ya tiene; "alerta" va vacía salvo que haya algo claramente preocupante en los datos (por ejemplo varios días con menos de 6 h de sueño junto con carga en aumento), y en ese caso sugerí descansar y consultar a un profesional si persiste. Check-in: energía y ánimo de 1 (muy bajo) a 5 (muy alto); dolor muscular de 1 (nada) a 5 (mucho). Cada ítem de hasta 160 caracteres. ' + 'También recibís "actividad", el movimiento fuera del entreno: "pasos" (promedio diario de los días con dato y variación contra la semana anterior; son estimaciones del celular, no una medición exacta), "actividades" (las que la persona registró: cantidad, minutos, km y desglose por tipo) y "rutasAparte" (salidas medidas con GPS que NO están ya en las actividades, así que no se cuentan dos veces; rutas = 0 significa que no hubo; ritmoMedioSegKm son segundos por km). "total" suma actividades y rutasAparte. No recibís recorridos ni lugares y no hace falta que los pidas. Podés relacionar la actividad con la carga de entreno, el sueño y el check-in (por ejemplo mucho movimiento extra con carga alta y poco descanso), y en "plan" podés sugerir ajustes concretos y chicos de la rutina de la semana: sumar o sacar un día de fuerza, bajar o subir el volumen o la intensidad, una semana de descarga, un día de movilidad o de caminata suave; sin nombrar ejercicios (no los recibís) y sin fijar ritmos ni distancias objetivo con cifras exactas. Si no hay datos de actividad, no los menciones.'
 
 export function cuerpoCoach(informe, prep) {
-  const {desde, hasta, actividad, ...resto} = informe
+  // `gasto` (kcal estimadas) se muestra en la app pero NO sale del dispositivo: se descarta acá, campo por campo.
+  const {desde, hasta, actividad, gasto: _gasto, ...resto} = informe
   const {records, ...entreno} = resto.entreno // los nombres de los ejercicios no salen del dispositivo: solo la cantidad de récords
   const datos = {
     semana: {desde, hasta},

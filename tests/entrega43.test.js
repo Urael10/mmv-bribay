@@ -386,16 +386,13 @@ test('dependencias · los tres plugins nuevos están en package.json y en el loc
   assert.match(pkg.dependencies['@capacitor/core'], /^\^8\./)
 })
 
-test('versión 0.43.0 / entrega 42 con su nota en el CHANGELOG y su sección en el README; la historia sigue', () => {
-  const pkg = JSON.parse(leer('package.json'))
-  assert.equal(pkg.version, '0.43.0')
-  assert.equal(pkg.entrega, '42')
+test('la Entrega 42 (v0.43.0) sigue en el CHANGELOG y en el README; la historia sigue', () => {
+  // Entrega 43: ya no se fija la versión actual acá (la fija entrega44.test.js); solo que la historia no se pierda.
   const ch = leer('CHANGELOG.md')
   assert.match(ch, /## v0\.43\.0 · Entrega 42 ·/)
   assert.match(ch, /## v0\.42\.0 · Entrega 41 ·/)
   assert.ok(ch.indexOf('v0.43.0') < ch.indexOf('v0.42.0'))
   const rd = leer('README.md')
-  assert.match(rd, /^# Mi Mejor Versión \(MMV\) · Entrega 42 \(v0\.43\.0\)/)
   assert.match(rd, /## Android completo \(v0\.43\.0\)/)
   assert.match(rd, /## Recordatorios \(v0\.42\.0\)/)
 })

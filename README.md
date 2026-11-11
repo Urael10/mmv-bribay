@@ -1,10 +1,10 @@
-# Mi Mejor Versión (MMV) · Entrega 42 (v0.43.0)
+# Mi Mejor Versión (MMV) · Entrega 44 (v0.45.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 
 ## Estructura
 ```
-src/domain/    lógica pura con pruebas: recordatorios (cuándo avisar: check-in, acostarte, agua, backup; a dónde lleva cada aviso), navegacion (botón atrás), actividad (pasos, GPS, actividades), metaPasos (meta, promedio y estado del conteo), sueno (alarma, horas de sueño y total del día), rutas (recorrido, trazo, parciales), mapa (teselas OSM), gpx (exportar/importar), alimentos, backup, biblioteca, checkin, cuerpo, entreno, informe, movimiento (pasos, actividades y rutas sin doble conteo), preparacion, privado (cifrado), progreso, registro, stats, temporizador
+src/domain/    lógica pura con pruebas: recordatorios (cuándo avisar: check-in, acostarte, agua, backup; a dónde lleva cada aviso), navegacion (botón atrás), actividad (pasos, GPS, actividades), gasto (kcal estimadas por actividad, entreno y rutas), metaPasos (meta, promedio y estado del conteo), sueno (alarma, horas de sueño y total del día), rutas (recorrido, trazo, parciales), mapa (teselas OSM), gpx (exportar/importar), alimentos, backup, biblioteca, checkin, cuerpo, entreno, informe, movimiento (pasos, actividades y rutas sin doble conteo), preparacion, privado (cifrado), progreso, registro, stats, temporizador
 src/data/      base de datos (Dexie v11), backup, biblioteca, menú privado, semilla de alimentos
 src/services/  IA (Gemini), Open Food Facts, escáner de código de barras, imágenes, reloj del entrenamiento, pendientes
 src/features/  pantallas: hoy, recordatorios (servicio y bloque de Ajustes), actividad (pasos y actividades), rutas (historial GPS, dentro de Progreso), entreno, comidas, progreso, cuerpo, coach, ajustes, bienestar (menú privado), biblioteca (ejercicios)
@@ -45,6 +45,12 @@ Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.z
 - Hoy va en el paquete principal; Entreno, Comidas, Progreso (con Rutas), Ajustes y el menú oculto se bajan aparte al abrirlos (`React.lazy` + `Suspense`). Mientras bajan se ve «Cargando…».
 - Unos segundos después de abrir, la app baja las demás pantallas en segundo plano (no lo hace sin conexión, con «ahorro de datos» ni con red 2G) y `public/sw.js` las guarda, así andan sin conexión. Si una pantalla no se puede bajar aparece «No se pudo abrir…» con **Reintentar** y **Actualizar la app**; tus datos no se tocan.
 - Regla para el código: nadie fuera de `src/ui/pantallas.js` importa esas pantallas de forma estática (una prueba lo vigila); una pantalla nueva se agrega ahí y a `ORDEN_PRECARGA`.
+
+## Hoy compacto y gasto calórico (v0.44.0)
+- **Hoy:** **rejilla de dos columnas** (Comida, Agua, Sueño y Pasos; Peso a todo el ancho) con **color por métrica** (agua, sueño, pasos, peso; comida en cian). Los estados siguen en verde/ámbar/rojo. La disposición actual es la propuesta C (v0.45.0).
+- **Gasto calórico:** estimación de las kcal por encima del reposo de tus entrenos, actividades y rutas con GPS (`(MET − 1) × peso × horas`; los pasos no se suman). Se ve en Hoy (fila de Pasos), en «Actividad física» y en el informe semanal. Necesita tu peso en Cuerpo. No se envía a la IA.
+- **Android:** el botón Compartir del informe del Coach usa la hoja nativa; el escáner libera la cámara al salir de la app.
+- Código: `src/domain/gasto.js` (puro), `src/data/gasto.js`, `src/platform/archivos.js › compartirTexto`. Dexie sigue en v11.
 
 ## Android completo (v0.43.0)
 - **Avisos que abren su pantalla:** tocar un aviso lleva al check-in, al agua, a «Dormir con alarma» o a Ajustes › Backup. **Backup semanal** como cuarto recordatorio (día y hora a elección; no avisa el día en que ya lo hiciste).

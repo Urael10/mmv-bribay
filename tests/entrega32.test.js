@@ -38,9 +38,9 @@ test('Anillo es decorativo y se dibuja con SVG, sin librerías', () => {
 })
 test('Hoy, Preparación y Comida usan el anillo; Peso no', () => {
   assert.match(leer('src/features/coach/Preparacion.jsx'), /<Anillo[\s\S]*meta=\{100\}/)
-  assert.match(leer('src/features/comidas/FilaAlimentacion.jsx'), /<Anillo valor=\{t\.kcal\}/)
+  assert.match(leer('src/features/comidas/FilaAlimentacion.jsx'), /<Anillo( tam=\{40\})? valor=\{t\.kcal\}/)
   const h = leer('src/features/hoy/Hoy.jsx')
-  assert.match(h, /<Anillo valor=\{h\.agua\}/)
+  assert.match(h, /<Anillo( tam=\{40\})? valor=\{h\.agua\}/)
   const peso = h.slice(h.indexOf('function TeselaPeso'), h.indexOf('export default function Hoy'))
   assert.doesNotMatch(peso, /Anillo/)
 })
