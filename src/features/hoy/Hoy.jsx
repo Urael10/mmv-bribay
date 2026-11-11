@@ -17,6 +17,7 @@ import ModoSueno from '../sueno/ModoSueno'
 import RegistroSueno from '../sueno/RegistroSueno'
 import {habitualNoche, duracionHM, duracionCorta, OBJETIVO_SUENO_H, fraccionSueno} from '../../domain/sueno'
 import Icono from '../../ui/Icono'
+import NotaDelDia from './NotaDelDia'
 import {leerGasto} from '../../data/gasto'
 import {gastoDia, textoKcal} from '../../domain/gasto'
 import {parsearMeta, promedioPasos, metaEfectiva, textoMetaPasos, PROMEDIO_DIAS} from '../../domain/metaPasos'
@@ -282,6 +283,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas, pedido}) {
         )}
       </div>
       <AvisoDescarga />
+      <NotaDelDia />
       <div className="teselas">
         <FilaAlimentacion onAbrir={onComidas} />
         <button

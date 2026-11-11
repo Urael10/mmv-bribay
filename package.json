@@ -1,7 +1,7 @@
 {
  "name": "mmv",
  "private": true,
- "version": "0.45.0",
+ "version": "0.46.0",
  "type": "module",
  "scripts": {
   "dev": "vite --host",
@@ -32,7 +32,7 @@
   "typescript": "^7.0.2",
   "vite": "^8.3.5"
  },
- "entrega": "44",
+ "entrega": "45",
  "engines": {
   "node": ">=20.19"
  }
