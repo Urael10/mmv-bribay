@@ -1,5 +1,31 @@
 # Historial de versiones de MMV
 
+## v0.50.0 · Entrega 49 · Sonidos, vibración y festejo de metas (12/11/2026)
+- **Qué hay de nuevo:** un toque al guardar (check-in completo, comida, medida, actividad), un toque corto al sumar agua, un festejo al cumplir cada meta del día (agua, pasos, sueño), otro al terminar el entreno y un cierre cuando las tres metas están cumplidas. El anillo da un pulso con una onda verde y, con el tono festivo, sale confeti con los colores de los tokens.
+- **Una vez por día:** cada meta festeja una sola vez por día, aunque sigas sumando o deshagas y vuelvas a cruzarla; el cierre del día también. La marca vive en `localStorage` (`mv_fb_dia`). Abrir la app con la meta ya cumplida no festeja: solo cuenta el paso de no cumplida a cumplida mientras Hoy está abierta.
+- **Ajuste «Sonidos y vibración»** (Ajustes › Metas): Apagado · **Solo vibración (por defecto)** · Vibración y sonido, con un botón «Probar». El sonido también se apaga con «Sonido del temporizador». El nivel (`mv_feedback`) viaja en el backup.
+- **Hápticos:** `@capacitor/haptics ^8.0.2` (dependencia nueva), solo desde `src/platform/hapticos.js`; en la web usa `navigator.vibrate`. El permiso `VIBRATE` ya estaba en el manifiesto. `cap sync` ahora ve 5 plugins.
+- **Con «reducir movimiento»** se apagan el pulso del anillo y el confeti; la vibración y el sonido siguen el ajuste elegido.
+- **Encaje:** `src/domain/feedback.js` (puro), `src/platform/hapticos.js`, `src/services/feedback.js`, `src/features/hoy/useMeta.js`; engancha en `Hoy.jsx`, `Entreno.jsx`, `Comidas.jsx`, `Cuerpo.jsx`, `ActividadFisica.jsx` y `Ajustes.jsx`. CSS del anillo en `styles.css` (antes del bloque de la entrega 30, para no romper las pruebas de «solo tokens»). Dexie sigue en v11; `appId`, `androidScheme` y `publicar.yml` sin cambios.
+- **Pruebas:** `tests/entrega50.test.js`. Se ajustaron a propósito `entrega27` y `entrega46` (lista de dependencias), `entrega40` (firma de `TeselaSueno`) y `entrega49` (ya no fija la versión vigente).
+- **No probado:** cómo se siente la vibración con `@capacitor/haptics` en tu teléfono, el volumen del tono, la animación y el confeti en pantalla real, y la compilación del APK con el plugin nuevo (solo corre en GitHub). La muestra que viste usaba `navigator.vibrate`.
+
+## v0.49.0 · Entrega 48 · Lectura del día con IA y caché (11/11/2026)
+- **Qué hay de nuevo:** dentro de la Nota del día (Hoy), «Lectura del día con IA»: un resumen de 2 frases y hasta 3 sugerencias chicas para lo que queda del día. Aparece solo con la clave de IA cargada y datos de hoy. **Nunca se pide sola**: solo al tocar el botón.
+- **Caché:** la lectura de hoy se guarda en el teléfono y se muestra sin red. Si cambian los datos (huella de los totales, sin contar la hora), avisa «cargaste datos nuevos desde entonces» y deja actualizar; no actualiza sola. Al cambiar el día no hay lectura. Se guarda en `localStorage` (`mv_ia_dia`), una sola entrada: **Dexie sigue en v11** y no viaja en el backup.
+- **Privacidad:** a la IA solo van totales de hoy. Quedan fuera el gasto estimado, los nombres de comidas y ejercicios, las notas y los trazos (una prueba lo vigila). La respuesta se sanea (sin `<`/`>`, límites de largo y cantidad) como la del coach. Cuenta en el registro de uso (`fn: 'dia'`).
+- **Encaje:** `src/domain/iaDia.js` (puro), `src/data/iaDia.js`, `src/features/hoy/LecturaIA.jsx` (usa `src/services/ia.js` como el coach). Sin CSS nuevo (reusa las clases de la Nota). Sin dependencias nuevas; `appId`, `androidScheme` y `publicar.yml` sin cambios.
+- **Pruebas:** `tests/entrega49.test.js`. Se relajó a propósito `entrega48` (ya no fija la versión vigente).
+- **No probado:** la llamada real a Gemini con tu clave, cómo se ve en pantalla ni en el celular, y la compilación del APK (solo corre en GitHub). El prompt es una propuesta de diseño sin ajustar con respuestas reales.
+
+## v0.48.0 · Entrega 47 · Pasos en el gasto calórico (11/11/2026)
+- **Pasos sueltos:** el gasto del día suma ahora los pasos como parte aparte, **sin contar dos veces** la misma caminata: se descuentan los pasos que caen dentro de las caminatas y carreras ya registradas (actividades y rutas GPS sin actividad), a 100 pasos/min al caminar y 160 al correr. Los pasos que sobran se convierten en kcal sobre el reposo con MET 2,8 (≈ 3,2 km/h): 10.000 pasos sueltos con 70 kg dan ≈ 210 kcal. Cadencia y MET son una propuesta de diseño (constantes `PASOS_POR_MIN` y `MET_PASOS` en `src/domain/gasto.js`); sigue siendo una estimación (±30 %).
+- **Dónde se ve:** el total de Hoy y de «Actividad física» (desglose «pasos sueltos»), el informe semanal (fila «Pasos sueltos» y línea del texto para copiar) y la señal de gasto de la Nota del día. Sin peso no se inventa un número. **No viaja a la IA** (una prueba lo vigila).
+- **Datos:** `src/data/gasto.js` lee también los pasos de `habitos` (solo fecha y pasos). Los totales sin pasos dan lo mismo que antes. **Dexie sigue en v11**; `appId`, `androidScheme` y `publicar.yml` sin cambios; sin dependencias nuevas. `versionCode` 4800.
+- **Pruebas:** `tests/entrega48.test.js`. Se relajó a propósito `entrega47` (ya no fija la versión vigente).
+- **Aparte, el borrado de actividades que reportaste:** no encontré ningún código que borre actividades salvo el botón ×, y en Chromium real una actividad registrada sobrevivió a la recarga; dijiste que ya se solucionó. Sin cambios por eso.
+- **No probado:** en el celular, y que la cadencia de 100 pasos/min se parezca a la tuya.
+
 ## v0.47.0 · Entrega 46 · Escáner de códigos de barras que funciona en el APK (11/11/2026)
 - **El problema:** el escáner dependía de `BarcodeDetector`, que el WebView de Android declara pero que necesita Google Play Services y un WebView actualizado; sin eso el APK decía «tipeá el número».
 - **Lector de reemplazo:** si falta `BarcodeDetector` y hay cámara, se usa ZXing en WebAssembly (paquete `barcode-detector` 3.2.3 con `zxing-wasm` 3.1.6), con el mismo contrato y los mismos formatos (EAN-13, EAN-8, UPC-A). `src/services/escanerWasm.js` se baja recién al abrir el escáner (import dinámico) y usa el *ponyfill* (no toca `window`). El `.wasm` (≈ 0,9 MB) sale del propio paquete, sin CDN, y el service worker lo guarda al usarlo: anda sin conexión desde la segunda vez. Si el nativo existe, manda el nativo. También ayuda en Firefox y Safari.

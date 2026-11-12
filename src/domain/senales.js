@@ -137,16 +137,16 @@ export function senalActividad({habitos = [], fecha, hora = 12, metaPasos = ''})
 }
 
 // ---------- Gasto estimado ----------
-export function senalGasto({medidas = [], sesiones = [], actividades = [], rutas = [], fecha}) {
-  const g = gastoDia({fecha, medidas, sesiones, actividades, rutas}),
-    hubo = g.entreno.cantidad + g.actividad.cantidad + g.rutas.cantidad > 0
+export function senalGasto({medidas = [], sesiones = [], actividades = [], rutas = [], habitos = [], fecha}) {
+  const g = gastoDia({fecha, medidas, sesiones, actividades, rutas, habitos}),
+    hubo = g.entreno.cantidad + g.actividad.cantidad + g.rutas.cantidad + g.pasos.cantidad > 0
   if (g.kcal > 0)
     return senal(
       'gasto-hoy',
       'gasto',
       25,
       `Actividad de hoy: ${textoKcal(g.kcal)}`,
-      `Entreno y actividad suman ${textoKcal(g.kcal)} por encima del reposo. Es una estimación (±30 %) y los pasos no se suman.`
+      `Entreno, actividad y pasos suman ${textoKcal(g.kcal)} por encima del reposo. Es una estimación (±30 %).`
     )
   if (hubo && g.sinPeso)
     return senal('gasto-sin-peso', 'gasto', 22, 'Cargá tu peso para estimar el gasto de hoy', 'Hubo actividad hoy, pero sin un peso registrado en Cuerpo no se puede estimar el gasto.')
@@ -191,7 +191,7 @@ export function notaDelDia(d = {}) {
     senalAgua({habitos, fecha, hora, metaAgua: d.metaAgua}),
     senalComida({comidas, medidas, fecha, hora, metaKcal: d.metaKcal, protKg: d.protKg}),
     senalActividad({habitos, fecha, hora, metaPasos: d.metaPasos}),
-    senalGasto({medidas, sesiones, actividades, rutas, fecha}),
+    senalGasto({medidas, sesiones, actividades, rutas, habitos, fecha}),
     senalCarga({sesiones, actividades, rutas, fecha})
   ].filter(Boolean)
   const lista = todas.map((s, i) => [s, i]).sort((a, b) => b[0].prioridad - a[0].prioridad || a[1] - b[1]).map(x => x[0]).slice(0, MAX_SENALES)

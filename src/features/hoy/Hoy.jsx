@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useRef} from 'react'
 import Anillo from '../../ui/Anillo'
 import {claseAnillo, textoAnillo} from '../../domain/anillo'
 import {db, hoy, cfg} from '../../data/db'
@@ -18,6 +18,8 @@ import RegistroSueno from '../sueno/RegistroSueno'
 import {habitualNoche, duracionHM, duracionCorta, OBJETIVO_SUENO_H, fraccionSueno} from '../../domain/sueno'
 import Icono from '../../ui/Icono'
 import NotaDelDia from './NotaDelDia'
+import useMeta from './useMeta'
+import {sentir, festejadaHoy} from '../../services/feedback'
 import {leerGasto} from '../../data/gasto'
 import {gastoDia, textoKcal} from '../../domain/gasto'
 import {parsearMeta, promedioPasos, metaEfectiva, textoMetaPasos, PROMEDIO_DIAS} from '../../domain/metaPasos'
@@ -71,8 +73,9 @@ function TeselaPasos({abierto, onAbrir}) {
       vigente = false
     }
   }, [abierto])
+  const ef = metaEfectiva({meta: parsearMeta(cfg('metapasos', '')).meta, promedio: d?.promedio ?? null})
+  const pop = useMeta('pasos', d ? d.pasos : null, ef.valor)
   if (!d) return null
-  const ef = metaEfectiva({meta: parsearMeta(cfg('metapasos', '')).meta, promedio: d.promedio})
   return (
     <button
       type="button"
@@ -84,7 +87,7 @@ function TeselaPasos({abierto, onAbrir}) {
         ': abrir conteo'
       }
     >
-      <Anillo tam={40} valor={d.pasos} meta={ef.valor} clase={claseAnillo(d.pasos, ef.valor)}>
+      <Anillo tam={40} valor={d.pasos} meta={ef.valor} clase={claseAnillo(d.pasos, ef.valor) + (pop ? ' pop' : '')}>
         <Icono n="pasos" tam={20} />
       </Anillo>
       <span className="eti">Pasos</span>
@@ -96,9 +99,10 @@ function TeselaPasos({abierto, onAbrir}) {
 }
 
 // Sueño: horas del día contra una referencia de 8 h, con la calidad. Al tocarla se abre el check-in en el bloque de sueño.
-function TeselaSueno({h, onAbrir}) {
+function TeselaSueno({h, cargado, onAbrir}) {
   const horas = +String(h.sueno ?? '').replace(',', '.') > 0 ? +String(h.sueno).replace(',', '.') : 0,
-    cal = +h.calidad >= 1 ? +h.calidad : null
+    cal = +h.calidad >= 1 ? +h.calidad : null,
+    pop = useMeta('sueno', cargado ? horas : null, OBJETIVO_SUENO_H)
   return (
     <button
       type="button"
@@ -110,7 +114,7 @@ function TeselaSueno({h, onAbrir}) {
           : 'Sueño: sin registrar. Abrir el registro'
       }
     >
-      <Anillo tam={40} valor={horas} meta={OBJETIVO_SUENO_H} clase={claseAnillo(horas, OBJETIVO_SUENO_H)}>
+      <Anillo tam={40} valor={horas} meta={OBJETIVO_SUENO_H} clase={claseAnillo(horas, OBJETIVO_SUENO_H) + (pop ? ' pop' : '')}>
         <Icono n="luna" tam={20} />
       </Anillo>
       <span className="eti">Sueño</span>
@@ -152,6 +156,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas, pedido}) {
     [aguaAb, setAguaAb] = useState(false),
     [suAb, setSuAb] = useState(false),
     [masAb, setMasAb] = useState(false),
+    [cargado, setCargado] = useState(false), // la fila de hoy ya se leyó de la base (antes no se festeja nada)
     [reinicio, setReinicio] = useState(null), // lo que había antes de «Reiniciar», para deshacerlo sin preguntar
     [pedir, setPedir] = useState({id: '', n: 0}), // a qué bloque del check-in llevar (sube con cada pedido)
     [habitual, setHabitual] = useState(null), // hora habitual de acostarse y levantarse (últimos días)
@@ -161,6 +166,7 @@ export default function Hoy({onEmpezar, onComidas, onRutas, pedido}) {
     db.habitos.get(hoy()).then(x => {
       if (x) setH(x)
       setCkAb(!checkinHecho(x)) // el check-in se abre solo si todavía no lo hiciste hoy
+      setCargado(true)
     })
     db.habitos
       .where('fecha')
@@ -234,6 +240,8 @@ export default function Hoy({onEmpezar, onComidas, onRutas, pedido}) {
     ml = Math.round(+ml)
     if (!(ml > 0) || ml > 5000) return
     setReinicio(null)
+    const cruza = (+h.agua || 0) < meta && (+h.agua || 0) + ml >= meta
+    if (!cruza || festejadaHoy('agua')) sentir('toque') // al cruzar la meta suena el festejo, no el toque
     g({agua: (+h.agua || 0) + ml, aguaLog: [...log, ml]})
   }
   const deshacer = () => {
@@ -242,6 +250,15 @@ export default function Hoy({onEmpezar, onComidas, onRutas, pedido}) {
     g({agua: Math.max(0, (+h.agua || 0) - ml), aguaLog: log.slice(0, -1)})
   }
   const resumenCk = checkinHecho(h) ? 'Hecho' : '20 segundos'
+  // Entrega 49: el agua festeja su meta (anillo y sonido); el check-in completo da un toque corto de «guardado».
+  const popAgua = useMeta('agua', cargado ? +h.agua || 0 : null, meta)
+  const ckHecho = cargado ? checkinHecho(h) : null,
+    ckAntes = useRef(null)
+  useEffect(() => {
+    if (ckHecho === null) return
+    if (ckAntes.current === false && ckHecho) sentir('guardar')
+    ckAntes.current = ckHecho
+  }, [ckHecho])
   return (
     <div className="bento hoy">
       <Preparacion
@@ -294,14 +311,14 @@ export default function Hoy({onEmpezar, onComidas, onRutas, pedido}) {
           aria-label={textoAnillo('Agua', h.agua, meta, 'ml')}
           onClick={() => setAguaAb(v => !v)}
         >
-          <Anillo tam={40} valor={h.agua} meta={meta} clase={claseAnillo(h.agua, meta)}>
+          <Anillo tam={40} valor={h.agua} meta={meta} clase={claseAnillo(h.agua, meta) + (popAgua ? ' pop' : '')}>
             <Icono n="gota" tam={20} />
           </Anillo>
           <span className="eti">Agua</span>
           <b className="mono tesela-v">{fmtVal(h.agua, {dec: 0})}</b>
           <small className="mu">de {meta} ml</small>
         </button>
-        <TeselaSueno h={h} onAbrir={() => abrirCk('hoy-sueno-reg')} />
+        <TeselaSueno h={h} cargado={cargado} onAbrir={() => abrirCk('hoy-sueno-reg')} />
         <TeselaPasos abierto={masAb} onAbrir={() => setMasAb(true)} />
         <TeselaPeso onAbrir={() => setMasAb(true)} />
       </div>

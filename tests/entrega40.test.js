@@ -116,9 +116,9 @@ test('Hoy: ya no se inventa una calidad 3 en filas nuevas y la hora habitual sal
 
 test('tesela de Sueño en Hoy: anillo contra la referencia, ícono de luna y texto accesible; abre el bloque de sueño', () => {
   const h = leer('src/features/hoy/Hoy.jsx')
-  assert.match(h, /function TeselaSueno\(\{h, onAbrir\}\)/)
+  assert.match(h, /function TeselaSueno\(\{h, cargado, onAbrir\}\)/ /* Entrega 49: suma `cargado` para no festejar al abrir */)
   assert.match(h, /<Icono n="luna" tam=\{20\} \/>/)
-  assert.match(h, /<TeselaSueno h=\{h\} onAbrir=\{\(\) => abrirCk\('hoy-sueno-reg'\)\} \/>/)
+  assert.match(h, /<TeselaSueno h=\{h\} cargado=\{cargado\} onAbrir=\{\(\) => abrirCk\('hoy-sueno-reg'\)\} \/>/)
   assert.ok(h.indexOf('<TeselaSueno') < h.indexOf('<TeselaPasos'))
   assert.match(h, /Sueño: sin registrar/)
   assert.match(leer('src/features/sueno/RegistroSueno.jsx'), /id="hoy-sueno-reg"[^>]*tabIndex=\{-1\}/)

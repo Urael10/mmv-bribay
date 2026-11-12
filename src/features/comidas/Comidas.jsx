@@ -1,4 +1,5 @@
 import {useState, useEffect, useMemo, useRef} from 'react'
+import {sentir} from '../../services/feedback'
 import {db, hoy, cfg, sembrar} from '../../data/db'
 import {pedirIA} from '../../services/ia'
 import {chica} from '../../services/img'
@@ -903,6 +904,7 @@ export default function Comidas() {
     setBor(null)
     setFx(null)
     setMsg('Comida guardada.')
+    sentir('guardar')
     cargarDia()
     cargarHist()
   }
@@ -939,6 +941,7 @@ export default function Comidas() {
     await db.comidas.add({...r, fecha: hoy(), hora: horaAhora()})
     setFecha(hoy())
     setMsg('Repetida en hoy.')
+    sentir('guardar')
     if (fecha === hoy()) cargarDia()
     cargarHist()
   }

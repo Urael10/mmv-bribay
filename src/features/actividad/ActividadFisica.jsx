@@ -1,4 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from 'react'
+import {sentir} from '../../services/feedback'
 import {createPortal} from 'react-dom'
 import {db, hoy, cfg, setCfg} from '../../data/db'
 import {sumaDias} from '../../domain/stats'
@@ -788,7 +789,7 @@ export default function ActividadFisica({onVerRutas}) {
       .then(x => vigente && setBaseGasto(x))
       .catch(() => vigente && setBaseGasto(null))
     return () => { vigente = false }
-  }, [fecha, actividades])
+  }, [fecha, actividades, total])
 
   useEffect(() => {
     let vigente = true
@@ -851,6 +852,7 @@ export default function ActividadFisica({onVerRutas}) {
     if (!item) return
     const id = await db.actividades.add(item)
     setActividades(a => [...a, {...item, id}].sort((x, y) => x.id - y.id))
+    sentir('guardar')
     setMinutos(''); setKmTxt(''); setNota(''); setRutaId(null)
   }
 
@@ -913,7 +915,8 @@ export default function ActividadFisica({onVerRutas}) {
             {[
               gasto.entreno.cantidad ? `entreno ${textoKcal(gasto.entreno.kcal)}` : null,
               gasto.actividad.cantidad ? `actividades ${textoKcal(gasto.actividad.kcal)}` : null,
-              gasto.rutas.cantidad ? `rutas con GPS aparte ${textoKcal(gasto.rutas.kcal)}` : null
+              gasto.rutas.cantidad ? `rutas con GPS aparte ${textoKcal(gasto.rutas.kcal)}` : null,
+              gasto.pasos.cantidad ? `pasos sueltos ${textoKcal(gasto.pasos.kcal)}` : null
             ].filter(Boolean).join(' · ')}. {AVISO_GASTO}
           </small>
         </>

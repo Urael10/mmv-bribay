@@ -9,6 +9,8 @@ import {CLAVE_MAPA} from '../../domain/mapa'
 import {INFO, fechaBuild, buscarActualizacion, actualizarAhora} from '../../version'
 import Icono from '../../ui/Icono'
 import Recordatorios from '../recordatorios/Recordatorios'
+import {nivel as nivelFb, guardarNivel, sentir, confeti} from '../../services/feedback'
+import {NIVELES} from '../../domain/feedback'
 
 function Version({onVersion}) {
   const [r, setR] = useState(null),
@@ -306,7 +308,8 @@ export default function Ajustes({onVersion, irA}) {
     [m, setM] = useState(cfg('modelo', 'gemini-3.8-flash')),
     [a, setA] = useState(cfg('meta', 2500)),
     [kc, setKc] = useState(cfg('metakcal', 2200)),
-    [so, setSo] = useState(cfg('sonido', '1') !== '0')
+    [so, setSo] = useState(cfg('sonido', '1') !== '0'),
+    [fb, setFb] = useState(nivelFb)
   // Entrega 42: tocar el aviso de backup abre Ajustes y trae «Backup» a la vista.
   useEffect(() => {
     if (irA !== 'backup') return
@@ -386,6 +389,37 @@ export default function Ajustes({onVersion, irA}) {
             <span>Sonido del temporizador</span>
           </label>
         </p>
+        <h3>Sonidos y vibración</h3>
+        <p className="mu">
+          Un toque al guardar, un festejo al cumplir cada meta del día (una vez por día) y otro al terminar el entreno.
+          Con «Vibración y sonido», el sonido también se apaga con «Sonido del temporizador».
+        </p>
+        <div className="row" role="group" aria-label="Sonidos y vibración">
+          {NIVELES.map(n => (
+            <button
+              key={n}
+              type="button"
+              className="chip"
+              aria-pressed={fb === n}
+              onClick={() => {
+                setFb(n)
+                guardarNivel(n)
+              }}
+            >
+              {{off: 'Apagado', vib: 'Solo vibración', full: 'Vibración y sonido'}[n]}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="ghost"
+            onClick={e => {
+              sentir('meta')
+              confeti(e.currentTarget, 18)
+            }}
+          >
+            Probar
+          </button>
+        </div>
       </section>
     </>
   )

@@ -1459,6 +1459,51 @@ button.ruta-fila:active:not(:disabled) {
   margin: 0;
 }
 
+/* Entrega 49 (v0.50.0): al cumplir una meta el anillo da un pulso y una onda verde (una vez por meta y por día).
+   El confeti es un canvas pasajero que arma src/services/feedback.js con los colores de los tokens. */
+.anillo.pop {
+  animation: anillo-pop 0.7s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.anillo.pop::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--pos);
+  pointer-events: none;
+  animation: anillo-onda 0.8s ease-out forwards;
+}
+@keyframes anillo-pop {
+  35% {
+    transform: scale(1.14);
+  }
+}
+@keyframes anillo-onda {
+  from {
+    opacity: 0.9;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+.confeti {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 60;
+}
+@media (prefers-reduced-motion: reduce) {
+  .anillo.pop,
+  .anillo.pop::after {
+    animation: none;
+  }
+}
+
+
 /* Entrega 30: Hoy simplificado (propuesta A, foco único) y tarjetas sin borde. Solo tokens. */
 .bento {
   gap: var(--sp-3);

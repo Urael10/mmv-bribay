@@ -1,17 +1,17 @@
-# Mi Mejor Versión (MMV) · Entrega 46 (v0.47.0)
+# Mi Mejor Versión (MMV) · Entrega 49 (v0.50.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 
 ## Estructura
 ```
-src/domain/    lógica pura con pruebas: senales (señales y Nota del día de Hoy), recordatorios (cuándo avisar: check-in, acostarte, agua, backup; a dónde lleva cada aviso), navegacion (botón atrás), actividad (pasos, GPS, actividades), gasto (kcal estimadas por actividad, entreno y rutas), metaPasos (meta, promedio y estado del conteo), sueno (alarma, horas de sueño y total del día), rutas (recorrido, trazo, parciales), mapa (teselas OSM), gpx (exportar/importar), alimentos, backup, biblioteca, checkin, cuerpo, entreno, informe, movimiento (pasos, actividades y rutas sin doble conteo), preparacion, privado (cifrado), progreso, registro, stats, temporizador
+src/domain/    lógica pura con pruebas: feedback (qué vibra y suena en cada evento, y qué meta ya se festejó hoy), senales (señales y Nota del día de Hoy), recordatorios (cuándo avisar: check-in, acostarte, agua, backup; a dónde lleva cada aviso), navegacion (botón atrás), actividad (pasos, GPS, actividades), gasto (kcal estimadas por actividad, entreno y rutas), metaPasos (meta, promedio y estado del conteo), sueno (alarma, horas de sueño y total del día), rutas (recorrido, trazo, parciales), mapa (teselas OSM), gpx (exportar/importar), alimentos, backup, biblioteca, checkin, cuerpo, entreno, informe, movimiento (pasos, actividades y rutas sin doble conteo), preparacion, privado (cifrado), progreso, registro, stats, temporizador
 src/data/      base de datos (Dexie v11), backup, biblioteca, menú privado, semilla de alimentos
-src/services/  IA (Gemini), Open Food Facts, escáner de código de barras, imágenes, reloj del entrenamiento, pendientes
+src/services/  feedback (sonido, vibración y confeti), IA (Gemini), Open Food Facts, escáner de código de barras, imágenes, reloj del entrenamiento, pendientes
 src/features/  pantallas: hoy, recordatorios (servicio y bloque de Ajustes), actividad (pasos y actividades), rutas (historial GPS, dentro de Progreso), entreno, comidas, progreso, cuerpo, coach, ajustes, bienestar (menú privado), biblioteca (ejercicios)
-src/platform/  adaptadores finos a Capacitor (si la app corre en el APK o en el navegador; notificaciones locales, archivos y compartir, botón atrás); solo esta carpeta importa @capacitor/*
+src/platform/  adaptadores finos a Capacitor (si la app corre en el APK o en el navegador; notificaciones locales, archivos y compartir, botón atrás, hápticos); solo esta carpeta importa @capacitor/*
 android/       proyecto Android de Capacitor (versionado; lo que genera `cap sync` no): se compila en GitHub, no en tu PC
 capacitor.config.ts  identidad de la app Android (appId, nombre, carpeta web, esquema https, barras del sistema)
-tests/         pruebas con `node --test` (`tests/platform/`: plataforma nativo/web; `entrega43.test.js`: avisos que abren pantalla, backup semanal, archivos y botón atrás; `entrega42.test.js`: recordatorios, manifiesto y plugin; `entrega41.test.js`: base de Capacitor y workflow del APK; `entrega20.test.js`: actividad física; `entrega26.test.js`: rutas GPS; `entrega27.test.js`: mapa y GPX; `entrega28.test.js`: carga diferida; `entrega29.test.js`: IA con actividad y rutas)
+tests/         pruebas con `node --test` (`tests/platform/`: plataforma nativo/web; `entrega43.test.js`: avisos que abren pantalla, backup semanal, archivos y botón atrás; `entrega42.test.js`: recordatorios, manifiesto y plugin; `entrega41.test.js`: base de Capacitor y workflow del APK; `entrega20.test.js`: actividad física; `entrega26.test.js`: rutas GPS; `entrega27.test.js`: mapa y GPX; `entrega28.test.js`: carga diferida; `entrega29.test.js`: IA con actividad y rutas; `entrega50.test.js`: sonidos, vibración y festejo)
 public/        manifest, íconos y service worker (`sw.js`)
 ```
 `src/ui/pantallas.js` es el registro de las pantallas con carga diferida (`React.lazy`); `src/domain/carga.js` tiene su lógica pura (reintento, cuándo precargar). Los componentes de `features/` solo muestran y guardan; las reglas y cálculos viven en `domain/` para poder probarlos.
@@ -45,6 +45,12 @@ Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.z
 - Hoy va en el paquete principal; Entreno, Comidas, Progreso (con Rutas), Ajustes y el menú oculto se bajan aparte al abrirlos (`React.lazy` + `Suspense`). Mientras bajan se ve «Cargando…».
 - Unos segundos después de abrir, la app baja las demás pantallas en segundo plano (no lo hace sin conexión, con «ahorro de datos» ni con red 2G) y `public/sw.js` las guarda, así andan sin conexión. Si una pantalla no se puede bajar aparece «No se pudo abrir…» con **Reintentar** y **Actualizar la app**; tus datos no se tocan.
 - Regla para el código: nadie fuera de `src/ui/pantallas.js` importa esas pantallas de forma estática (una prueba lo vigila); una pantalla nueva se agrega ahí y a `ORDEN_PRECARGA`.
+
+## Lectura del día con IA (v0.49.0)
+- **Hoy:** al abrir la Nota del día aparece «Lectura del día con IA» (solo si cargaste tu clave de IA en Ajustes y hay datos de hoy). **Nunca se pide sola**: solo al tocar «Pedir lectura del día». Devuelve un resumen de 2 frases y hasta 3 sugerencias chicas para lo que queda del día.
+- **Caché:** la lectura de hoy queda guardada en el teléfono y se vuelve a mostrar sin red ni gasto de cuota. Si después cargás datos nuevos, dice «cargaste datos nuevos desde entonces» y ofrece «Actualizar lectura». Al día siguiente no hay lectura hasta que la pidas. Se guarda en `localStorage` (`mv_ia_dia`), **no en Dexie** (sigue en v11) y no viaja en el backup: se puede volver a pedir.
+- **Privacidad:** a la IA solo llegan totales de hoy (sueño, check-in, agua, comida, pasos, entreno y carga de la semana contra lo habitual). **No** el gasto estimado, ni nombres de comidas o ejercicios, ni notas, ni trazos. Una prueba lo vigila.
+- Código: `src/domain/iaDia.js` (puro), `src/data/iaDia.js` (caché) y `src/features/hoy/LecturaIA.jsx`.
 
 ## Nota del día (v0.46.0)
 - **Hoy:** una franja de una línea arriba de la rejilla (propuesta B) dice lo más importante del día y, al tocarla, lista hasta 3 señales. Mira sueño (noche corta o racha), agua (contra lo esperado a esa hora), comida (sin registros, falta de proteína, kcal pasadas o en tu meta), pasos, gasto estimado y carga de entreno (contra tu promedio de 28 días; hace falta historia de 2 semanas). Sin datos no se muestra; con datos y sin nada que decir dice «Sin novedades por ahora».

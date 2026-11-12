@@ -259,10 +259,16 @@ export function Informe({ses, reg, manual}) {
                     <span>Actividades y rutas</span>
                     <span className="mono">{textoKcal(inf.gasto.actividad)}</span>
                   </div>
+                  {inf.gasto.pasos > 0 && (
+                    <div className="lin">
+                      <span>Pasos sueltos</span>
+                      <span className="mono">{textoKcal(inf.gasto.pasos)}</span>
+                    </div>
+                  )}
                   <small className="mu">
                     {textoKcal(inf.gasto.kcalPorDia)} por día con actividad ({inf.gasto.diasConGasto} d). Es una estimación
-                    (±30 %) de lo que gastás por encima del reposo; no incluye los pasos para no contar dos veces la misma
-                    caminata y no se envía a la IA.
+                    (±30 %) de lo que gastás por encima del reposo; los pasos suman solo los que no están dentro de una
+                    caminata o carrera registrada, y no se envía a la IA.
                   </small>
                 </>
               )}
