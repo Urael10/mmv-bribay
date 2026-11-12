@@ -1,4 +1,5 @@
 import {useState, useEffect, useSyncExternalStore} from 'react'
+import {festejarEntreno} from '../../services/feedback'
 import Biblioteca from '../biblioteca/Biblioteca'
 import Icono from '../../ui/Icono'
 import {agregarEjercicio, resumenBloque} from '../../domain/biblioteca'
@@ -337,6 +338,7 @@ export default function Entreno() {
           : '')
     )
     save(null)
+    festejarEntreno()
   }
   const cerrarTimer = () => {
     const r = cerrarReloj()

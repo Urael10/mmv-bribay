@@ -368,6 +368,7 @@ test('ningún servicio toca mapa ni GPX; no hay fetch de teselas ni librería de
     '@capacitor/app', // Entrega 42 (v0.43.0): botón atrás; solo lo importa src/platform/atras.js
     '@capacitor/core',
     '@capacitor/filesystem', // Entrega 42: backup y GPX en el APK; solo lo importa src/platform/archivos.js
+    '@capacitor/haptics', // Entrega 49 (v0.50.0): vibración del APK; solo lo importa src/platform/hapticos.js
     '@capacitor/local-notifications', // Entrega 41 (v0.42.0): recordatorios; solo lo importa src/platform/notificaciones.js
     '@capacitor/share', // Entrega 42: hoja de compartir del APK; solo lo importa src/platform/archivos.js
     '@fontsource/bebas-neue',

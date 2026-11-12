@@ -1,5 +1,15 @@
 # Historial de versiones de MMV
 
+## v0.50.0 · Entrega 49 · Sonidos, vibración y festejo de metas (12/11/2026)
+- **Qué hay de nuevo:** un toque al guardar (check-in completo, comida, medida, actividad), un toque corto al sumar agua, un festejo al cumplir cada meta del día (agua, pasos, sueño), otro al terminar el entreno y un cierre cuando las tres metas están cumplidas. El anillo da un pulso con una onda verde y, con el tono festivo, sale confeti con los colores de los tokens.
+- **Una vez por día:** cada meta festeja una sola vez por día, aunque sigas sumando o deshagas y vuelvas a cruzarla; el cierre del día también. La marca vive en `localStorage` (`mv_fb_dia`). Abrir la app con la meta ya cumplida no festeja: solo cuenta el paso de no cumplida a cumplida mientras Hoy está abierta.
+- **Ajuste «Sonidos y vibración»** (Ajustes › Metas): Apagado · **Solo vibración (por defecto)** · Vibración y sonido, con un botón «Probar». El sonido también se apaga con «Sonido del temporizador». El nivel (`mv_feedback`) viaja en el backup.
+- **Hápticos:** `@capacitor/haptics ^8.0.2` (dependencia nueva), solo desde `src/platform/hapticos.js`; en la web usa `navigator.vibrate`. El permiso `VIBRATE` ya estaba en el manifiesto. `cap sync` ahora ve 5 plugins.
+- **Con «reducir movimiento»** se apagan el pulso del anillo y el confeti; la vibración y el sonido siguen el ajuste elegido.
+- **Encaje:** `src/domain/feedback.js` (puro), `src/platform/hapticos.js`, `src/services/feedback.js`, `src/features/hoy/useMeta.js`; engancha en `Hoy.jsx`, `Entreno.jsx`, `Comidas.jsx`, `Cuerpo.jsx`, `ActividadFisica.jsx` y `Ajustes.jsx`. CSS del anillo en `styles.css` (antes del bloque de la entrega 30, para no romper las pruebas de «solo tokens»). Dexie sigue en v11; `appId`, `androidScheme` y `publicar.yml` sin cambios.
+- **Pruebas:** `tests/entrega50.test.js`. Se ajustaron a propósito `entrega27` y `entrega46` (lista de dependencias), `entrega40` (firma de `TeselaSueno`) y `entrega49` (ya no fija la versión vigente).
+- **No probado:** cómo se siente la vibración con `@capacitor/haptics` en tu teléfono, el volumen del tono, la animación y el confeti en pantalla real, y la compilación del APK con el plugin nuevo (solo corre en GitHub). La muestra que viste usaba `navigator.vibrate`.
+
 ## v0.49.0 · Entrega 48 · Lectura del día con IA y caché (11/11/2026)
 - **Qué hay de nuevo:** dentro de la Nota del día (Hoy), «Lectura del día con IA»: un resumen de 2 frases y hasta 3 sugerencias chicas para lo que queda del día. Aparece solo con la clave de IA cargada y datos de hoy. **Nunca se pide sola**: solo al tocar el botón.
 - **Caché:** la lectura de hoy se guarda en el teléfono y se muestra sin red. Si cambian los datos (huella de los totales, sin contar la hora), avisa «cargaste datos nuevos desde entonces» y deja actualizar; no actualiza sola. Al cambiar el día no hay lectura. Se guarda en `localStorage` (`mv_ia_dia`), una sola entrada: **Dexie sigue en v11** y no viaja en el backup.

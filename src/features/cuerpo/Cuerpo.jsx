@@ -1,4 +1,5 @@
 import {useState, useEffect, useCallback} from 'react'
+import {sentir} from '../../services/feedback'
 import {db, hoy, cfg} from '../../data/db'
 import {sumaDias} from '../../domain/stats'
 import {claseVariacion} from '../../domain/variacion'
@@ -37,6 +38,7 @@ function FormMedida({inicial, onGuardar, onCancelar}) {
       e = validarMedida(m)
     if (e) return setErr(e)
     await db.medidas.put(m)
+    sentir('guardar')
     onGuardar()
   }
   return (

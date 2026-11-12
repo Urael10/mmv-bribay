@@ -238,9 +238,9 @@ test('documentación y reglas fijas', () => {
   assert.match(leer('capacitor.config.ts'), /appId: 'online\.bribayfitness\.mmv'/)
   assert.match(leer('capacitor.config.ts'), /androidScheme: 'https'/)
   assert.deepEqual(Object.keys(pkg.dependencies).sort(), [
-    '@capacitor/android', '@capacitor/app', '@capacitor/core', '@capacitor/filesystem', '@capacitor/local-notifications',
+    '@capacitor/android', '@capacitor/app', '@capacitor/core', '@capacitor/filesystem', '@capacitor/haptics', '@capacitor/local-notifications',
     '@capacitor/share', '@fontsource/bebas-neue', '@fontsource/chakra-petch', '@fontsource/inter', 'barcode-detector', 'dexie', 'react', 'react-dom'
-  ]) // Entrega 46: suma barcode-detector (escáner del WebView)
+  ]) // Entrega 46: suma barcode-detector (escáner del WebView); Entrega 49: suma @capacitor/haptics
   assert.ok(!/publicar/.test(leer('.github/workflows/android-debug.yml')))
   assert.match(leer('android/app/build.gradle'), /package\.json/)
 })

@@ -1,4 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from 'react'
+import {sentir} from '../../services/feedback'
 import {createPortal} from 'react-dom'
 import {db, hoy, cfg, setCfg} from '../../data/db'
 import {sumaDias} from '../../domain/stats'
@@ -851,6 +852,7 @@ export default function ActividadFisica({onVerRutas}) {
     if (!item) return
     const id = await db.actividades.add(item)
     setActividades(a => [...a, {...item, id}].sort((x, y) => x.id - y.id))
+    sentir('guardar')
     setMinutos(''); setKmTxt(''); setNota(''); setRutaId(null)
   }
 

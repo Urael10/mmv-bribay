@@ -106,7 +106,7 @@ test('caché: ida y vuelta, vigente / desactualizada / sin, y texto roto', () =>
     assert.equal(leerCache(malo), null, malo)
 })
 
-test('encaje: dominio puro, sin Dexie nueva, usa pedirIA solo desde el botón, versión 0.49.0', () => {
+test('encaje: dominio puro, sin Dexie nueva, usa pedirIA solo desde el botón, la versión vigente la fija la última entrega', () => {
   assert.doesNotMatch(leer('src/domain/iaDia.js'), /from '\.\.?\/(?!stats|preparacion|movimiento|alimentos|cuerpo|metaPasos)|react|db\.|localStorage|document|window/)
   assert.match(leer('src/data/iaDia.js'), /ia_dia/)
   const comp = leer('src/features/hoy/LecturaIA.jsx')
@@ -119,10 +119,9 @@ test('encaje: dominio puro, sin Dexie nueva, usa pedirIA solo desde el botón, v
   assert.doesNotMatch(leer('src/data/db.js'), /version\(12\)/)
   assert.doesNotMatch(leer('src/domain/informe.js'), /iaDia/)
   const pkg = JSON.parse(leer('package.json'))
-  assert.equal(pkg.version, '0.49.0')
-  assert.equal(pkg.entrega, '48')
-  assert.match(leer('CHANGELOG.md'), /^# Historial de versiones de MMV\s+## v0\.49\.0 · Entrega 48/)
-  assert.match(leer('README.md'), /Entrega 48 \(v0\.49\.0\)/)
+  assert.ok(+pkg.entrega >= 48 && /^0\.\d+\.0$/.test(pkg.version)) // se relajó a propósito en la entrega 49: ya no fija la versión vigente
+  assert.match(leer('CHANGELOG.md'), /## v0\.49\.0 · Entrega 48/)
+  assert.match(leer('README.md'), /Entrega \d+ \(v0\.\d+\.0\)/)
   assert.match(leer('capacitor.config.ts'), /online\.bribayfitness\.mmv/)
   assert.match(leer('capacitor.config.ts'), /androidScheme: 'https'/)
 })

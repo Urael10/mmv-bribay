@@ -6,6 +6,7 @@ export const AJUSTES = [
   'metakcal',
   'modelo',
   'sonido',
+  'feedback', // Entrega 49: nivel de sonidos y vibración
   'altura',
   'nac',
   'pesoobj',
