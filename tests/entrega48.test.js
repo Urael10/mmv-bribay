@@ -55,8 +55,6 @@ test('lectura y reglas: habitos solo fecha y pasos; Dexie v11; versión 0.48.0',
   assert.match(leer('src/data/db.js'), /version\(11\)/)
   assert.doesNotMatch(leer('src/data/db.js'), /version\(12\)/)
   const pkg = JSON.parse(leer('package.json'))
-  assert.equal(pkg.version, '0.48.0')
-  assert.equal(pkg.entrega, '47')
-  assert.match(leer('CHANGELOG.md'), /^# Historial de versiones de MMV\s+## v0\.48\.0 · Entrega 47/)
-  assert.match(leer('README.md'), /Entrega 47 \(v0\.48\.0\)/)
+  assert.match(pkg.version, /^0\.(4[89]|[5-9]\d)\.\d+$/) // relajada en la Entrega 48: ya no fija la versión vigente
+  assert.match(leer('CHANGELOG.md'), /## v0\.48\.0 · Entrega 47/)
 })

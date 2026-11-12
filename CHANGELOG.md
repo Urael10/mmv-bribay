@@ -1,5 +1,13 @@
 # Historial de versiones de MMV
 
+## v0.49.0 · Entrega 48 · Lectura del día con IA y caché (11/11/2026)
+- **Qué hay de nuevo:** dentro de la Nota del día (Hoy), «Lectura del día con IA»: un resumen de 2 frases y hasta 3 sugerencias chicas para lo que queda del día. Aparece solo con la clave de IA cargada y datos de hoy. **Nunca se pide sola**: solo al tocar el botón.
+- **Caché:** la lectura de hoy se guarda en el teléfono y se muestra sin red. Si cambian los datos (huella de los totales, sin contar la hora), avisa «cargaste datos nuevos desde entonces» y deja actualizar; no actualiza sola. Al cambiar el día no hay lectura. Se guarda en `localStorage` (`mv_ia_dia`), una sola entrada: **Dexie sigue en v11** y no viaja en el backup.
+- **Privacidad:** a la IA solo van totales de hoy. Quedan fuera el gasto estimado, los nombres de comidas y ejercicios, las notas y los trazos (una prueba lo vigila). La respuesta se sanea (sin `<`/`>`, límites de largo y cantidad) como la del coach. Cuenta en el registro de uso (`fn: 'dia'`).
+- **Encaje:** `src/domain/iaDia.js` (puro), `src/data/iaDia.js`, `src/features/hoy/LecturaIA.jsx` (usa `src/services/ia.js` como el coach). Sin CSS nuevo (reusa las clases de la Nota). Sin dependencias nuevas; `appId`, `androidScheme` y `publicar.yml` sin cambios.
+- **Pruebas:** `tests/entrega49.test.js`. Se relajó a propósito `entrega48` (ya no fija la versión vigente).
+- **No probado:** la llamada real a Gemini con tu clave, cómo se ve en pantalla ni en el celular, y la compilación del APK (solo corre en GitHub). El prompt es una propuesta de diseño sin ajustar con respuestas reales.
+
 ## v0.48.0 · Entrega 47 · Pasos en el gasto calórico (11/11/2026)
 - **Pasos sueltos:** el gasto del día suma ahora los pasos como parte aparte, **sin contar dos veces** la misma caminata: se descuentan los pasos que caen dentro de las caminatas y carreras ya registradas (actividades y rutas GPS sin actividad), a 100 pasos/min al caminar y 160 al correr. Los pasos que sobran se convierten en kcal sobre el reposo con MET 2,8 (≈ 3,2 km/h): 10.000 pasos sueltos con 70 kg dan ≈ 210 kcal. Cadencia y MET son una propuesta de diseño (constantes `PASOS_POR_MIN` y `MET_PASOS` en `src/domain/gasto.js`); sigue siendo una estimación (±30 %).
 - **Dónde se ve:** el total de Hoy y de «Actividad física» (desglose «pasos sueltos»), el informe semanal (fila «Pasos sueltos» y línea del texto para copiar) y la señal de gasto de la Nota del día. Sin peso no se inventa un número. **No viaja a la IA** (una prueba lo vigila).

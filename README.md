@@ -1,4 +1,4 @@
-# Mi Mejor Versión (MMV) · Entrega 47 (v0.48.0)
+# Mi Mejor Versión (MMV) · Entrega 48 (v0.49.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 
@@ -45,6 +45,12 @@ Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.z
 - Hoy va en el paquete principal; Entreno, Comidas, Progreso (con Rutas), Ajustes y el menú oculto se bajan aparte al abrirlos (`React.lazy` + `Suspense`). Mientras bajan se ve «Cargando…».
 - Unos segundos después de abrir, la app baja las demás pantallas en segundo plano (no lo hace sin conexión, con «ahorro de datos» ni con red 2G) y `public/sw.js` las guarda, así andan sin conexión. Si una pantalla no se puede bajar aparece «No se pudo abrir…» con **Reintentar** y **Actualizar la app**; tus datos no se tocan.
 - Regla para el código: nadie fuera de `src/ui/pantallas.js` importa esas pantallas de forma estática (una prueba lo vigila); una pantalla nueva se agrega ahí y a `ORDEN_PRECARGA`.
+
+## Lectura del día con IA (v0.49.0)
+- **Hoy:** al abrir la Nota del día aparece «Lectura del día con IA» (solo si cargaste tu clave de IA en Ajustes y hay datos de hoy). **Nunca se pide sola**: solo al tocar «Pedir lectura del día». Devuelve un resumen de 2 frases y hasta 3 sugerencias chicas para lo que queda del día.
+- **Caché:** la lectura de hoy queda guardada en el teléfono y se vuelve a mostrar sin red ni gasto de cuota. Si después cargás datos nuevos, dice «cargaste datos nuevos desde entonces» y ofrece «Actualizar lectura». Al día siguiente no hay lectura hasta que la pidas. Se guarda en `localStorage` (`mv_ia_dia`), **no en Dexie** (sigue en v11) y no viaja en el backup: se puede volver a pedir.
+- **Privacidad:** a la IA solo llegan totales de hoy (sueño, check-in, agua, comida, pasos, entreno y carga de la semana contra lo habitual). **No** el gasto estimado, ni nombres de comidas o ejercicios, ni notas, ni trazos. Una prueba lo vigila.
+- Código: `src/domain/iaDia.js` (puro), `src/data/iaDia.js` (caché) y `src/features/hoy/LecturaIA.jsx`.
 
 ## Nota del día (v0.46.0)
 - **Hoy:** una franja de una línea arriba de la rejilla (propuesta B) dice lo más importante del día y, al tocarla, lista hasta 3 señales. Mira sueño (noche corta o racha), agua (contra lo esperado a esa hora), comida (sin registros, falta de proteína, kcal pasadas o en tu meta), pasos, gasto estimado y carga de entreno (contra tu promedio de 28 días; hace falta historia de 2 semanas). Sin datos no se muestra; con datos y sin nada que decir dice «Sin novedades por ahora».

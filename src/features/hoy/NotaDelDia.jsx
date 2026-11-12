@@ -4,6 +4,7 @@ import Icono from '../../ui/Icono'
 import {hoy} from '../../data/db'
 import {leerSenales, metasNota} from '../../data/senales'
 import {notaDelDia, AVISO_NOTA} from '../../domain/senales'
+import LecturaIA from './LecturaIA'
 
 const horaAhora = () => {
   const d = new Date()
@@ -12,7 +13,7 @@ const horaAhora = () => {
 
 // Nota del día (Entrega 45, propuesta B): una franja de una línea arriba de la rejilla que se abre al tocarla.
 // Todo se lee de la base y se vuelve a leer cuando algo cambia (agua, sueño, pasos, comidas, entrenos, actividades),
-// con `liveQuery`: no depende de la copia de Hoy, que arranca con un valor de relleno. Todo local: no hay IA ni red.
+// con `liveQuery`: no depende de la copia de Hoy, que arranca con un valor de relleno. La nota es toda local (sin IA ni red); la lectura con IA (Entrega 48) solo se pide al tocar su botón.
 export default function NotaDelDia() {
   const [d, setD] = useState(null),
     [ab, setAb] = useState(false),
@@ -25,10 +26,11 @@ export default function NotaDelDia() {
       clearInterval(t)
     }
   }, [])
+  const metas = useMemo(() => metasNota(), [d])
   const nota = useMemo(() => {
     if (!d) return null
-    return notaDelDia({...d, ...metasNota(), fecha: hoy(), hora})
-  }, [d, hora])
+    return notaDelDia({...d, ...metas, fecha: hoy(), hora})
+  }, [d, metas, hora])
   if (!nota?.principal) return null
   return (
     <section className="nota" aria-label="Nota del día">
@@ -44,6 +46,7 @@ export default function NotaDelDia() {
           ))}
         </ul>
         <small className="mu">{AVISO_NOTA}</small>
+        {ab && d && <LecturaIA d={d} metas={metas} hora={hora} />}
       </div>
     </section>
   )
