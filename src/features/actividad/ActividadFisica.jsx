@@ -788,7 +788,7 @@ export default function ActividadFisica({onVerRutas}) {
       .then(x => vigente && setBaseGasto(x))
       .catch(() => vigente && setBaseGasto(null))
     return () => { vigente = false }
-  }, [fecha, actividades])
+  }, [fecha, actividades, total])
 
   useEffect(() => {
     let vigente = true
@@ -913,7 +913,8 @@ export default function ActividadFisica({onVerRutas}) {
             {[
               gasto.entreno.cantidad ? `entreno ${textoKcal(gasto.entreno.kcal)}` : null,
               gasto.actividad.cantidad ? `actividades ${textoKcal(gasto.actividad.kcal)}` : null,
-              gasto.rutas.cantidad ? `rutas con GPS aparte ${textoKcal(gasto.rutas.kcal)}` : null
+              gasto.rutas.cantidad ? `rutas con GPS aparte ${textoKcal(gasto.rutas.kcal)}` : null,
+              gasto.pasos.cantidad ? `pasos sueltos ${textoKcal(gasto.pasos.kcal)}` : null
             ].filter(Boolean).join(' · ')}. {AVISO_GASTO}
           </small>
         </>

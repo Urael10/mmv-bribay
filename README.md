@@ -1,4 +1,4 @@
-# Mi Mejor Versión (MMV) · Entrega 46 (v0.47.0)
+# Mi Mejor Versión (MMV) · Entrega 47 (v0.48.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 

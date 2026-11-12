@@ -4,9 +4,10 @@ import {db} from './db.js'
 import {leerMovimiento} from './movimiento.js'
 
 export async function leerGasto(desde, hasta) {
-  const [sesiones, medidas, mov] = await Promise.all([
+  const [sesiones, medidas, habitos, mov] = await Promise.all([
     db.sesiones.where('fecha').between(desde, hasta, true, true).toArray(),
     db.medidas.toArray(),
+    db.habitos.where('fecha').between(desde, hasta, true, true).toArray(),
     leerMovimiento(desde, hasta)
   ])
   return {
@@ -16,6 +17,7 @@ export async function leerGasto(desde, hasta) {
       bloques: (s.bloques || []).map(b => ({minutos: b?.minutos}))
     })),
     medidas: medidas.map(m => ({fecha: m.fecha, peso: m.peso})),
+    habitos: habitos.map(h => ({fecha: h.fecha, pasos: h.pasos})),
     ...mov
   }
 }

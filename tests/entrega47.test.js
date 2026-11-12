@@ -46,10 +46,8 @@ test('escáner · el .wasm sale del paquete (sin CDN), se carga de forma dinámi
 
 test('versión 0.47.0 · Entrega 46; Dexie v11; appId y esquema intactos; publicar.yml sin tocar', () => {
   const pkg = JSON.parse(leer('package.json'))
-  assert.equal(pkg.version, '0.47.0')
-  assert.equal(pkg.entrega, '46')
-  assert.match(leer('CHANGELOG.md'), /^# Historial de versiones de MMV\s+## v0\.47\.0 · Entrega 46/)
-  assert.match(leer('README.md'), /Entrega 46 \(v0\.47\.0\)/)
+  assert.match(pkg.version, /^0\.(4[7-9]|[5-9]\d)\.\d+$/) // relajada en la Entrega 47: ya no fija la versión vigente
+  assert.match(leer('CHANGELOG.md'), /## v0\.47\.0 · Entrega 46/)
   assert.match(leer('src/data/db.js'), /version\(11\)/)
   assert.doesNotMatch(leer('src/data/db.js'), /version\(12\)/)
   assert.match(leer('capacitor.config.ts'), /online\.bribayfitness\.mmv/)

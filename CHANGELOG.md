@@ -1,5 +1,13 @@
 # Historial de versiones de MMV
 
+## v0.48.0 · Entrega 47 · Pasos en el gasto calórico (11/11/2026)
+- **Pasos sueltos:** el gasto del día suma ahora los pasos como parte aparte, **sin contar dos veces** la misma caminata: se descuentan los pasos que caen dentro de las caminatas y carreras ya registradas (actividades y rutas GPS sin actividad), a 100 pasos/min al caminar y 160 al correr. Los pasos que sobran se convierten en kcal sobre el reposo con MET 2,8 (≈ 3,2 km/h): 10.000 pasos sueltos con 70 kg dan ≈ 210 kcal. Cadencia y MET son una propuesta de diseño (constantes `PASOS_POR_MIN` y `MET_PASOS` en `src/domain/gasto.js`); sigue siendo una estimación (±30 %).
+- **Dónde se ve:** el total de Hoy y de «Actividad física» (desglose «pasos sueltos»), el informe semanal (fila «Pasos sueltos» y línea del texto para copiar) y la señal de gasto de la Nota del día. Sin peso no se inventa un número. **No viaja a la IA** (una prueba lo vigila).
+- **Datos:** `src/data/gasto.js` lee también los pasos de `habitos` (solo fecha y pasos). Los totales sin pasos dan lo mismo que antes. **Dexie sigue en v11**; `appId`, `androidScheme` y `publicar.yml` sin cambios; sin dependencias nuevas. `versionCode` 4800.
+- **Pruebas:** `tests/entrega48.test.js`. Se relajó a propósito `entrega47` (ya no fija la versión vigente).
+- **Aparte, el borrado de actividades que reportaste:** no encontré ningún código que borre actividades salvo el botón ×, y en Chromium real una actividad registrada sobrevivió a la recarga; dijiste que ya se solucionó. Sin cambios por eso.
+- **No probado:** en el celular, y que la cadencia de 100 pasos/min se parezca a la tuya.
+
 ## v0.47.0 · Entrega 46 · Escáner de códigos de barras que funciona en el APK (11/11/2026)
 - **El problema:** el escáner dependía de `BarcodeDetector`, que el WebView de Android declara pero que necesita Google Play Services y un WebView actualizado; sin eso el APK decía «tipeá el número».
 - **Lector de reemplazo:** si falta `BarcodeDetector` y hay cámara, se usa ZXing en WebAssembly (paquete `barcode-detector` 3.2.3 con `zxing-wasm` 3.1.6), con el mismo contrato y los mismos formatos (EAN-13, EAN-8, UPC-A). `src/services/escanerWasm.js` se baja recién al abrir el escáner (import dinámico) y usa el *ponyfill* (no toca `window`). El `.wasm` (≈ 0,9 MB) sale del propio paquete, sin CDN, y el service worker lo guarda al usarlo: anda sin conexión desde la segunda vez. Si el nativo existe, manda el nativo. También ayuda en Firefox y Safari.

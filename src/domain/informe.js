@@ -121,7 +121,7 @@ export function informeSemana({
     },
     actividad: movimientoSemana({desde, habitos, actividades, rutas}),
     // Entrega 43: gasto estimado por encima del reposo (solo se muestra; NO viaja a la IA)
-    gasto: gastoSemana({desde, medidas, sesiones, actividades, rutas})
+    gasto: gastoSemana({desde, medidas, sesiones, actividades, rutas, habitos})
   }
 }
 
@@ -164,7 +164,7 @@ export function textoGasto(g) {
   if (!g) return 'Gasto en actividad: sin datos'
   if (g.sinPeso) return g.haySesionesSinPeso ? 'Gasto en actividad: cargá tu peso para estimarlo' : 'Gasto en actividad: sin datos'
   if (!(g.kcal > 0)) return 'Gasto en actividad: sin datos'
-  return `Gasto en actividad (estimado, sobre el reposo): ${textoKcal(g.kcal)} · entreno ${textoKcal(g.entreno)} · actividades y rutas ${textoKcal(g.actividad)} · ${textoKcal(g.kcalPorDia)} por día con actividad`
+  return `Gasto en actividad (estimado, sobre el reposo): ${textoKcal(g.kcal)} · entreno ${textoKcal(g.entreno)} · actividades y rutas ${textoKcal(g.actividad)}${g.pasos > 0 ? ` · pasos sueltos ${textoKcal(g.pasos)}` : ''} · ${textoKcal(g.kcalPorDia)} por día con actividad`
 }
 
 // Texto plano para copiar o compartir.
