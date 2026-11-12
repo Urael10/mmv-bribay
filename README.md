@@ -1,17 +1,17 @@
-# Mi Mejor Versión (MMV) · Entrega 49 (v0.50.0)
+# Mi Mejor Versión (MMV) · Entrega 50 (v0.51.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 
 ## Estructura
 ```
-src/domain/    lógica pura con pruebas: feedback (qué vibra y suena en cada evento, y qué meta ya se festejó hoy), senales (señales y Nota del día de Hoy), recordatorios (cuándo avisar: check-in, acostarte, agua, backup; a dónde lleva cada aviso), navegacion (botón atrás), actividad (pasos, GPS, actividades), gasto (kcal estimadas por actividad, entreno y rutas), metaPasos (meta, promedio y estado del conteo), sueno (alarma, horas de sueño y total del día), rutas (recorrido, trazo, parciales), mapa (teselas OSM), gpx (exportar/importar), alimentos, backup, biblioteca, checkin, cuerpo, entreno, informe, movimiento (pasos, actividades y rutas sin doble conteo), preparacion, privado (cifrado), progreso, registro, stats, temporizador
+src/domain/    lógica pura con pruebas: feedback (qué vibra y suena en cada evento, y qué meta ya se festejó hoy), senales (señales y Nota del día de Hoy), recordatorios (cuándo avisar: check-in, acostarte, agua, backup; a dónde lleva cada aviso), navegacion (botón atrás), actividad (pasos, GPS, actividades), gasto (kcal estimadas por actividad, entreno y rutas), metaPasos (meta, promedio y estado del conteo), sueno (alarma, horas de sueño y total del día), rutas (recorrido, trazo, parciales), mapa (teselas OSM), gpx (exportar/importar), alimentos, backup (qué ajustes viajan y cómo se validan), biblioteca, checkin, cuerpo, entreno, informe, movimiento (pasos, actividades y rutas sin doble conteo), preparacion, privado (cifrado), progreso, registro, stats, temporizador
 src/data/      base de datos (Dexie v11), backup, biblioteca, menú privado, semilla de alimentos
 src/services/  feedback (sonido, vibración y confeti), IA (Gemini), Open Food Facts, escáner de código de barras, imágenes, reloj del entrenamiento, pendientes
 src/features/  pantallas: hoy, recordatorios (servicio y bloque de Ajustes), actividad (pasos y actividades), rutas (historial GPS, dentro de Progreso), entreno, comidas, progreso, cuerpo, coach, ajustes, bienestar (menú privado), biblioteca (ejercicios)
 src/platform/  adaptadores finos a Capacitor (si la app corre en el APK o en el navegador; notificaciones locales, archivos y compartir, botón atrás, hápticos); solo esta carpeta importa @capacitor/*
 android/       proyecto Android de Capacitor (versionado; lo que genera `cap sync` no): se compila en GitHub, no en tu PC
 capacitor.config.ts  identidad de la app Android (appId, nombre, carpeta web, esquema https, barras del sistema)
-tests/         pruebas con `node --test` (`tests/platform/`: plataforma nativo/web; `entrega43.test.js`: avisos que abren pantalla, backup semanal, archivos y botón atrás; `entrega42.test.js`: recordatorios, manifiesto y plugin; `entrega41.test.js`: base de Capacitor y workflow del APK; `entrega20.test.js`: actividad física; `entrega26.test.js`: rutas GPS; `entrega27.test.js`: mapa y GPX; `entrega28.test.js`: carga diferida; `entrega29.test.js`: IA con actividad y rutas; `entrega50.test.js`: sonidos, vibración y festejo)
+tests/         pruebas con `node --test` (`tests/platform/`: plataforma nativo/web; `entrega43.test.js`: avisos que abren pantalla, backup semanal, archivos y botón atrás; `entrega42.test.js`: recordatorios, manifiesto y plugin; `entrega41.test.js`: base de Capacitor y workflow del APK; `entrega20.test.js`: actividad física; `entrega26.test.js`: rutas GPS; `entrega27.test.js`: mapa y GPX; `entrega28.test.js`: carga diferida; `entrega29.test.js`: IA con actividad y rutas; `entrega50.test.js`: sonidos, vibración y festejo; `entrega51.test.js`: backup con la configuración de recordatorios)
 public/        manifest, íconos y service worker (`sw.js`)
 ```
 `src/ui/pantallas.js` es el registro de las pantallas con carga diferida (`React.lazy`); `src/domain/carga.js` tiene su lógica pura (reintento, cuándo precargar). Los componentes de `features/` solo muestran y guardan; las reglas y cálculos viven en `domain/` para poder probarlos.
@@ -67,6 +67,12 @@ Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.z
 - **Avisos que abren su pantalla:** tocar un aviso lleva al check-in, al agua, a «Dormir con alarma» o a Ajustes › Backup. **Backup semanal** como cuarto recordatorio (día y hora a elección; no avisa el día en que ya lo hiciste).
 - **Backup y GPX en el APK:** se escriben en la caché y se comparten con la hoja del teléfono (el WebView no baja archivos `blob:`). **Botón atrás:** vuelve a Hoy y sale solo desde Hoy. Manifiesto: vibración y cámara.
 - Código: `src/platform/archivos.js` (`@capacitor/filesystem` y `@capacitor/share`), `src/platform/atras.js` (`@capacitor/app`), `src/domain/navegacion.js` (puro). Dexie sigue en v11.
+
+## Backup con la configuración de recordatorios (v0.51.0)
+- **Qué viaja:** además de los ajustes de siempre, el backup lleva la configuración de los cuatro recordatorios (cuáles están activados, la hora del check-in, la franja y el intervalo del agua, el día y la hora del backup semanal). Al cambiar de teléfono o reinstalar el APK no hay que volver a configurarlos.
+- **Al restaurar:** la configuración se valida con `normalizarConfig` (horas, días e intervalos válidos; una franja de agua sin largo vuelve a la de fábrica). Un backup viejo, sin esa clave, o con un valor dañado **no pisa** la configuración que ya tenés. Después de restaurar, la pantalla de Recordatorios se vuelve a leer y los avisos se reprograman solos.
+- **El permiso no viaja:** es de cada teléfono. Si el backup trae avisos activados y este teléfono todavía no permitió las notificaciones, Ajustes › Recordatorios lo dice y ofrece **Permitir avisos** (el diálogo de Android sale solo al tocar ese botón, nunca solo). El permiso de la versión web no hace falta: ahí no hay avisos.
+- No viajan la marca interna de «hay avisos programados» ni los avisos ya programados: se recalculan en el teléfono. Dexie sigue en v11. Código: `src/domain/backup.js` (`AJUSTES`, `valorDeAjuste`, `ajustesAplicables`), `src/data/backup.js` (evento `mmv:restaurado`), `src/features/recordatorios/`.
 
 ## Recordatorios (v0.42.0)
 - Ajustes › Recordatorios (solo en la app de Android): aviso del **check-in** a la hora que elijas, aviso de **acostarte** 30 min antes de tu hora habitual (necesita 2 días con las dos horas) y aviso de **agua** en una franja cada 2, 3 o 4 h. En el navegador / la PWA el bloque lo dice y no ofrece nada: una web no puede avisar con la app cerrada.

@@ -166,21 +166,20 @@ test('ajuste: el nivel viaja en el backup y la clave de IA sigue sin viajar', ()
   assert.ok(!AJUSTES.includes('key'))
 })
 
-test('reglas fijas y documentación: Dexie v11, appId y esquema intactos, dependencia nueva coherente, versión 0.50.0', () => {
+test('reglas fijas y documentación: Dexie v11, appId y esquema intactos, dependencia nueva coherente, versión vigente', () => {
   assert.match(leer('src/data/db.js'), /version\(11\)/)
   assert.doesNotMatch(leer('src/data/db.js'), /version\(12\)/)
   assert.match(leer('capacitor.config.ts'), /appId: 'online\.bribayfitness\.mmv'/)
   assert.match(leer('capacitor.config.ts'), /androidScheme: 'https'/)
   const pkg = JSON.parse(leer('package.json')),
     lock = JSON.parse(leer('package-lock.json'))
-  assert.equal(pkg.version, '0.50.0')
-  assert.equal(pkg.entrega, '49')
+  assert.ok(+pkg.entrega >= 49 && /^0\.\d+\.0$/.test(pkg.version)) // se relajó a propósito en la entrega 50: ya no fija la versión vigente
   assert.match(pkg.dependencies['@capacitor/haptics'], /^\^8\./)
   assert.match(lock.packages['node_modules/@capacitor/haptics'].version, /^8\./)
   assert.match(leer('android/capacitor.settings.gradle'), /node_modules\/@capacitor\/haptics\/android/)
   assert.match(leer('android/app/capacitor.build.gradle'), /implementation project\(':capacitor-haptics'\)/)
   assert.match(leer('android/app/src/main/AndroidManifest.xml'), /android\.permission\.VIBRATE/)
-  assert.match(leer('CHANGELOG.md'), /^# Historial de versiones de MMV\s+## v0\.50\.0 · Entrega 49/)
-  assert.match(leer('README.md'), /Entrega 49 \(v0\.50\.0\)/)
+  assert.match(leer('CHANGELOG.md'), /## v0\.50\.0 · Entrega 49/)
+  assert.match(leer('README.md'), /Entrega \d+ \(v0\.\d+\.0\)/)
   assert.ok(!/publicar/.test(leer('.github/workflows/android-debug.yml')))
 })

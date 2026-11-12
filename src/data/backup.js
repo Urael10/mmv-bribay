@@ -1,7 +1,7 @@
 // Backup de MMV: arma el archivo, lo descarga o lo comparte, y restaura.
 import {db, hoy, cfg, setCfg, TABLAS, importarTabla} from './db.js'
 import {INFO} from '../version.js'
-import {AJUSTES, ajustesDe, nombreBackup, validarBackup} from '../domain/backup.js'
+import {ajustesDe, ajustesAplicables, nombreBackup, validarBackup} from '../domain/backup.js'
 import {META, planRestaurarPrivado} from '../domain/privado.js'
 import {archivos} from '../platform/archivos.js'
 
@@ -32,6 +32,9 @@ export async function hayDatos() {
 export const ultimoBackup = () => cfg('backup')
 // Nombre del evento con que se avisa (a quien escuche, p. ej. los recordatorios) que se acaba de hacer un backup.
 export const EVENTO_BACKUP = 'mmv:backup'
+// Entrega 50: se anuncia al terminar de restaurar un backup (los ajustes ya están escritos). Los recordatorios lo escuchan para
+// reprogramar los avisos y para volver a leer su configuración.
+export const EVENTO_RESTAURADO = 'mmv:restaurado'
 const marcar = () => {
   setCfg('backup', new Date().toISOString())
   try {
@@ -103,11 +106,15 @@ export async function restaurar(d) {
     }
     omitidas += await importarTabla(t, d[t])
   }
-  if (d._ajustes && typeof d._ajustes === 'object')
-    for (const k of AJUSTES) if (d._ajustes[k]) setCfg(k, String(d._ajustes[k]))
+  for (const [k, v] of ajustesAplicables(d._ajustes)) setCfg(k, v)
   try {
     if (d._sesion && !localStorage.getItem('mv_sesion'))
       localStorage.setItem('mv_sesion', JSON.stringify(d._sesion))
   } catch {}
+  try {
+    globalThis.dispatchEvent?.(new Event(EVENTO_RESTAURADO))
+  } catch {
+    /* sin ventana (pruebas): no hay a quién avisar */
+  }
   return omitidas
 }

@@ -1,7 +1,8 @@
 import {useState, useEffect} from 'react'
 import {hoy} from '../../data/db'
+import {EVENTO_RESTAURADO} from '../../data/backup'
 import {notificaciones} from '../../platform/notificaciones'
-import {INTERVALOS_AGUA, DIAS_SEMANA, estadoAcostarte} from '../../domain/recordatorios'
+import {INTERVALOS_AGUA, DIAS_SEMANA, estadoAcostarte, hayActivos} from '../../domain/recordatorios'
 import {leerConfig, guardarConfig, reprogramar, habitosRecientes} from './servicio'
 
 // Entrega 41 (v0.42.0) · Ajustes › Recordatorios. Avisos del teléfono (solo en la app de Android) para el check-in, la
@@ -21,6 +22,15 @@ export default function Recordatorios() {
     habitosRecientes()
       .then(hs => setNoche(estadoAcostarte(hs, hoy())))
       .catch(() => {})
+  }, [nativo])
+  // Entrega 50: al restaurar un backup la configuración cambia por fuera de esta pantalla; se vuelve a leer, junto con el permiso.
+  useEffect(() => {
+    const alRestaurar = () => {
+      setC(leerConfig())
+      if (nativo) notificaciones.permiso().then(setPermiso)
+    }
+    window.addEventListener(EVENTO_RESTAURADO, alRestaurar)
+    return () => window.removeEventListener(EVENTO_RESTAURADO, alRestaurar)
   }, [nativo])
 
   if (!nativo)
@@ -76,6 +86,17 @@ export default function Recordatorios() {
         <small className="mu" role="alert">
           {AYUDA_PERMISO}
         </small>
+      )}
+      {/* Entrega 50: un backup restaurado trae los avisos activados, pero el permiso es de cada teléfono. Se pide solo al tocar el botón (aplicar(c, true)). */}
+      {permiso === 'prompt' && hayActivos(c) && (
+        <p>
+          <small className="mu" role="status">
+            Tus recordatorios están configurados, pero este teléfono todavía no permitió los avisos.
+          </small>{' '}
+          <button className="ghost" onClick={() => aplicar(c, true)}>
+            Permitir avisos
+          </button>
+        </p>
       )}
 
       <p>
