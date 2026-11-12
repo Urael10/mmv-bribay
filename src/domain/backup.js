@@ -1,4 +1,5 @@
 // Backup: reglas puras (sin base de datos ni navegador).
+import {normalizarConfig} from './recordatorios.js'
 export const DIAS_AVISO = 7
 // Ajustes que viajan en el backup. La clave de IA NO va nunca.
 export const AJUSTES = [
@@ -7,6 +8,7 @@ export const AJUSTES = [
   'modelo',
   'sonido',
   'feedback', // Entrega 49: nivel de sonidos y vibración
+  'recordatorios', // Entrega 50: configuración de los avisos (JSON); se valida al ir y al volver
   'altura',
   'nac',
   'pesoobj',
@@ -38,11 +40,47 @@ export function validarBackup(d) {
   )
 }
 
+const comoObjeto = v => {
+  let o = v
+  if (typeof o === 'string') {
+    try {
+      o = JSON.parse(o)
+    } catch {
+      return null
+    }
+  }
+  return o && typeof o === 'object' && !Array.isArray(o) ? o : null
+}
+
+// Valor de un ajuste tal como se guarda en localStorage. La configuración de recordatorios se pasa por
+// `normalizarConfig` (horas, días e intervalos válidos); si no es un objeto no se puede usar y devuelve null.
+export function valorDeAjuste(k, v) {
+  if (k === 'recordatorios') {
+    const o = comoObjeto(v)
+    return o ? JSON.stringify(normalizarConfig(o)) : null
+  }
+  return String(v)
+}
+
 export function ajustesDe(leer) {
   const o = {}
   for (const k of AJUSTES) {
     const v = leer(k)
-    if (v) o[k] = v
+    const val = v ? valorDeAjuste(k, v) : null
+    if (val) o[k] = val
   }
   return o
+}
+
+// Lo que se escribe al restaurar: [clave, valor] solo de las claves conocidas y con valor usable. Un valor dañado
+// no pisa lo que ya hay en el teléfono.
+export function ajustesAplicables(guardados) {
+  if (!guardados || typeof guardados !== 'object' || Array.isArray(guardados)) return []
+  const r = []
+  for (const k of AJUSTES) {
+    const v = Object.hasOwn(guardados, k) ? guardados[k] : null // nada heredado: solo lo que trae el archivo
+    const val = v ? valorDeAjuste(k, v) : null
+    if (val) r.push([k, val])
+  }
+  return r
 }

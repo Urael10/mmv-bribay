@@ -3,7 +3,7 @@ import {db, hoy, cfg, setCfg} from '../../data/db.js'
 import {notificaciones} from '../../platform/notificaciones.js'
 import {CLAVE_CFG, normalizarConfig, hayActivos, planRecordatorios} from '../../domain/recordatorios.js'
 import {sumaDias} from '../../domain/stats.js'
-import {EVENTO_BACKUP} from '../../data/backup.js'
+import {EVENTO_BACKUP, EVENTO_RESTAURADO} from '../../data/backup.js'
 
 // Entrega 41 (v0.42.0) · recordatorios (Entrega 42: suma el backup semanal): une la base (hábitos), la configuración (localStorage) y las notificaciones
 // nativas (src/platform/notificaciones.js). La decisión de cuándo avisar vive en src/domain/recordatorios.js.
@@ -65,10 +65,13 @@ export function vigilar(notif = notificaciones, {espera = 800} = {}) {
   document.addEventListener('visibilitychange', alVolver)
   // Un backup recién hecho cambia el plan (el aviso de ese día sale), pero no vive en Dexie: data/backup.js lo anuncia.
   window.addEventListener(EVENTO_BACKUP, pedir)
+  // Entrega 50: restaurar un backup puede traer otra configuración de avisos (y no mueve los hábitos que ya se vigilan).
+  window.addEventListener(EVENTO_RESTAURADO, pedir)
   return () => {
     clearTimeout(t)
     sub.unsubscribe()
     document.removeEventListener('visibilitychange', alVolver)
     window.removeEventListener(EVENTO_BACKUP, pedir)
+    window.removeEventListener(EVENTO_RESTAURADO, pedir)
   }
 }
