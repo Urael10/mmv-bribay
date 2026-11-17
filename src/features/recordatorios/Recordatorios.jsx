@@ -79,8 +79,8 @@ export default function Recordatorios() {
       <h3>Recordatorios</h3>
       <p>
         Avisos del teléfono. Se recalculan cada vez que abrís la app o cambian tus datos: si ya hiciste el check-in o
-        llegaste a la meta de agua, hoy no te insisten (ni con el backup, si ya lo hiciste ese día). Tocar un aviso abre la
-        pantalla que corresponde.
+        llegaste a la meta de agua, hoy no te insisten (ni con el backup, si ya lo hiciste ese día). Si vas por delante con el
+        agua, se saltean los avisos de hoy que todavía no hacían falta. Tocar un aviso abre la pantalla que corresponde.
       </p>
       {permiso === 'denied' && (c.checkin.on || c.acostarte.on || c.agua.on || c.backup.on) && (
         <small className="mu" role="alert">

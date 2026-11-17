@@ -1,7 +1,10 @@
 import {sumaDias} from './stats.js'
 import {checkinHecho} from './checkin.js'
 import {habitualNoche, parseHora} from './sueno.js'
+import {aguaEsperada} from './senales.js'
 
+// Entrega 51 (v0.52.0): el agua «al ritmo»: un aviso de agua de HOY se saltea si lo ya tomado alcanza para lo que se
+// esperaría a la hora de ese aviso (`aguaAlRitmo`).
 // Entrega 41 (v0.42.0) · recordatorios (lógica pura). Entrega 42 (v0.43.0): suma el aviso de backup semanal y decide a
 // qué pantalla lleva cada aviso al tocarlo (`destinoDeAviso`). Decide CUÁNDO avisar; no sabe de plugins, de Android ni de pantallas.
 //
@@ -90,6 +93,15 @@ export function horasDeAgua({desde, hasta, cada}) {
   return r
 }
 
+// ¿Lo tomado hoy (ml) ya alcanza para lo que se esperaría a la hora del aviso (`min` minutos desde las 00:00)?
+// Usa la misma curva lineal (8 a 20 h) de la Nota del día (`aguaEsperada`). Sin nada tomado (o sin meta) nunca da por
+// adelantado: un aviso de la mañana no desaparece solo porque la curva todavía vale 0.
+export const aguaAlRitmo = (ml, metaMl, min) => {
+  const m = +ml || 0,
+    meta = +metaMl || 0
+  return m > 0 && meta > 0 && m >= aguaEsperada(min / 60) * meta
+}
+
 // Mismo día + `min` minutos, sin que un cambio de hora (verano) corra el reloj: se arma con el calendario, no sumando ms.
 const instante = (f, min) => {
   const [y, m, d] = f.split('-').map(Number)
@@ -159,6 +171,9 @@ export function planRecordatorios({config, ahoraMs, hoy, habitos = [], metaAgua 
     if (enVentana && cfg.agua.on && !(i === 0 && aguaListos)) {
       for (const m of horasDeAgua(cfg.agua)) {
         const t = instante(dia, m)
+        // Solo hoy hay datos: si ya vas por delante de la curva a esa hora, el aviso no sale (no lleva números en el texto,
+        // que quedaría viejo). Si después cargás agua o pasa el tiempo, el plan se recalcula.
+        if (i === 0 && aguaAlRitmo(fila?.agua, metaAgua, m)) continue
         if (futuro(t)) out.push({tipo: 'agua', cuando: t, titulo: 'Agua', cuerpo: 'Un vaso de agua, ¿te parece?'})
       }
     }
