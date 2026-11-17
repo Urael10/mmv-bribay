@@ -152,18 +152,16 @@ test('reglas fijas y documentación: Dexie v11, appId y esquema intactos, sin de
   assert.match(leer('capacitor.config.ts'), /androidScheme: 'https'/)
   const pkg = JSON.parse(leer('package.json')),
     lock = JSON.parse(leer('package-lock.json'))
-  assert.equal(pkg.version, '0.51.0')
-  assert.equal(pkg.entrega, '50')
-  assert.equal(lock.version, '0.51.0')
-  assert.equal(lock.packages[''].version, '0.51.0')
+  assert.ok(+pkg.entrega >= 50 && /^0\.\d+\.0$/.test(pkg.version)) // se relajó a propósito en la entrega 51: ya no fija la versión vigente
+  assert.equal(lock.version, pkg.version)
+  assert.equal(lock.packages[''].version, pkg.version)
   assert.deepEqual(Object.keys(pkg.dependencies), [
     '@capacitor/android', '@capacitor/app', '@capacitor/core', '@capacitor/filesystem', '@capacitor/haptics',
     '@capacitor/local-notifications', '@capacitor/share', '@fontsource/bebas-neue', '@fontsource/chakra-petch',
     '@fontsource/inter', 'barcode-detector', 'dexie', 'react', 'react-dom'
   ]) // la lista de la entrega 49: esta entrega no suma ninguna
-  assert.match(leer('CHANGELOG.md'), /^# Historial de versiones de MMV\s+## v0\.51\.0 · Entrega 50/)
+  assert.match(leer('CHANGELOG.md'), /## v0\.51\.0 · Entrega 50/)
   assert.match(leer('CHANGELOG.md'), /## v0\.50\.0 · Entrega 49/)
-  assert.match(leer('README.md'), /Entrega 50 \(v0\.51\.0\)/)
   assert.match(leer('README.md'), /## Backup con la configuración de recordatorios \(v0\.51\.0\)/)
   assert.ok(!/publicar/.test(leer('.github/workflows/android-debug.yml')))
 })

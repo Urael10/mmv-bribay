@@ -117,11 +117,13 @@ test('plan · agua: franja y frecuencia elegidas; con la meta cumplida hoy no in
   })
   assert.equal(cumplida.length, 6 * 5)
   assert.equal(cumplida[0].cuando, local(2026, 11, 10, 9, 0))
-  // con 2000 de 2500 todavía falta: sigue avisando hoy
+  // con 2000 de 2500 todavía falta: sigue avisando hoy (Entrega 51: salvo los avisos de las 12 y las 15, para los que
+  // ya vas por delante de la curva; el de las 18 y el de las 21 quedan)
   const falta = planRecordatorios({
     config: solo('agua'), ahoraMs: AHORA, hoy: HOY, metaAgua: 2500, habitos: [{fecha: HOY, agua: 2000}]
   })
-  assert.equal(falta.length, 4 + 6 * 5)
+  assert.equal(falta.length, 2 + 6 * 5)
+  assert.equal(falta[0].cuando, local(2026, 11, 9, 18, 0))
   // sin meta conocida (0) nunca se da por cumplida
   const sinMeta = planRecordatorios({config: solo('agua'), ahoraMs: AHORA, hoy: HOY, habitos: [{fecha: HOY, agua: 9999}]})
   assert.equal(sinMeta.length, 4 + 6 * 5)

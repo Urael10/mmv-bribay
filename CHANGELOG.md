@@ -1,5 +1,14 @@
 # Historial de versiones de MMV
 
+## v0.52.0 · Entrega 51 · Avisos de agua al ritmo (12/11/2026)
+- **Qué hay de nuevo:** el aviso de agua de **hoy** se saltea si lo que ya tomaste alcanza para lo que se esperaría a la hora de ese aviso. Usa la misma curva lineal de 8 a 20 h de la Nota del día (`aguaEsperada`, en `src/domain/senales.js`): a las 12 h se espera el 33 % de la meta, a las 15 h el 58 %, a las 18 h el 83 %. Si vas atrasado, el aviso queda. Cada vaso que anotás recalcula el plan (ya se vigilan los hábitos con `liveQuery`), así que no hizo falta tocar el servicio.
+- **Reglas finas:** sin nada tomado (o sin meta) nunca se da por adelantado, para que un aviso de la mañana no desaparezca porque la curva todavía vale 0; los demás días no se tocan (no hay datos de mañana); la meta cumplida sigue cortando todo lo que queda de hoy. El texto del aviso no cambia y no lleva números (se calcula al programar y puede envejecer).
+- **Costo conocido:** si vas por delante y después no tomás nada, no te avisa hasta que cambie algo en la app (volver a abrirla, anotar agua, pasar el día). Es lo que se eligió: no molestar.
+- **Pantalla:** Ajustes › Recordatorios suma una frase que lo explica.
+- **Encaje:** `aguaAlRitmo` (puro) y un cambio de una línea en `planRecordatorios`, ambos en `src/domain/recordatorios.js`, que ahora importa `aguaEsperada` de `senales.js` (los dos son puros). Dexie sigue en v11; `appId`, `androidScheme` y `publicar.yml` intactos; sin dependencias ni CSS nuevos. `versionCode` 5200.
+- **Pruebas:** `tests/entrega52.test.js`. Se ajustaron a propósito `entrega42` (con 2000 de 2500 ml a las 10:00 ya no quedan los avisos de las 12 y las 15) y `entrega51` (ya no fija la versión vigente).
+- **No probado:** en el celular (que los avisos saltados no suenen y los demás sí, tras anotar agua con el APK) y la compilación del APK (solo corre en GitHub). La regla 2 de la propuesta (acostarte antes si dormiste poco) no se hizo.
+
 ## v0.51.0 · Entrega 50 · Backup con la configuración de recordatorios (12/11/2026)
 - **Qué hay de nuevo:** el backup lleva ahora la configuración de los recordatorios (`mv_recordatorios`): cuáles están activados, la hora del check-in, la franja y el intervalo del agua y el día y la hora del backup semanal. Al cambiar de teléfono o reinstalar el APK no hay que configurarlos de nuevo. Cierra el límite que dejó la Entrega 41 («el backup no incluye la configuración de recordatorios»).
 - **Validación al ir y al volver:** `src/domain/backup.js` suma `recordatorios` a `AJUSTES` y dos funciones puras, `valorDeAjuste` y `ajustesAplicables`: la configuración pasa por `normalizarConfig` al exportar y al restaurar. Un backup sin esa clave (todos los anteriores a esta versión) o con un valor dañado (texto que no es JSON, un arreglo, un número) **no pisa** la configuración del teléfono. Las claves desconocidas, como la clave de IA, se ignoran.

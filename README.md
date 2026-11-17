@@ -1,4 +1,4 @@
-# Mi Mejor Versión (MMV) · Entrega 50 (v0.51.0)
+# Mi Mejor Versión (MMV) · Entrega 51 (v0.52.0)
 
 App personal de seguimiento: entrenos, hábitos, comidas, progreso, cuerpo y actividad física. Todo se guarda en el dispositivo (IndexedDB con Dexie, versión 11). Historial completo de cambios en `CHANGELOG.md`.
 
@@ -11,7 +11,7 @@ src/features/  pantallas: hoy, recordatorios (servicio y bloque de Ajustes), act
 src/platform/  adaptadores finos a Capacitor (si la app corre en el APK o en el navegador; notificaciones locales, archivos y compartir, botón atrás, hápticos); solo esta carpeta importa @capacitor/*
 android/       proyecto Android de Capacitor (versionado; lo que genera `cap sync` no): se compila en GitHub, no en tu PC
 capacitor.config.ts  identidad de la app Android (appId, nombre, carpeta web, esquema https, barras del sistema)
-tests/         pruebas con `node --test` (`tests/platform/`: plataforma nativo/web; `entrega43.test.js`: avisos que abren pantalla, backup semanal, archivos y botón atrás; `entrega42.test.js`: recordatorios, manifiesto y plugin; `entrega41.test.js`: base de Capacitor y workflow del APK; `entrega20.test.js`: actividad física; `entrega26.test.js`: rutas GPS; `entrega27.test.js`: mapa y GPX; `entrega28.test.js`: carga diferida; `entrega29.test.js`: IA con actividad y rutas; `entrega50.test.js`: sonidos, vibración y festejo; `entrega51.test.js`: backup con la configuración de recordatorios)
+tests/         pruebas con `node --test` (`tests/platform/`: plataforma nativo/web; `entrega43.test.js`: avisos que abren pantalla, backup semanal, archivos y botón atrás; `entrega42.test.js`: recordatorios, manifiesto y plugin; `entrega41.test.js`: base de Capacitor y workflow del APK; `entrega20.test.js`: actividad física; `entrega26.test.js`: rutas GPS; `entrega27.test.js`: mapa y GPX; `entrega28.test.js`: carga diferida; `entrega29.test.js`: IA con actividad y rutas; `entrega50.test.js`: sonidos, vibración y festejo; `entrega51.test.js`: backup con la configuración de recordatorios; `entrega52.test.js`: agua al ritmo)
 public/        manifest, íconos y service worker (`sw.js`)
 ```
 `src/ui/pantallas.js` es el registro de las pantallas con carga diferida (`React.lazy`); `src/domain/carga.js` tiene su lógica pura (reintento, cuándo precargar). Los componentes de `features/` solo muestran y guardan; las reglas y cálculos viven en `domain/` para poder probarlos.
@@ -67,6 +67,11 @@ Desde la carpeta del repositorio: `./publicar.sh ~/Descargas/mmv-vX.Y.Z-CODIGO.z
 - **Avisos que abren su pantalla:** tocar un aviso lleva al check-in, al agua, a «Dormir con alarma» o a Ajustes › Backup. **Backup semanal** como cuarto recordatorio (día y hora a elección; no avisa el día en que ya lo hiciste).
 - **Backup y GPX en el APK:** se escriben en la caché y se comparten con la hoja del teléfono (el WebView no baja archivos `blob:`). **Botón atrás:** vuelve a Hoy y sale solo desde Hoy. Manifiesto: vibración y cámara.
 - Código: `src/platform/archivos.js` (`@capacitor/filesystem` y `@capacitor/share`), `src/platform/atras.js` (`@capacitor/app`), `src/domain/navegacion.js` (puro). Dexie sigue en v11.
+
+## Agua al ritmo (v0.52.0)
+- **Qué hace:** en Ajustes › Recordatorios, el aviso de agua de **hoy** se saltea si lo que ya tomaste alcanza para lo que se esperaría a esa hora (la misma curva lineal de 8 a 20 h de la Nota del día). Si vas atrasado, el aviso queda. Cada vaso que anotás recalcula el plan.
+- **Límites:** solo mira hoy; sin agua cargada no saltea nada; la meta cumplida sigue cortando los avisos que quedan. Si vas por delante y después no tomás nada, no te avisa hasta que cambie algo en la app (abrirla, anotar agua, pasar el día).
+- Código: `aguaAlRitmo` y `planRecordatorios` en `src/domain/recordatorios.js`. Dexie sigue en v11.
 
 ## Backup con la configuración de recordatorios (v0.51.0)
 - **Qué viaja:** además de los ajustes de siempre, el backup lleva la configuración de los cuatro recordatorios (cuáles están activados, la hora del check-in, la franja y el intervalo del agua, el día y la hora del backup semanal). Al cambiar de teléfono o reinstalar el APK no hay que volver a configurarlos.
