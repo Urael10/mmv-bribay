@@ -1519,6 +1519,37 @@ button:active:not(:disabled),
   transform: scale(0.97);
 }
 
+.anillo.ok,
+.anillo.anillo-cumplido {
+  filter: drop-shadow(0 0 6px var(--sombra-glow-pos));
+}
+
+.anillo.pop,
+.anillo.ok.pop {
+  animation: mmv-anillo-pop 0.5s var(--ease-spring);
+}
+
+@keyframes mmv-anillo-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+.trazo-linea {
+  transition: stroke-dashoffset 1.8s var(--ease-out-expo);
+  animation: mmv-trazo-draw 1.8s var(--ease-out-expo) both;
+}
+
+@keyframes mmv-trazo-draw {
+  from { stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes mmv-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .stagger-1 { animation: mmv-stagger-up var(--dur-slow) var(--ease-out-expo) 40ms both; }
 .stagger-2 { animation: mmv-stagger-up var(--dur-slow) var(--ease-out-expo) 80ms both; }
 .stagger-3 { animation: mmv-stagger-up var(--dur-slow) var(--ease-out-expo) 120ms both; }
@@ -1570,10 +1601,14 @@ button:active:not(:disabled),
   overflow: hidden;
 }
 
+.tabs-lista {
+  position: relative;
+}
+
 .tab-pill-indicador {
   position: absolute;
-  top: 2px;
-  bottom: 2px;
+  top: 4px;
+  bottom: 4px;
   background: var(--ac);
   border-radius: var(--r-pill);
   z-index: 1;
@@ -1583,10 +1618,37 @@ button:active:not(:disabled),
               width var(--dur-normal) var(--ease-spring);
 }
 
+.tabs-lista > .chip {
+  position: relative;
+  z-index: 2;
+}
+
+.tabs-lista > .chip.on {
+  background: transparent;
+  color: var(--on-ac);
+  border-color: transparent;
+}
+
+.tesela {
+  border: 1px solid var(--bd-sutil);
+  transition: transform var(--dur-fast) var(--ease-spring),
+              background var(--dur-fast),
+              border-color var(--dur-fast),
+              box-shadow var(--dur-fast);
+}
+
+.tesela:active:not(:disabled) {
+  transform: scale(0.97);
+  background: var(--sf-active);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bento.hoy > *,
   .vacio-c-animado,
   .tab-pill-indicador,
+  .anillo.pop,
+  .anillo.ok,
+  .trazo-linea,
   .stagger-1,
   .stagger-2,
   .stagger-3,

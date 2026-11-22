@@ -354,7 +354,18 @@ export function Informe({ses, reg, manual}) {
                 {coach ? 'Actualizar consejos' : 'Pedir consejos al coach'}
               </button>
             </div>
-            {msg && <p className={msg.startsWith('No pude') ? 'warn' : 'mu'}>{msg}</p>}
+            {ocupado && (
+              <div className="skeleton-shimmer" style={{borderRadius: 'var(--r-md)', padding: 'var(--sp-3)', margin: 'var(--sp-3) 0', border: '1px solid var(--bd-sutil)'}}>
+                <div style={{display: 'flex', alignItems: 'center', gap: 'var(--sp-2)', marginBottom: 'var(--sp-2)'}}>
+                  <div style={{width: 20, height: 20, borderRadius: 'var(--r-pill)', border: '2px solid var(--bd-sutil)', borderTopColor: 'var(--ac)', animation: 'mmv-spin 1s infinite linear'}} />
+                  <b style={{fontSize: '13px', color: 'var(--tx)'}}>{msg || 'Consultando al coach…'}</b>
+                </div>
+                <div style={{height: '6px', width: '100%', background: 'var(--sf)', borderRadius: 'var(--r-sm)', overflow: 'hidden'}}>
+                  <div style={{height: '100%', width: '65%', background: 'var(--ac)', borderRadius: 'var(--r-sm)', animation: 'mmv-shimmer 1.5s infinite ease-in-out'}} />
+                </div>
+              </div>
+            )}
+            {!ocupado && msg && <p className={msg.startsWith('No pude') ? 'warn' : 'mu'}>{msg}</p>}
             {msg.startsWith('No pude') && (
               <small className="mu">
                 El informe de arriba sigue siendo válido: lo calcula la app, no la IA.

@@ -318,23 +318,21 @@ export default function Ajustes({onVersion, irA, onMaqueta}) {
   }, [irA])
   return (
     <>
-      {import.meta.env.DEV && (
-        <section>
-          <h3>Sistema de diseño y movimiento</h3>
-          <p className="mu">
-            Maqueta interactiva de la nueva propuesta visual: físicas de resorte, feedback táctil elástico, elevaciones y micro-interacciones (Fase 0).
-          </p>
-          <button
-            className="ghost"
-            onClick={() => {
-              if (onMaqueta) onMaqueta()
-              else window.location.hash = '#maqueta'
-            }}
-          >
-            ✨ Abrir Maqueta Interactiva
-          </button>
-        </section>
-      )}
+      <section>
+        <h3>Sistema de diseño y movimiento</h3>
+        <p className="mu">
+          Maqueta interactiva de la nueva propuesta visual: físicas de resorte, feedback táctil elástico, elevaciones y micro-interacciones (Fase 0).
+        </p>
+        <button
+          className="ghost"
+          onClick={() => {
+            if (onMaqueta) onMaqueta()
+            else window.location.hash = '#maqueta'
+          }}
+        >
+          ✨ Abrir Maqueta Interactiva
+        </button>
+      </section>
       <Version onVersion={onVersion} />
       <Respaldo />
       <Perfil />

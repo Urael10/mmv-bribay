@@ -117,26 +117,24 @@ export default function App() {
     <div className="app">
       <header>
         <b className="logo">MMV</b>
-        {(import.meta.env.DEV || tab === 'maqueta') && (
-          <button
-            className={'btn-maqueta-hdr' + (tab === 'maqueta' ? ' on' : '')}
-            style={{
-              border: '1px solid var(--bd)',
-              background: tab === 'maqueta' ? 'var(--ac)' : 'transparent',
-              color: tab === 'maqueta' ? 'var(--on-ac)' : 'var(--ac)',
-              borderRadius: 'var(--r-pill)',
-              fontSize: '12px',
-              fontWeight: '600',
-              padding: '4px 10px',
-              minHeight: '32px',
-              cursor: 'pointer'
-            }}
-            aria-label="Abrir maqueta de diseño interactiva"
-            onClick={() => setTab(tab === 'maqueta' ? previa : 'maqueta')}
-          >
-            {tab === 'maqueta' ? 'Volver' : '✨ Maqueta'}
-          </button>
-        )}
+        <button
+          className={'btn-maqueta-hdr' + (tab === 'maqueta' ? ' on' : '')}
+          style={{
+            border: '1px solid var(--bd)',
+            background: tab === 'maqueta' ? 'var(--ac)' : 'transparent',
+            color: tab === 'maqueta' ? 'var(--on-ac)' : 'var(--ac)',
+            borderRadius: 'var(--r-pill)',
+            fontSize: '12px',
+            fontWeight: '600',
+            padding: '4px 10px',
+            minHeight: '32px',
+            cursor: 'pointer'
+          }}
+          aria-label="Abrir maqueta de diseño interactiva"
+          onClick={() => setTab(tab === 'maqueta' ? previa : 'maqueta')}
+        >
+          {tab === 'maqueta' ? 'Volver' : '✨ Maqueta'}
+        </button>
         <button
           className={'gear' + (tab === 'ajustes' || tab === 'priv' ? ' on' : '')}
           aria-label={tab === 'ajustes' || tab === 'priv' ? 'Cerrar ajustes' : 'Ajustes'}
