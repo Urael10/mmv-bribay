@@ -1,4 +1,5 @@
 import {useRef, useState, useEffect, useCallback} from 'react'
+import {sentir} from '../services/feedback'
 
 // Pestañas en una sola fila con deslizamiento horizontal.
 // La activa se centra sola y un degradé en el borde avisa si hay más pestañas fuera de pantalla.
@@ -43,8 +44,14 @@ export default function TabsDeslizables({items, valor, onCambio, etiqueta = 'Sec
     else if (e.key === 'End') j = items.length - 1
     if (j === null) return
     e.preventDefault()
+    if (items[j][0] !== valor) sentir('toque')
     onCambio(items[j][0])
     lista.current?.querySelectorAll('[role="tab"]')[j]?.focus()
+  }
+
+  const alHacerClic = k => {
+    if (k !== valor) sentir('toque')
+    onCambio(k)
   }
 
   return (
@@ -65,7 +72,7 @@ export default function TabsDeslizables({items, valor, onCambio, etiqueta = 'Sec
             aria-selected={valor === k}
             tabIndex={valor === k ? 0 : -1}
             className={'chip' + (valor === k ? ' on' : '')}
-            onClick={() => onCambio(k)}
+            onClick={() => alHacerClic(k)}
           >
             {n}
           </button>

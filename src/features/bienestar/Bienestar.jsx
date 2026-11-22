@@ -1,5 +1,6 @@
 // Menú privado «Bienestar»: se abre con 5 toques en la versión del encabezado. Datos cifrados, clave solo en memoria.
 import {useState, useEffect, useRef, useCallback} from 'react'
+import {sentir} from '../../services/feedback'
 import {hoy} from '../../data/db'
 import {hayClave, crearClave, abrir, leerMes, guardarMes, leerTodo, cambiarClave, borrarTodo} from '../../data/privado'
 import {
@@ -176,6 +177,7 @@ function Registro({clave, bloques, recargar}) {
     try {
       const b = fn(await leerMes(clave, mes))
       await guardarMes(clave, mes, b)
+      sentir('guardar')
       setErr('')
       await recargar()
     } catch (e) {

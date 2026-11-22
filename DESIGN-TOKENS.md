@@ -70,3 +70,36 @@ Sin tokens nuevos. Los cuatro mosaicos con meta (Comida, Agua, Sueño, Pasos) va
 
 ## Nota del día (v0.46.0)
 Sin tokens nuevos. Una franja de una línea arriba de la rejilla de Hoy (`--sf`, `--sombra-1`, `--r-tile`; al pasar el cursor `--sf-2`) que se abre al tocarla y muestra hasta 3 señales. El texto va en `--tx` y el ícono en `--tx-2`: **no usa** los colores de métrica (`--m-*`) ni los de estado (`--pos`, `--neg`, `--warn`, `--info`) ni el lima. El cian (`--ac`) está solo en el chevron, porque es lo único tocable. En pantalla ancha ocupa una fila propia debajo de la preparación y la rejilla.
+
+## Sistema de Movimiento y Físicas de Resorte (v0.52.0)
+Todos los tiempos y curvas de aceleración viven en `src/tokens.css` y se rigen por `prefers-reduced-motion`.
+
+| Token | Valor | Uso |
+|---|---|---|
+| `--ease-spring` | `cubic-bezier(0.34, 1.56, 0.64, 1)` | rebote reactivo para botones, pastillas activas y tildes |
+| `--ease-spring-soft` | `cubic-bezier(0.18, 0.89, 0.32, 1.28)` | paneles y expansiones de tamaño |
+| `--ease-out-expo` | `cubic-bezier(0.16, 1, 0.3, 1)` | salida suave y natural sin rebote para modales y shimmers |
+| `--ease-in-out` | `cubic-bezier(0.65, 0, 0.35, 1)` | transiciones continuas equilibradas (barras cuánticas) |
+| `--dur-instant` | `100ms` | feedback háptico visual al presionar (`:active`) |
+| `--dur-fast` | `180ms` | micro-interacciones, toggles, tildes y hover |
+| `--dur-normal` | `280ms` | tabs deslizables, arcos de anillos y paneles plegables |
+| `--dur-slow` | `420ms` | transiciones de pantalla y entrada escalonada (*stagger*) |
+
+## Elevación, Sombras y Superficies Complementarias (v0.52.0)
+
+| Token | Valor | Uso |
+|---|---|---|
+| `--sombra-0` | `none` | vista plana |
+| `--sombra-1` | `0 1px 2px ..., 0 6px 18px ...` | tarjetas estándar |
+| `--sombra-2` | `0 4px 14px ..., 0 12px 30px ...` | elementos flotantes y avisos elevados |
+| `--sombra-glow-ac` | `0 0 16px rgba(34, 211, 238, 0.28)` | resplandor de interacción cian |
+| `--sombra-glow-pr` | `0 0 16px rgba(198, 244, 50, 0.28)` | resplandor del CTA principal lima |
+| `--sombra-glow-pos` | `0 0 16px rgba(74, 222, 128, 0.28)` | resplandor verde de meta cumplida |
+| `--sombra-pill` | `0 2px 8px rgba(0, 0, 0, 0.3)` | pastilla indicadora de tabs |
+| `--sf-subtle` | `#0d141d` | superficie intermedia entre fondo y tarjeta |
+| `--sf-hover` | `#16202c` | estado hover de tarjetas |
+| `--sf-active` | `#1d2938` | estado presionado activo |
+| `--bd-sutil` | `rgba(255, 255, 255, 0.08)` | borde sutil para separación en temas oscuros |
+| `--r-pill` | `9999px` | chips circulares y pastillas deslizables |
+| `--r-sm` / `--r-md` | `8px` / `12px` | insignias y controles medianos |
+

@@ -1176,7 +1176,7 @@ section.vacio > h3 {
 }
 .vacio-ch {
   flex-shrink: 0;
-  transition: transform 0.15s;
+  transition: transform var(--dur-normal) var(--ease-spring);
 }
 .vacio-ch.abierto {
   transform: rotate(180deg);
@@ -1504,6 +1504,109 @@ button.ruta-fila:active:not(:disabled) {
 }
 
 
+/* ===== Sistema de Movimiento y Micro-interacciones (Fase A) ===== */
+button,
+.chip {
+  transition: transform var(--dur-instant) var(--ease-spring),
+              background var(--dur-fast),
+              border-color var(--dur-fast),
+              color var(--dur-fast),
+              box-shadow var(--dur-fast);
+}
+
+button:active:not(:disabled),
+.chip:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.stagger-1 { animation: mmv-stagger-up var(--dur-slow) var(--ease-out-expo) 40ms both; }
+.stagger-2 { animation: mmv-stagger-up var(--dur-slow) var(--ease-out-expo) 80ms both; }
+.stagger-3 { animation: mmv-stagger-up var(--dur-slow) var(--ease-out-expo) 120ms both; }
+.stagger-4 { animation: mmv-stagger-up var(--dur-slow) var(--ease-out-expo) 160ms both; }
+.stagger-5 { animation: mmv-stagger-up var(--dur-slow) var(--ease-out-expo) 200ms both; }
+
+@keyframes mmv-stagger-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: var(--sf-2);
+}
+
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent 0%, var(--sf) 50%, transparent 100%);
+  animation: mmv-shimmer 1.5s infinite var(--ease-in-out);
+}
+
+@keyframes mmv-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.vacio-c-animado {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-normal) var(--ease-out-expo);
+}
+
+.vacio-c-animado.abierto {
+  grid-template-rows: 1fr;
+}
+
+.vacio-c-animado > .vacio-c {
+  overflow: hidden;
+}
+
+.tab-pill-indicador {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  background: var(--ac);
+  border-radius: var(--r-pill);
+  z-index: 1;
+  pointer-events: none;
+  box-shadow: var(--sombra-pill);
+  transition: transform var(--dur-normal) var(--ease-spring),
+              width var(--dur-normal) var(--ease-spring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bento.hoy > *,
+  .vacio-c-animado,
+  .tab-pill-indicador,
+  .stagger-1,
+  .stagger-2,
+  .stagger-3,
+  .stagger-4,
+  .stagger-5,
+  .skeleton-shimmer::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.bento.hoy > * {
+  animation: mmv-stagger-up var(--dur-slow) var(--ease-out-expo) both;
+}
+.bento.hoy > *:nth-child(1) { animation-delay: 40ms; }
+.bento.hoy > *:nth-child(2) { animation-delay: 80ms; }
+.bento.hoy > *:nth-child(3) { animation-delay: 120ms; }
+.bento.hoy > *:nth-child(4) { animation-delay: 160ms; }
+.bento.hoy > *:nth-child(5) { animation-delay: 200ms; }
+
 /* Entrega 30: Hoy simplificado (propuesta A, foco único) y tarjetas sin borde. Solo tokens. */
 .bento {
   gap: var(--sp-3);
@@ -1784,7 +1887,7 @@ button.ruta-fila:active:not(:disabled) {
 .anillo-arco {
   stroke: var(--info);
   stroke-linecap: round;
-  transition: stroke-dasharray 0.4s;
+  transition: stroke-dasharray var(--dur-normal) var(--ease-spring);
 }
 .anillo.ok .anillo-arco {
   stroke: var(--pos);

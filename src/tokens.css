@@ -83,6 +83,56 @@
   --sp-6: 32px;
   --sombra-1: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 18px rgba(0, 0, 0, 0.22);
   --ancho-app: 520px; /* ancho máximo de la app en el celular */
+
+  /* Movimiento y micro-interacciones (Fase 0 · Sistema reactivo) */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring-soft: cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-instant: 100ms;
+  --dur-fast: 180ms;
+  --dur-normal: 280ms;
+  --dur-slow: 420ms;
+
+  /* Elevaciones refinadas y resplandores */
+  --sombra-0: none;
+  --sombra-2: 0 4px 14px rgba(0, 0, 0, 0.45), 0 12px 30px rgba(0, 0, 0, 0.35);
+  --sombra-glow-ac: 0 0 16px rgba(34, 211, 238, 0.28);
+  --sombra-glow-pr: 0 0 16px rgba(198, 244, 50, 0.28);
+  --sombra-glow-pos: 0 0 16px rgba(74, 222, 128, 0.28);
+  --sombra-pill: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  /* Superficies y bordes complementarios */
+  --sf-subtle: #0d141d;
+  --sf-hover: #16202c;
+  --sf-active: #1d2938;
+  --bd-sutil: rgba(255, 255, 255, 0.08);
+  --bd-focus: rgba(34, 211, 238, 0.6);
+
+  /* Radios complementarios */
+  --r-pill: 9999px;
+  --r-sm: 8px;
+  --r-md: 12px;
+}
+
+/* Variantes para el selector en vivo de la maqueta */
+.tema-neo {
+  --sf: #111a26;
+  --sf-2: #192536;
+  --sombra-1: 0 2px 8px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+  --bd: #687e97;
+}
+
+.tema-oled {
+  --bg: #000000;
+  --sf: #080b0f;
+  --sf-2: #121820;
+  --ln: #242e3b;
+  --bd: #8495a8;
+  --tx: #ffffff;
+  --tx-2: #bdcad8;
+  --pista: #5a6e84;
+  --sombra-1: none;
 }
 
 /* Pantallas anchas: la app se ensancha un poco; el contenido sigue en una sola columna legible */

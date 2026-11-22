@@ -81,7 +81,7 @@ const estadoRed = () => {
     tipoRed: c?.effectiveType || ''
   }
 }
-const pausa = ms => new Promise(r => setTimeout(r, ms))
+const pausa = ms => (ms > 0 ? new Promise(r => setTimeout(r, ms)) : Promise.resolve())
 
 let iniciada = false
 // Devuelve una función para cancelar (se usa al desmontar). Se puede llamar varias veces: solo arranca una.

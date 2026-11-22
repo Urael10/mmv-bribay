@@ -1,4 +1,6 @@
 import {useState, useEffect, useMemo, useRef} from 'react'
+import FilaComidaItem from './FilaComidaItem'
+import SeccionMisAlimentos from './SeccionMisAlimentos'
 import {sentir} from '../../services/feedback'
 import {db, hoy, cfg, sembrar} from '../../data/db'
 import {pedirIA} from '../../services/ia'
@@ -1239,44 +1241,17 @@ export default function Comidas() {
           {reintento()}
           {!bor && !cs.length && <p className="mu">Todavía no cargaste comidas este día.</p>}
           {cs.map(c => (
-            <section key={c.id}>
-              <div className="row" style={{justifyContent: 'space-between'}}>
-                <b>
-                  {c.momento} <small className="mu">{c.hora}</small>
-                </b>
-                <b className="mono">{c.kcal} kcal</b>
-              </div>
-              {c.items.map((it, i) => (
-                <div className="lin alim" key={i}>
-                  <span className="ic">
-                    {base.find(a => a.id === it.alimentoId)?.fuente ? <Icono n="web" tam={16} etiqueta="copiado de la web" className="en-texto" /> : null}
-                    {it.origen === 'ia' ? '≈' : ''}
-                  </span>
-                  <span>
-                    {it.nombre} · {fmt(it.g)} g
-                  </span>
-                  <span className="mono kcal">{it.kcal} kcal</span>
-                </div>
-              ))}
-              <Macros t={c} compacto />
-              <div className="row" style={{marginTop: 8}}>
-                <button className="ghost mini" onClick={() => editar(c)}>
-                  Editar
-                </button>
-                <button className="ghost mini" onClick={() => repetir(c)}>
-                  {esHoy ? 'Repetir' : 'Repetir hoy'}
-                </button>
-                <button
-                  className="ghost mini"
-                  onClick={() => guardarPlantilla(c.items, c.momento, c.momento)}
-                >
-                  <Icono n="estrella" tam={16} className="en-texto" /> Guardar
-                </button>
-                <button className="ghost mini" onClick={() => borrarComida(c)}>
-                  Borrar
-                </button>
-              </div>
-            </section>
+            <FilaComidaItem
+              key={c.id}
+              comida={c}
+              base={base}
+              esHoy={esHoy}
+              onEditar={editar}
+              onRepetir={repetir}
+              onGuardarPlantilla={guardarPlantilla}
+              onBorrar={borrarComida}
+              MacrosComponente={Macros}
+            />
           ))}
           {cs.some(c => c.items.some(i => i.origen === 'ia')) && (
             <small className="mu">≈ = valores estimados por la IA, no de tu base.</small>
@@ -1288,129 +1263,37 @@ export default function Comidas() {
           )}
         </>
       ) : (
-        <>
-          <section>
-            <div className="row">
-              <button
-                className="pri"
-                onClick={() => {
-                  setForm({
-                    nombre: '',
-                    kcal100: '',
-                    p100: '',
-                    c100: '',
-                    g100: '',
-                    porcion: 100,
-                    origen: 'propio'
-                  })
-                  setMsg('')
-                }}
-              >
-                <Icono n="mas" tam={16} className="en-texto" /> Nuevo alimento
-              </button>
-            </div>
-            <small className="mu" style={{display: 'block', marginTop: 8}}>
-              Acá corregís valores. Para cargar comidas usá «Agregar» en el Diario.
-            </small>
-            <input
-              style={{width: '100%', marginTop: 10}}
-              placeholder="Buscar alimento…"
-              aria-label="Buscar en mis alimentos"
-              value={bq}
-              onChange={e => setBq(e.target.value)}
-            />
-            <div className="row" role="group" aria-label="Filtrar alimentos" style={{marginTop: 10}}>
-              {FILTROS_ALIMENTOS.map(([k, n]) => (
-                <button
-                  key={k}
-                  className={'chip' + (filtro === k ? ' on' : '')}
-                  aria-pressed={filtro === k}
-                  onClick={() => setFiltro(k)}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
-            <small className="mu leyenda">
-              <span><Icono n="web" tam={16} className="en-texto" /> copiado de la web</span>
-              <span>≈ estimado por IA o etiqueta</span>
-              <span>Valores cada 100 g · ordenados por uso reciente</span>
-            </small>
-          </section>
-          {aviso()}
-          {reintento()}
-          {plant.length > 0 && (
-            <section>
-              <h3><Icono n="estrella" tam={16} className="en-texto" /> Comidas guardadas</h3>
-              {plant.map(p => {
-                const its = itemsDePlantilla(p, base),
-                  k = totales(its).kcal
-                return (
-                  <div className="fila" key={p.id}>
-                    <div className="row" style={{justifyContent: 'space-between'}}>
-                      <b>{p.nombre}</b>
-                      <span className="mono">{k} kcal</span>
-                    </div>
-                    <small className="mu">
-                      {p.momento} · {its.map(i => i.nombre).join(', ')}
-                    </small>
-                    <div className="row">
-                      <button className="ghost mini" onClick={() => usarPlantilla(p)}>
-                        Usar hoy
-                      </button>
-                      <button className="ghost mini" onClick={() => borrarPlantilla(p)}>
-                        Borrar
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
-            </section>
-          )}
-          <section>
-            {lista.map(a => (
-              <div
-                className="lin alim"
-                key={a.id}
-                onClick={() => {
-                  setForm({...a})
-                  setMsg('')
-                }}
-                style={{cursor: 'pointer'}}
-              >
-                <span className="ic">
-                  {a.fuente ? <Icono n="web" tam={16} etiqueta="copiado de la web" className="en-texto" /> : null}
-                  {a.origen === 'ia' || a.origen === 'etiqueta' ? '≈' : ''}
-                </span>
-                <span>{a.nombre}</span>
-                <span className="mono kcal">{a.kcal100} kcal</span>
-              </div>
-            ))}
-            {!lista.length && (
-              <p className="mu">
-                {filtro === 'frecuentes'
-                  ? `Todavía no hay alimentos que hayas usado ${MIN_FRECUENTE} veces o más en los últimos 90 días.`
-                  : 'No hay alimentos con ese nombre o filtro.'}
-              </p>
-            )}
-            <small className="mu" style={{display: 'block', marginTop: 8}}>
-              Los iniciales son referencias aproximadas: corregilos con tus datos. Frecuentes = usados {MIN_FRECUENTE} veces o
-              más en 90 días.
-            </small>
-            {hayWeb && (
-              <small className="mu" style={{display: 'block', marginTop: 4}}>
-                {ATRIBUCION}
-              </small>
-            )}
-          </section>
-          <details className="avanzado">
-            <summary className="tag">Avanzado</summary>
-            <p className="mu" style={{margin: '8px 0'}}>
-              Vuelve a agregar los alimentos iniciales que hayas borrado. No toca los que ya tenés ni tus comidas.
-            </p>
-            <button onClick={restaurar}>Reponer alimentos iniciales</button>
-          </details>
-        </>
+        <SeccionMisAlimentos
+          onNuevo={() => {
+            setForm({
+              nombre: '',
+              kcal100: '',
+              p100: '',
+              c100: '',
+              g100: '',
+              porcion: 100,
+              origen: 'propio'
+            })
+            setMsg('')
+          }}
+          busqueda={bq}
+          onCambioBusqueda={setBq}
+          filtro={filtro}
+          onCambioFiltro={setFiltro}
+          plantillas={plant}
+          base={base}
+          onUsarPlantilla={usarPlantilla}
+          onBorrarPlantilla={borrarPlantilla}
+          alimentosLista={lista}
+          onSeleccionarAlimento={a => {
+            setForm({...a})
+            setMsg('')
+          }}
+          hayWeb={hayWeb}
+          onRestaurarIniciales={restaurar}
+          avisoNode={aviso()}
+          reintentoNode={reintento()}
+        />
       )}
     </>
   )
