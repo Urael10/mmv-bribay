@@ -6,7 +6,7 @@
  "scripts": {
   "dev": "vite --host",
   "build": "vite build",
-  "test": "node --test \"tests/**/*.test.js\"",
+  "test": "node --test tests/*.test.js tests/**/*.test.js",
   "preview": "vite preview --host",
   "cap:sync": "npm run build && cap sync android",
   "android:build": "npm run cap:sync && cd android && sh ./gradlew assembleDebug"

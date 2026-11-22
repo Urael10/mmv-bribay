@@ -72,6 +72,13 @@ export default function LecturaIA({d, metas, hora}) {
           {estado === 'sin' ? 'Pedir lectura del día' : 'Actualizar lectura'}
         </button>
       </div>
+      {ocupado && (
+        <div className="skeleton-shimmer" style={{borderRadius: 'var(--r-md)', padding: 'var(--sp-3)', margin: '8px 0'}}>
+          <div style={{height: '14px', width: '70%', background: 'var(--sf)', borderRadius: 'var(--r-sm)', marginBottom: '8px'}} />
+          <div style={{height: '12px', width: '90%', background: 'var(--sf)', borderRadius: 'var(--r-sm)', marginBottom: '6px'}} />
+          <div style={{height: '12px', width: '40%', background: 'var(--sf)', borderRadius: 'var(--r-sm)'}} />
+        </div>
+      )}
       {msg && <p className={msg.startsWith('No pude') ? 'warn' : 'mu'}>{msg}</p>}
       <small className="mu" style={{display: 'block'}}>
         {AVISO_DIA}

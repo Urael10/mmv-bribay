@@ -303,7 +303,7 @@ function MapaRutas() {
   )
 }
 
-export default function Ajustes({onVersion, irA}) {
+export default function Ajustes({onVersion, irA, onMaqueta}) {
   const [k, setK] = useState(cfg('key')),
     [m, setM] = useState(cfg('modelo', 'gemini-3.8-flash')),
     [a, setA] = useState(cfg('meta', 2500)),
@@ -318,6 +318,23 @@ export default function Ajustes({onVersion, irA}) {
   }, [irA])
   return (
     <>
+      {import.meta.env.DEV && (
+        <section>
+          <h3>Sistema de diseño y movimiento</h3>
+          <p className="mu">
+            Maqueta interactiva de la nueva propuesta visual: físicas de resorte, feedback táctil elástico, elevaciones y micro-interacciones (Fase 0).
+          </p>
+          <button
+            className="ghost"
+            onClick={() => {
+              if (onMaqueta) onMaqueta()
+              else window.location.hash = '#maqueta'
+            }}
+          >
+            ✨ Abrir Maqueta Interactiva
+          </button>
+        </section>
+      )}
       <Version onVersion={onVersion} />
       <Respaldo />
       <Perfil />

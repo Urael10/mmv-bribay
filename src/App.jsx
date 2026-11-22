@@ -1,5 +1,6 @@
 import {useState, useEffect, useRef} from 'react'
 import Hoy from './features/hoy/Hoy'
+import Maqueta from './features/maqueta/Maqueta'
 import {BarraReloj} from './features/entreno/Timer'
 import Pantalla from './ui/Pantalla'
 import {precargarEnSegundoPlano} from './ui/pantallas'
@@ -23,7 +24,13 @@ const TABS = [
 
 export default function App() {
   useRecordatorios() // Entrega 41: en el APK mantiene al día los avisos programados
-  const [tab, setTab] = useState('hoy'),
+  const [tab, setTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search)
+      if (p.get('vista') === 'maqueta' || window.location.hash === '#maqueta') return 'maqueta'
+    }
+    return 'hoy'
+  }),
     [previa, setPrevia] = useState('hoy'),
     [nueva, setNueva] = useState(false),
     [bk, setBk] = useState(null),
@@ -31,6 +38,13 @@ export default function App() {
     [subProgreso, setSubProgreso] = useState(undefined),
     [pedido, setPedido] = useState({accion: null, n: 0}), // qué abrir en Hoy al tocar un aviso (sube con cada toque)
     [aAjustes, setAAjustes] = useState(null) // qué mostrar en Ajustes al tocar un aviso («backup»)
+  useEffect(() => {
+    const alHash = () => {
+      if (window.location.hash === '#maqueta') setTab('maqueta')
+    }
+    window.addEventListener('hashchange', alHash)
+    return () => window.removeEventListener('hashchange', alHash)
+  }, [])
   useEffect(() => {
     buscarActualizacion().then(r => r?.nueva && setNueva(true))
   }, [])
@@ -103,6 +117,26 @@ export default function App() {
     <div className="app">
       <header>
         <b className="logo">MMV</b>
+        {(import.meta.env.DEV || tab === 'maqueta') && (
+          <button
+            className={'btn-maqueta-hdr' + (tab === 'maqueta' ? ' on' : '')}
+            style={{
+              border: '1px solid var(--bd)',
+              background: tab === 'maqueta' ? 'var(--ac)' : 'transparent',
+              color: tab === 'maqueta' ? 'var(--on-ac)' : 'var(--ac)',
+              borderRadius: 'var(--r-pill)',
+              fontSize: '12px',
+              fontWeight: '600',
+              padding: '4px 10px',
+              minHeight: '32px',
+              cursor: 'pointer'
+            }}
+            aria-label="Abrir maqueta de diseño interactiva"
+            onClick={() => setTab(tab === 'maqueta' ? previa : 'maqueta')}
+          >
+            {tab === 'maqueta' ? 'Volver' : '✨ Maqueta'}
+          </button>
+        )}
         <button
           className={'gear' + (tab === 'ajustes' || tab === 'priv' ? ' on' : '')}
           aria-label={tab === 'ajustes' || tab === 'priv' ? 'Cerrar ajustes' : 'Ajustes'}
@@ -164,10 +198,11 @@ export default function App() {
         {tab === 'entreno' && <Pantalla clave="entreno" nombre="Entreno" />}
         {tab === 'comidas' && <Pantalla clave="comidas" nombre="Comidas" />}
         {tab === 'progreso' && <Pantalla clave="progreso" nombre="Progreso" subInicial={subProgreso} />}
-        {tab === 'ajustes' && <Pantalla clave="ajustes" nombre="Ajustes" onVersion={tocarVersion} irA={aAjustes} />}
+        {tab === 'ajustes' && <Pantalla clave="ajustes" nombre="Ajustes" onVersion={tocarVersion} irA={aAjustes} onMaqueta={() => ir('maqueta')} />}
         {tab === 'priv' && (
           <Pantalla clave="priv" nombre="esta pantalla" onSalir={() => setTab(previa)} />
         )}
+        {tab === 'maqueta' && <Maqueta onVolver={() => setTab(previa)} />}
       </main>
       <nav>
         {TABS.map(([k, n, ic]) => (

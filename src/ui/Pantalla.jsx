@@ -8,7 +8,8 @@ import {actualizarAhora} from '../version'
 
 function Cargando({nombre}) {
   return (
-    <section className="pantalla-carga" role="status" aria-live="polite" aria-busy="true">
+    <section className="pantalla-carga skeleton-shimmer" role="status" aria-live="polite" aria-busy="true">
+      <div style={{height: '16px', width: '50%', borderRadius: 'var(--r-sm)', background: 'var(--sf-2)', margin: '0 auto var(--sp-2)'}} />
       <p className="mu">Cargando {nombre}…</p>
     </section>
   )
