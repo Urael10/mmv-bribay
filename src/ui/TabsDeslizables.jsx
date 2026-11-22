@@ -6,13 +6,22 @@ import {sentir} from '../services/feedback'
 // `items`: [[clave, nombre], …] · `valor`: clave activa · `onCambio(clave)`.
 export default function TabsDeslizables({items, valor, onCambio, etiqueta = 'Secciones'}) {
   const lista = useRef(null),
-    [borde, setBorde] = useState({izq: false, der: false})
+    [borde, setBorde] = useState({izq: false, der: false}),
+    [pill, setPill] = useState({left: 0, width: 0, opacity: 0})
 
   const medir = useCallback(() => {
     const el = lista.current
     if (!el) return
     const max = el.scrollWidth - el.clientWidth
     setBorde({izq: el.scrollLeft > 4, der: el.scrollLeft < max - 4})
+    const act = el.querySelector('[aria-selected="true"]')
+    if (act) {
+      setPill({
+        left: act.offsetLeft,
+        width: act.offsetWidth,
+        opacity: 1
+      })
+    }
   }, [])
 
   // Centra la pestaña activa al montar y cada vez que cambia.
@@ -59,11 +68,21 @@ export default function TabsDeslizables({items, valor, onCambio, etiqueta = 'Sec
       <div
         ref={lista}
         className="tabs-lista"
+        style={{position: 'relative'}}
         role="tablist"
         aria-label={etiqueta}
         onScroll={medir}
         onKeyDown={tecla}
       >
+        <span
+          className="tab-pill-indicador"
+          style={{
+            transform: `translateX(${pill.left}px)`,
+            width: `${pill.width}px`,
+            opacity: pill.opacity
+          }}
+          aria-hidden="true"
+        />
         {items.map(([k, n]) => (
           <button
             key={k}

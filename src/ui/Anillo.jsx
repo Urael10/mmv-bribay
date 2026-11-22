@@ -5,9 +5,10 @@ import {arco} from '../domain/anillo'
 // Colores por tokens (clases `anillo-pista` y `anillo-arco` en styles.css); `clase`: '' | 'ok' | 'bajo'.
 export default function Anillo({valor, meta, tam = 44, clase = '', children}) {
   const largo = arco(valor, meta)
+  const ok = clase === 'ok' || largo >= 100
   return (
     <span
-      className={'anillo' + (clase ? ' ' + clase : '')}
+      className={'anillo' + (clase ? ' ' + clase : '') + (ok ? ' anillo-cumplido' : '')}
       style={{width: tam, height: tam}}
       aria-hidden="true"
     >
