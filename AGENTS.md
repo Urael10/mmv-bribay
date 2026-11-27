@@ -15,6 +15,10 @@ App personal, local-first, de un solo usuario y un solo dispositivo: entrenamien
 3. Si tocaste Dexie o el backup: añade o ajusta tests con `fake-indexeddb` que cubran la migración desde la versión anterior y la restauración.
 4. Informa qué verificaste y qué no. No digas que algo funciona si no lo ejecutaste.
 
+## Ramas y commits
+- Se trabaja en la rama `prueba`; `main` es producción. No hagas commits directamente en `main` salvo que se pida.
+- Un OK del usuario (tests + build + prueba manual) vale para ese commit concreto; no lo traslades a otro sin verificar de nuevo.
+
 ## Datos (Dexie)
 - El esquema vive en `src/data/db.js` con versiones incrementales. Nunca edites una versión publicada: añade `db.version(n+1)` con `upgrade` explícito. Varios tests fijan la versión (`verno`): al subirla, actualízalos (`grep -rn verno src`).
 - Convención actual: los componentes de `src/features/` pueden leer y escribir Dexie. El esquema, las migraciones y el backup viven solo en `src/data/` y `src/domain/backup.js`. No refactorices accesos existentes a repositorios sin que se pida.
