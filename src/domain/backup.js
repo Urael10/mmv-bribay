@@ -13,7 +13,10 @@ export const AJUSTES = [
   'nac',
   'pesoobj',
   'fechaobj',
-  'protkg'
+  'protkg',
+  'metapasos',
+  'alarmasueno',
+  'ruta_ocultar'
 ]
 
 export const diasDesde = (iso, ahora = Date.now()) => {
@@ -31,13 +34,95 @@ export function avisoBackup({ultimo, hayDatos, ahora = Date.now(), dias = DIAS_A
 
 export const nombreBackup = fecha => `mmv-backup-${fecha}.json`
 
+const esObjetoPlano = v => !!v && typeof v === 'object' && !Array.isArray(v)
+const esClaveTexto = v => typeof v === 'string' && v.trim().length > 0
+const esClaveId = v =>
+  (typeof v === 'number' && Number.isFinite(v)) || (typeof v === 'string' && v.length > 0)
+
+// Clave primaria (pk) e índice único (unica) de cada tabla conocida de Dexie.
+export const ESQUEMA_BACKUP = {
+  sesiones: {autoId: true},
+  habitos: {pk: 'fecha'},
+  uso: {autoId: true},
+  ejercicios: {pk: 'clave'},
+  registros: {autoId: true},
+  alimentos: {autoId: true, unica: 'clave'},
+  comidas: {autoId: true},
+  coach: {pk: 'semana'},
+  plantillas: {autoId: true, unica: 'clave'},
+  medidas: {pk: 'fecha'},
+  tests: {autoId: true},
+  rutinas: {autoId: true, unica: 'clave'},
+  actividades: {autoId: true},
+  rutas: {autoId: true}
+}
+
+export function validarContenidoBackup(d, esquemaExtra = null) {
+  if (!esObjetoPlano(d)) return {ok: false, error: 'No parece un backup de MMV.'}
+  const esquema = esquemaExtra ? {...ESQUEMA_BACKUP, ...esquemaExtra} : ESQUEMA_BACKUP
+  const tieneTabla =
+    Object.keys(esquema).some(t => Array.isArray(d[t])) || Object.values(d).some(Array.isArray)
+  if (d._meta?.app !== 'MMV' && !tieneTabla) {
+    return {ok: false, error: 'No parece un backup de MMV.'}
+  }
+  if (d._meta !== undefined && !esObjetoPlano(d._meta)) {
+    return {ok: false, error: 'El backup tiene metadatos inválidos.'}
+  }
+  if (d._ajustes !== undefined && !esObjetoPlano(d._ajustes)) {
+    return {ok: false, error: 'El backup tiene ajustes inválidos.'}
+  }
+  if (d._sesion !== undefined && !esObjetoPlano(d._sesion)) {
+    return {ok: false, error: 'El backup tiene una sesión en curso inválida.'}
+  }
+  for (const [tabla, regla] of Object.entries(esquema)) {
+    const filas = d[tabla]
+    if (filas === undefined) continue // backups antiguos pueden no traer tablas nuevas
+    if (!Array.isArray(filas)) {
+      return {ok: false, error: `El backup tiene una tabla inválida (${tabla}).`}
+    }
+    const pks = new Set()
+    const ids = new Set()
+    const unicas = new Set()
+    for (const f of filas) {
+      if (!esObjetoPlano(f)) {
+        return {ok: false, error: `El backup tiene una fila inválida en ${tabla}.`}
+      }
+      if (regla.pk) {
+        const k = f[regla.pk]
+        if (!esClaveTexto(k)) {
+          return {ok: false, error: `El backup tiene una fila sin ${regla.pk} en ${tabla}.`}
+        }
+        if (pks.has(k)) {
+          return {ok: false, error: `El backup tiene claves duplicadas en ${tabla}.`}
+        }
+        pks.add(k)
+      }
+      if (regla.autoId && f.id !== undefined) {
+        if (!esClaveId(f.id)) {
+          return {ok: false, error: `El backup tiene un id inválido en ${tabla}.`}
+        }
+        if (ids.has(f.id)) {
+          return {ok: false, error: `El backup tiene ids duplicados en ${tabla}.`}
+        }
+        ids.add(f.id)
+      }
+      if (regla.unica && f[regla.unica] !== undefined) {
+        const u = f[regla.unica]
+        if (!esClaveTexto(u)) {
+          return {ok: false, error: `El backup tiene una clave única inválida en ${tabla}.`}
+        }
+        if (unicas.has(u)) {
+          return {ok: false, error: `El backup tiene claves únicas duplicadas en ${tabla}.`}
+        }
+        unicas.add(u)
+      }
+    }
+  }
+  return {ok: true, error: null}
+}
+
 export function validarBackup(d) {
-  return (
-    !!d &&
-    typeof d === 'object' &&
-    !Array.isArray(d) &&
-    (d._meta?.app === 'MMV' || Object.values(d).some(Array.isArray))
-  )
+  return validarContenidoBackup(d).ok
 }
 
 const comoObjeto = v => {
@@ -59,7 +144,9 @@ export function valorDeAjuste(k, v) {
     const o = comoObjeto(v)
     return o ? JSON.stringify(normalizarConfig(o)) : null
   }
-  return String(v)
+  if (typeof v === 'string') return v || null
+  if (typeof v === 'number' && Number.isFinite(v)) return String(v)
+  return null
 }
 
 export function ajustesDe(leer) {

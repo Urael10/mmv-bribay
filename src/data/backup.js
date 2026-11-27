@@ -1,7 +1,7 @@
 // Backup de MMV: arma el archivo, lo descarga o lo comparte, y restaura.
-import {db, hoy, cfg, setCfg, TABLAS, importarTabla} from './db.js'
+import {db, hoy, cfg, setCfg, TABLAS} from './db.js'
 import {INFO} from '../version.js'
-import {ajustesDe, ajustesAplicables, nombreBackup, validarBackup} from '../domain/backup.js'
+import {ajustesDe, ajustesAplicables, nombreBackup, validarContenidoBackup} from '../domain/backup.js'
 import {META, planRestaurarPrivado} from '../domain/privado.js'
 import {archivos} from '../platform/archivos.js'
 
@@ -91,21 +91,33 @@ export async function exportar({compartir = false} = {}) {
   return 'descargado'
 }
 
-// Devuelve cuántos registros se omitieron por estar repetidos.
+// Valida la estructura completa del archivo (incluyendo tablas locales cifradas) antes de escribir.
+export const validarArchivoBackup = d => validarContenidoBackup(d, {privado: {pk: 'mes'}})
+
+// Reemplaza cada tabla incluida en el archivo dentro de una única transacción (las ausentes quedan intactas).
+// Devuelve cuántos registros privados de otro equipo se omitieron.
 export async function restaurar(d) {
-  if (!validarBackup(d)) throw new Error('No parece un backup de MMV.')
+  const validacion = validarArchivoBackup(d)
+  if (!validacion.ok) throw new Error(validacion.error)
+  const tables = TABLAS.map(t => db[t])
   let omitidas = 0
-  for (const t of TABLAS) {
-    if (!Array.isArray(d[t])) continue
-    if (t === 'privado') {
-      // El registro privado viaja cifrado: solo se importa si la clave del backup es la de este equipo (o aquí no hay ninguna).
-      const plan = planRestaurarPrivado(await db.privado.get(META), d[t])
-      omitidas += plan.omitidas
-      if (plan.importar.length) omitidas += await importarTabla(t, plan.importar)
-      continue
+  await db.transaction('rw', tables, async () => {
+    for (const t of TABLAS) {
+      if (!Array.isArray(d[t])) continue
+      if (t === 'privado') {
+        // El registro privado viaja cifrado: solo se importa si la clave del backup es la de este equipo (o aquí no hay ninguna).
+        const plan = planRestaurarPrivado(await db.privado.get(META), d[t])
+        omitidas += plan.omitidas
+        if (plan.importar.length) {
+          await db.privado.clear()
+          await db.privado.bulkAdd(plan.importar)
+        }
+        continue
+      }
+      await db[t].clear()
+      if (d[t].length) await db[t].bulkAdd(d[t])
     }
-    omitidas += await importarTabla(t, d[t])
-  }
+  })
   for (const [k, v] of ajustesAplicables(d._ajustes)) setCfg(k, v)
   try {
     if (d._sesion && !localStorage.getItem('mv_sesion'))

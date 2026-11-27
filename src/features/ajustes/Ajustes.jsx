@@ -1,6 +1,6 @@
 import {useState, useEffect} from 'react'
 import {db, hoy, cfg, setCfg} from '../../data/db'
-import {exportar, restaurar, puedeCompartir, ultimoBackup} from '../../data/backup'
+import {exportar, restaurar, puedeCompartir, ultimoBackup, hayDatos, validarArchivoBackup} from '../../data/backup'
 import {archivos} from '../../platform/archivos'
 import {diasDesde} from '../../domain/backup'
 import {edadDe, proteinaObjetivo, ultima, PROT_KG} from '../../domain/cuerpo'
@@ -91,14 +91,18 @@ function UsoIA() {
 
 function Respaldo() {
   const nativo = archivos.disponible(),
-    [msg, setMsg] = useState(''),
+    [msg, setMsg] = useState(null),
     [ult, setUlt] = useState(ultimoBackup()),
+    [pendiente, setPendiente] = useState(null),
+    [ocupado, setOcupado] = useState(false),
     d = diasDesde(ult)
+  const avisar = (texto, error = false) => setMsg(texto ? {texto, error} : null)
   const hacer = async compartir => {
+    setOcupado(true)
     try {
       const r = await exportar({compartir})
       setUlt(ultimoBackup())
-      setMsg(
+      avisar(
         r === 'compartido'
           ? 'Backup compartido.'
           : r === 'descargado'
@@ -106,7 +110,9 @@ function Respaldo() {
             : 'Cancelado.'
       )
     } catch (err) {
-      setMsg(err?.message || 'No pude hacer el backup. Probá de nuevo.')
+      avisar(err?.message || 'No pude hacer el backup. Probá de nuevo.', true)
+    } finally {
+      setOcupado(false)
     }
   }
   const imp = async e => {
@@ -114,10 +120,35 @@ function Respaldo() {
     e.target.value = ''
     if (!x) return
     try {
-      const om = await restaurar(JSON.parse(await x.text()))
-      alert('Backup importado' + (om ? ` (${om} registros repetidos se omitieron)` : ''))
+      const datos = JSON.parse(await x.text())
+      const validacion = validarArchivoBackup(datos)
+      if (!validacion.ok) {
+        setPendiente(null)
+        avisar('No pude importar ese archivo: ' + validacion.error, true)
+        return
+      }
+      const conDatos = await hayDatos()
+      avisar(null)
+      setPendiente({nombre: x.name, datos, conDatos})
     } catch (err) {
-      alert('No pude importar ese archivo: ' + err.message)
+      setPendiente(null)
+      avisar('No pude importar ese archivo: ' + (err?.message || 'JSON inválido.'), true)
+    }
+  }
+  const confirmarRestaurar = async () => {
+    if (!pendiente || ocupado) return
+    setOcupado(true)
+    try {
+      const om = await restaurar(pendiente.datos)
+      setPendiente(null)
+      avisar(
+        'Backup restaurado' +
+          (om ? ` (${om} registros cifrados con otra clave se omitieron).` : '.')
+      )
+    } catch (err) {
+      avisar('No pude importar ese archivo: ' + (err?.message || 'error al restaurar.'), true)
+    } finally {
+      setOcupado(false)
     }
   }
   return (
@@ -133,22 +164,55 @@ function Respaldo() {
       </p>
       <div className="botonera">
         {puedeCompartir() && (
-          <button className="pri" onClick={() => hacer(true)}>
+          <button className="pri" disabled={ocupado} onClick={() => hacer(true)}>
             {nativo ? 'Guardar o compartir backup' : 'Compartir backup'}
           </button>
         )}
         {/* En el APK la hoja de compartir ya incluye «Guardar en Archivos / Drive»: un segundo botón haría lo mismo */}
         {!nativo && (
-          <button className={puedeCompartir() ? '' : 'pri'} onClick={() => hacer(false)}>
+          <button className={puedeCompartir() ? '' : 'pri'} disabled={ocupado} onClick={() => hacer(false)}>
             Descargar backup
           </button>
         )}
-        <button className="ghost" onClick={e => e.currentTarget.nextSibling.click()}>
+        <button className="ghost" disabled={ocupado} onClick={e => e.currentTarget.nextSibling.click()}>
           Importar backup
         </button>
         <input hidden type="file" accept="application/json" onChange={imp} />
       </div>
-      {msg && <small className="tag">{msg}</small>}
+      {pendiente && (
+        <div role="region" aria-label="Confirmar restauración de backup" style={{marginTop: 12}}>
+          <p>
+            <b>Vas a restaurar «{pendiente.nombre}».</b>{' '}
+            {pendiente.conDatos
+              ? 'Las tablas incluidas en el archivo reemplazarán los datos actuales de este dispositivo.'
+              : 'Se cargarán los datos del archivo en este dispositivo.'}
+          </p>
+          <div className="botonera">
+            <button type="button" className="ghost" disabled={ocupado} onClick={() => hacer(nativo)}>
+              Exportar datos actuales antes de restaurar
+            </button>
+            <button type="button" className="pri" disabled={ocupado} onClick={confirmarRestaurar}>
+              {ocupado ? 'Restaurando…' : 'Confirmar y restaurar'}
+            </button>
+            <button
+              type="button"
+              className="ghost"
+              disabled={ocupado}
+              onClick={() => {
+                setPendiente(null)
+                avisar('Restauración cancelada.')
+              }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+      {msg && (
+        <small className="tag" role={msg.error ? 'alert' : 'status'} style={{display: 'block', marginTop: 8}}>
+          {msg.texto}
+        </small>
+      )}
     </section>
   )
 }
