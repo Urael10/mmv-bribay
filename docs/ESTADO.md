@@ -1,12 +1,12 @@
 # ESTADO (se sobrescribe en cada cierre)
-Actualizado: 2026-11-26 · alias h · Gemini 4 Hydrogen · esfuerzo alto
-Versión (package.json): 0.52.0 · HEAD: 236165e · Árbol: con cambios sin commit
-Línea base: npm test 726/726 · build OK · 26/11/2026; se actualiza con la corrida de esta tarea
+Actualizado: 2026-11-27 · alias h · Claude Sonnet 4.6 · esfuerzo bajo
+Versión (package.json): 0.52.0 · HEAD: 0896ae4 · Árbol: limpio
+Línea base: npm test 726/726 · build OK · 27/11/2026
 
 ## Último relevo
-Tareas: backup completo y restauración segura (código y tests terminados), ajuste en `Respaldo()` con `role="alert"` en errores y `role="status"` en avisos informativos, actualización de `AGENTS.md` (regla de `restaurar()` y decisiones vigentes) y creación de `docs/ESTADO.md` y `docs/DECISIONES.md`.
+Tarea: recuperación de sesión cortada — se verificó coherencia del árbol, se corrieron tests y build, y se hizo el commit pendiente de la sesión anterior.
 Archivos: src/domain/backup.js, src/data/backup.js, src/features/ajustes/Ajustes.jsx, tests/backup-restauracion.test.js, AGENTS.md, docs/ESTADO.md, docs/DECISIONES.md
-Revisión por código de Respaldo(): botones con min-height 48 px, error visible (`role="alert"` en errores / `role="status"` informativo), estado de carga, error a mitad con reintento, sin confirm/alert; los botones se nombran por su texto visible, sin aria-label (`<input hidden type="file">` tampoco lleva aria-label).
+Commit: 0896ae4 «feat(backup): backup completo y restauración segura»
 Prueba manual (usuario): PENDIENTE
 No verificado: pantalla Respaldo() renderizada, APK, restauración con un backup antiguo real.
 
@@ -15,8 +15,7 @@ No verificado: pantalla Respaldo() renderizada, APK, restauración con un backup
 
 ## Pendientes (orden)
 1) Prueba manual de Respaldo() en npm run preview, con un backup válido y otro roto.
-2) Commit en prueba (lo decide el usuario). AGENTS.md y docs/ siguen sin seguimiento en git: inclúyelos.
-3) Probar exportar e importar backup en el APK.
+2) Probar exportar e importar backup en el APK.
 
 ## Plantilla de relevo
 RELEVO · AAAA-MM-DD · alias · modelo · esfuerzo
