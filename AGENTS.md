@@ -17,7 +17,7 @@ App personal, local-first, de un solo usuario y un solo dispositivo: entrenamien
 
 ## Ramas y commits
 - Se trabaja en la rama `prueba`; `main` es producción. No hagas commits directamente en `main` salvo que se pida.
-- Un OK del usuario (tests + build + prueba manual) vale para ese commit concreto; no lo traslades a otro sin verificar de nuevo.
+- Cada permiso de commit vale para un solo commit, incluidos los de documentación. El permiso de push se pide aparte.
 
 ## Datos (Dexie)
 - El esquema vive en `src/data/db.js` con versiones incrementales. Nunca edites una versión publicada: añade `db.version(n+1)` con `upgrade` explícito. Varios tests fijan la versión (`verno`): al subirla, actualízalos (`grep -rn verno src`).

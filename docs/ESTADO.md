@@ -1,21 +1,22 @@
 # ESTADO (se sobrescribe en cada cierre)
 Actualizado: 2026-11-27
-HEAD publicado: 8885f63 · main y prueba coincidían al publicar
+Versión (package.json): 0.52.0 · HEAD publicado: 8885f63
+Línea base: npm test 726/726 · build OK · 27/11/2026 (código de 0896ae4)
 
 ## Último relevo
 Tarea: backup completo y restauración segura. TERMINADA y publicada.
-Verificado: npm test 726/726 y build OK antes de commitear 0896ae4;
-pruebas en la web de prueba, el APK y producción reportadas OK por el usuario.
-Ramas: se trabaja en prueba; main es producción.
-La rama prueba anterior (36358e0) quedó en respaldo/prueba-antigua.
+Archivos: src/domain/backup.js, src/data/backup.js, src/features/ajustes/Ajustes.jsx, tests/backup-restauracion.test.js, AGENTS.md, docs/ESTADO.md, docs/DECISIONES.md
+Commits: 0896ae4 (backup) · 0de6d7a y 8885f63 (docs)
+Prueba manual local (usuario): OK; exportar, importar válido, archivo roto, carga y botones de 48 px, sin alert/confirm.
+Web de prueba, APK y producción: reportadas OK por el usuario.
+No verificado: restauración de backups de versiones más antiguas que la anterior en producción.
+Ramas: se trabaja en prueba; main es producción. La prueba anterior (36358e0) está en respaldo/prueba-antigua.
 
 ## En curso
 (nada)
 
 ## Pendientes (orden)
-1) Añadir a AGENTS.md: un OK de commit vale para un solo commit;
-   trabajar en prueba y no commitear en main.
-2) Revisar el backlog contra el repo y elegir la siguiente tarea.
+1) Revisar el backlog contra el repo y elegir la siguiente tarea.
 
 ## Plantilla de relevo
 RELEVO · AAAA-MM-DD · alias · modelo · esfuerzo
