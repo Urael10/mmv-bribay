@@ -292,17 +292,24 @@ test('adaptador archivos · escribe en la caché, comparte el archivo y distingu
   assert.equal(await a.compartir('x.gpx', '<gpx/>'), 'cancelado')
   c.reg.falla = 'no hay apps'
   assert.equal(await a.compartir('x.gpx', '<gpx/>'), 'error')
+  assert.equal(a.ultimoError(), 'no hay apps')
+  c.reg.falla = null
+  assert.equal(await a.compartir('x.gpx', '<gpx/>'), 'compartido')
+  assert.equal(a.ultimoError(), '') // se limpia en la llamada siguiente
   assert.equal(cargas, 1) // los plugins se bajan una sola vez
 })
 
-test('adaptador archivos · sin plugin o sin disco devuelve error sin lanzar; en la PWA no toca nada', async () => {
+test('adaptador archivos · sin plugin o sin disco devuelve error sin lanzar y conserva el detalle; en la PWA no toca nada', async () => {
   const sinDisco = crearArchivos({cargar: async () => filesystem({fallaEscritura: true}), android: () => true})
   assert.equal(await sinDisco.compartir('a.json', '{}'), 'error')
+  assert.equal(sinDisco.ultimoError(), 'disco lleno')
   const sinPlugin = crearArchivos({cargar: async () => { throw new Error('sin plugin') }, android: () => true})
   assert.equal(await sinPlugin.compartir('a.json', '{}'), 'error')
+  assert.equal(sinPlugin.ultimoError(), 'sin plugin')
   const web = crearArchivos({cargar: async () => { throw new Error('no debe cargarse') }, android: () => false})
   assert.equal(web.disponible(), false)
   assert.equal(await web.compartir('a.json', '{}'), 'no-disponible')
+  assert.equal(web.ultimoError(), '')
 })
 
 test('adaptador archivos · nombres seguros', () => {

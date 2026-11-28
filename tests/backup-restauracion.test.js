@@ -404,5 +404,47 @@ test('Ajustes.jsx valida antes de restaurar y ofrece exportar datos actuales sin
   assert.match(respaldo, /Exportar datos actuales antes de restaurar/)
   assert.match(respaldo, /Confirmar y restaurar/)
   assert.match(respaldo, /role=\{msg\.error \? 'alert' : 'status'\}/)
+  assert.match(respaldo, /accept=\{nativo \? undefined : 'application\/json'\}/)
   assert.doesNotMatch(respaldo, /\b(alert|confirm|prompt)\s*\(/)
+})
+
+test('APK: exportar propaga el error nativo real; en PWA no usa archivos y rechaza archivos ajenos al restaurar', async () => {
+  const {exportar, restaurar, validarArchivoBackup} = await import('../src/data/backup.js')
+  const {archivos} = await import('../src/platform/archivos.js')
+  const origDisp = archivos.disponible
+  const origComp = archivos.compartir
+  const origErr = archivos.ultimoError
+  const origDoc = globalThis.document
+  const origURL = globalThis.URL
+  try {
+    archivos.disponible = () => true
+    archivos.compartir = async () => 'error'
+    archivos.ultimoError = () => 'Permission denied'
+    await assert.rejects(() => exportar({compartir: true}), /Permission denied/)
+
+    // Con nativo=false (PWA) sigue descargando por enlace/blob sin tocar archivos.compartir
+    archivos.disponible = () => false
+    let descarga = null
+    globalThis.URL = {createObjectURL: () => 'blob:pwa', revokeObjectURL: () => {}}
+    globalThis.document = {
+      createElement: () => {
+        const a = {href: '', download: '', click: () => { descarga = {href: a.href, download: a.download} }}
+        return a
+      }
+    }
+    assert.equal(await exportar({compartir: false}), 'descargado')
+    assert.equal(descarga?.href, 'blob:pwa')
+    assert.match(descarga?.download || '', /^mmv-backup-.*\.json$/)
+  } finally {
+    archivos.disponible = origDisp
+    archivos.compartir = origComp
+    archivos.ultimoError = origErr
+    globalThis.document = origDoc
+    globalThis.URL = origURL
+  }
+
+  // Aunque el selector sin accept permita elegir cualquier archivo, la validación rechaza lo que no sea backup MMV
+  assert.equal(validarArchivoBackup('texto plano').ok, false)
+  assert.equal(validarArchivoBackup({otraApp: true, version: 1}).ok, false)
+  await assert.rejects(() => restaurar({otraApp: true}), /backup/i)
 })

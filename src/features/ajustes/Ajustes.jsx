@@ -177,7 +177,7 @@ function Respaldo() {
         <button className="ghost" disabled={ocupado} onClick={e => e.currentTarget.nextSibling.click()}>
           Importar backup
         </button>
-        <input hidden type="file" accept="application/json" onChange={imp} />
+        <input hidden type="file" accept={nativo ? undefined : 'application/json'} onChange={imp} />
       </div>
       {pendiente && (
         <div role="region" aria-label="Confirmar restauración de backup" style={{marginTop: 12}}>

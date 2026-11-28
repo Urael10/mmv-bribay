@@ -69,7 +69,12 @@ export async function exportar({compartir = false} = {}) {
       return 'compartido'
     }
     if (r === 'cancelado') return 'cancelado'
-    throw new Error('No pude preparar el backup para compartirlo. Probá de nuevo.')
+    const detalle = archivos.ultimoError?.()
+    throw new Error(
+      detalle
+        ? `No pude preparar el backup para compartirlo: ${detalle}`
+        : 'No pude preparar el backup para compartirlo. Probá de nuevo.'
+    )
   }
   if (compartir && puedeCompartir()) {
     try {

@@ -18,18 +18,24 @@ export const nombreSeguro = n => String(n || 'archivo').replace(/[^\w.\-]+/g, '_
 
 // «Share canceled» (Android) o «AbortError»: la persona cerró la hoja sin elegir nada.
 const esCancelado = e => /cancel|abort|dismiss/i.test(String(e?.message || e?.name || e))
+const textoError = e => String(e?.message || e || '').trim()
 
 export function crearArchivos({cargar = cargarReal, android = esAndroid} = {}) {
   let caja = null
+  let ultimoErr = ''
   return {
     /** true solo en el APK de Android. */
     disponible: () => android() === true,
+
+    /** Último mensaje de error técnico (sin datos de usuario), o '' si no hubo. */
+    ultimoError: () => ultimoErr,
 
     /**
      * Entrega 43: manda un TEXTO a la hoja de compartir (sin archivo), p. ej. el informe semanal del Coach.
      * Devuelve 'compartido' | 'cancelado' | 'no-disponible' | 'error' (nunca lanza).
      */
     async compartirTexto(texto, titulo = 'MMV') {
+      ultimoErr = ''
       if (!android()) return 'no-disponible'
       try {
         const c = (caja ||= await cargar())
@@ -37,9 +43,12 @@ export function crearArchivos({cargar = cargarReal, android = esAndroid} = {}) {
           await c.share.share({title: titulo, text: String(texto), dialogTitle: titulo})
           return 'compartido'
         } catch (e) {
-          return esCancelado(e) ? 'cancelado' : 'error'
+          if (esCancelado(e)) return 'cancelado'
+          ultimoErr = textoError(e)
+          return 'error'
         }
-      } catch {
+      } catch (e) {
+        ultimoErr = textoError(e)
         return 'error'
       }
     },
@@ -49,6 +58,7 @@ export function crearArchivos({cargar = cargarReal, android = esAndroid} = {}) {
      * Devuelve 'compartido' | 'cancelado' | 'no-disponible' | 'error' (nunca lanza).
      */
     async compartir(nombre, texto, titulo = nombre) {
+      ultimoErr = ''
       if (!android()) return 'no-disponible'
       try {
         const c = (caja ||= await cargar())
@@ -58,9 +68,12 @@ export function crearArchivos({cargar = cargarReal, android = esAndroid} = {}) {
           await c.share.share({title: titulo, dialogTitle: titulo, files: [uri]})
           return 'compartido'
         } catch (e) {
-          return esCancelado(e) ? 'cancelado' : 'error'
+          if (esCancelado(e)) return 'cancelado'
+          ultimoErr = textoError(e)
+          return 'error'
         }
-      } catch {
+      } catch (e) {
+        ultimoErr = textoError(e)
         return 'error'
       }
     }
