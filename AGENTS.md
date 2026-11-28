@@ -44,7 +44,7 @@ App personal, local-first, de un solo usuario y un solo dispositivo: entrenamien
 - No hagas `git commit` ni `git push` salvo que se pida.
 
 ## Diseño y UX (mobile-first, uso diario)
-- Tema oscuro único (intencional): no añadas tema claro salvo que se pida. El acceso ✨ Maqueta también es intencional: no lo quites.
+- Tema oscuro único (intencional): no añadas tema claro salvo que se pida.
 - Registro rápido: las acciones frecuentes (anotar serie, comida, marcar hábito) en 3 toques o menos, usables con una mano, con el último valor precargado.
 - Offline es el estado normal: nunca muestres errores de red para funciones locales.
 - No pierdas datos: autoguarda una sesión en curso. En código nuevo, borrar es "deshacer" con UI propia: no añadas `confirm()`, `alert()` ni `prompt()`.
