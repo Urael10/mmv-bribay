@@ -7,7 +7,7 @@ Línea base: npm test 726/726 · build OK · 27/11/2026 (código de 0896ae4)
 Tarea: revisión de pendientes Android contra el código (solo lectura).
 Archivos: ninguno modificado (árbol limpio en 5d60187).
 Commits: ninguno en esta sesión.
-Prueba manual local (usuario): no realizada en esta sesión.
+Prueba manual local (usuario): Respaldo() en el navegador (exportar, importar, confirmar y restaurar, archivo roto rechazado) probada el 28/11/2026 — OK.
 Web de prueba, APK y producción: sin cambios respecto a 8885f63.
 No verificado: npm test y build en esta sesión; restauración de backups de versiones más antiguas que la anterior en producción; si el repo es público (por debug.keystore).
 Ramas: se trabaja en prueba; main es producción. La prueba anterior (36358e0) está en respaldo/prueba-antigua.
